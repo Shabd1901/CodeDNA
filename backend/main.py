@@ -1,3 +1,7 @@
+from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv(Path(__file__).with_name(".env"))
+
 from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 import httpx
@@ -7,6 +11,7 @@ import uuid
 import os
 import shutil
 import zipfile
+import json
 from analysis import build_repository_codedna, compare_codedna
 from ai_engine import generate_forensic_report
 
@@ -149,12 +154,32 @@ async def analyze_and_compare(session_id: str = Form(...)):
     # 3. Compare (Deterministic)
     comparison_results = compare_codedna(baseline_dna, submission_dna)
     
-    # 4. Generate AI Forensic Report
-    ai_report = await generate_forensic_report(comparison_results)
+    # Save for the AI step
+    with open(os.path.join(session_path, "deterministic_results.json"), "w") as f:
+        json.dump(comparison_results, f)
     
     return {
         "status": "success",
-        "deterministic_data": comparison_results,
+        "deterministic_data": comparison_results
+    }
+
+@app.post("/api/analyze/ai-report")
+async def generate_ai_report(session_id: str = Form(...)):
+    """Generate the AI forensic report using previously generated deterministic data."""
+    session_path = os.path.join(SESSION_DIR, session_id)
+    results_path = os.path.join(session_path, "deterministic_results.json")
+    
+    if not os.path.exists(results_path):
+        raise HTTPException(status_code=400, detail="Deterministic analysis not found. Run /api/analyze/compare first.")
+        
+    with open(results_path, "r") as f:
+        comparison_results = json.load(f)
+        
+    ai_report, ai_mode = await generate_forensic_report(comparison_results)
+    
+    return {
+        "status": "success",
+        "ai_mode": ai_mode,
         "forensic_report": ai_report
     }
 

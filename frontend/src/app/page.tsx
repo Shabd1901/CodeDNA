@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, Search, ShieldAlert, CheckCircle, Activity, FileCode2, ChevronRight, FileArchive, User } from "lucide-react";
+import { Upload, Search, ShieldAlert, CheckCircle, Activity, FileCode2, ChevronRight, FileArchive, User, Sparkles } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 
 export default function Home() {
@@ -15,17 +15,24 @@ export default function Home() {
 
   // Results State
   const [report, setReport] = useState<any>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiMode, setAiMode] = useState<"mock" | "openai" | null>(null);
 
   const startAnalysis = async () => {
     if (!submissionFile) return;
     
     setAppState("analyzing");
+    setReport(null);
+    setAiMode(null);
     
     try {
-      const sessionId = crypto.randomUUID();
-      
-      // 1. Start Session
-      await fetch("http://localhost:8000/api/session/start", { method: "POST" });
+      // 1. Start Session — use the server-issued id for all later calls
+      const sessionRes = await fetch("http://localhost:8000/api/session/start", { method: "POST" });
+      const sessionData = await sessionRes.json();
+      const sessionId = sessionData.session_id as string;
+      if (!sessionId) throw new Error("No session_id returned");
+      setSessionId(sessionId);
       
       // 2. Upload Repositories / Fetch GitHub
       const formData = new FormData();
@@ -77,6 +84,7 @@ export default function Home() {
         body: compareData
       });
       
+      if (!res.ok) throw new Error("Compare failed");
       const data = await res.json();
       setReport(data);
       setAppState("results");
@@ -85,6 +93,29 @@ export default function Home() {
       console.error(error);
       alert("Analysis failed. Ensure backend is running at :8000");
       setAppState("idle");
+      setSessionId(null);
+    }
+  };
+
+  const runAiAnalysis = async () => {
+    if (!sessionId) return;
+    setAiLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("session_id", sessionId);
+      const res = await fetch("http://localhost:8000/api/analyze/ai-report", {
+        method: "POST",
+        body: formData
+      });
+      if (!res.ok) throw new Error("AI report failed");
+      const data = await res.json();
+      setAiMode(data.ai_mode === "openai" ? "openai" : "mock");
+      setReport((prev: any) => ({ ...prev, forensic_report: data.forensic_report }));
+    } catch (error) {
+      console.error(error);
+      alert("AI analysis failed. Ensure the backend is running and comparison completed.");
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -223,7 +254,7 @@ export default function Home() {
               <Activity className="absolute inset-0 m-auto w-8 h-8 text-zinc-900" />
             </div>
             <h2 className="text-2xl font-bold mb-2 text-zinc-900">Extracting CodeDNA...</h2>
-            <p className="text-zinc-500">Parsing AST, analyzing dependencies, and generating forensic report.</p>
+            <p className="text-zinc-500">Parsing AST, analyzing dependencies, and running a local CodeDNA comparison.</p>
           </motion.div>
         )}
 
@@ -244,26 +275,80 @@ export default function Home() {
                   </span>
                 </div>
               </div>
-              <button onClick={() => setAppState("idle")} className="px-5 py-2.5 bg-white border border-zinc-200 shadow-sm rounded-lg text-sm font-medium hover:bg-zinc-50 text-zinc-700 transition-colors">
+              <button onClick={() => { setAppState("idle"); setReport(null); setSessionId(null); setAiMode(null); }} className="px-5 py-2.5 bg-white border border-zinc-200 shadow-sm rounded-lg text-sm font-medium hover:bg-zinc-50 text-zinc-700 transition-colors">
                 New Investigation
               </button>
             </div>
 
-            {/* AI Summary */}
+            {/* Local anomalies (always available, no API cost) */}
+            <div className="clean-card p-8">
+              <h3 className="text-lg font-bold mb-4 text-zinc-900">Local Comparison Anomalies</h3>
+              {report.deterministic_data?.anomalies?.length ? (
+                <ul className="space-y-3">
+                  {report.deterministic_data.anomalies.map((anomaly: any, i: number) => (
+                    <li key={i} className="border border-zinc-200 rounded-lg p-4 bg-zinc-50">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400 mb-1">{String(anomaly.type || "anomaly").replace(/_/g, " ")}</p>
+                      <p className="text-sm text-zinc-700">{anomaly.message}</p>
+                      {Array.isArray(anomaly.details) && anomaly.details.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {anomaly.details.map((d: string, j: number) => (
+                            <span key={j} className="text-xs bg-white px-2 py-1 rounded text-zinc-600 border border-zinc-200 font-mono">{d}</span>
+                          ))}
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-zinc-500">No local anomalies detected against the baseline.</p>
+              )}
+            </div>
+
+            {/* AI — explicit step */}
             <div className="clean-card p-8 border-l-4 border-l-blue-500">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-zinc-900">
-                <CheckCircle className="w-5 h-5 text-blue-500" />
-                AI Conclusion
-              </h3>
-              <p className="text-[15px] leading-relaxed text-zinc-600">
-                {report.forensic_report?.summary || "No summary provided."}
-              </p>
+              <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+                <h3 className="text-lg font-bold flex items-center gap-2 text-zinc-900">
+                  <CheckCircle className="w-5 h-5 text-blue-500" />
+                  AI Forensic Reasoning
+                </h3>
+                <div className="flex items-center gap-2">
+                  {aiMode && (
+                    <span className={`px-2.5 py-1 text-xs font-semibold rounded-md border ${aiMode === "openai" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-zinc-100 text-zinc-600 border-zinc-200"}`}>
+                      {aiMode === "openai" ? "OpenAI" : "Mock AI"}
+                    </span>
+                  )}
+                  <button
+                    onClick={runAiAnalysis}
+                    disabled={!sessionId || aiLoading}
+                    className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-zinc-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    {aiLoading ? "Running…" : report.forensic_report ? "Re-run AI Analysis" : "Run AI Analysis"}
+                  </button>
+                </div>
+              </div>
+              {aiLoading && (
+                <p className="text-sm text-zinc-500">Generating forensic reasoning…</p>
+              )}
+              {!aiLoading && !report.forensic_report && (
+                <p className="text-[15px] leading-relaxed text-zinc-600">
+                  AI forensic reasoning has not been run. Local CodeDNA comparison is complete; click Run AI Analysis for an investigation summary.
+                </p>
+              )}
+              {!aiLoading && report.forensic_report && (
+                <p className="text-[15px] leading-relaxed text-zinc-600">
+                  {report.forensic_report.summary || "No summary provided."}
+                </p>
+              )}
             </div>
 
             <div className="grid lg:grid-cols-3 gap-8">
               {/* Findings */}
               <div className="lg:col-span-2 space-y-5">
                 <h3 className="text-lg font-bold text-zinc-900">Forensic Findings</h3>
+                {!report.forensic_report?.findings?.length && (
+                  <p className="text-sm text-zinc-500">Findings appear after you run AI analysis.</p>
+                )}
                 {report.forensic_report?.findings?.map((finding: any, i: number) => (
                   <div key={i} className="clean-card p-6">
                     <div className="flex items-start justify-between mb-3">

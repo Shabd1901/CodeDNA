@@ -84,11 +84,11 @@ def build_repository_codedna(repo_path: str) -> Dict[str, Any]:
             
             if ext == '.py':
                 metrics = analyze_python_file(filepath)
-                dna["languages"]["python"] = dna.languages.get("python", 0) + 1
+                dna["languages"]["python"] = dna["languages"].get("python", 0) + 1
             elif ext in ['.js', '.jsx', '.ts', '.tsx']:
                 metrics = analyze_js_ts_file(filepath)
                 lang_key = "javascript" if ext in ['.js', '.jsx'] else "typescript"
-                dna["languages"][lang_key] = dna.languages.get(lang_key, 0) + 1
+                dna["languages"][lang_key] = dna["languages"].get(lang_key, 0) + 1
             else:
                 continue
                 
