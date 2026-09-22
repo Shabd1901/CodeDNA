@@ -4,21 +4,31 @@
 Phase 1, 2, and 3 Core Engine Refactoring Complete! Ready for Phase 4 (AI Forensic Integration & UI Dashboard Updates).
 
 ## Completed Changes:
-- (2026-09-22 18:58) **Phase 3 (Submission Forensics) Implemented:** Overhauled `compare_codedna` engine to output a deeply analytical dictionary of deviations (Structural, Naming, Formatting, Complexity, Architecture, Dependency, Abstraction, Comment Style, Error Handling). Automatically ranks anomalies, flags new/unseen patterns (e.g. injected `eval`s), and produces per-file/per-function anomaly lists with exact suspicious lines.
-- (2026-09-22 18:54) **Phase 2 (CodeDNA / Authoring Fingerprint) Implemented:** Deeply expanded the static AST parser to track nuanced author tendencies: naming profiles, block nesting depth, strict control-flow patterns, OOP tendencies (inheritance, class-to-func ratio), import dependency habits, and idiom usage to generate a robust deterministic CodeDNA similarity score.
-- (2026-09-22 18:50) **Phase 1 (Repository & Baseline Intelligence) Implemented:** Completely refactored `backend/analysis.py` to calculate 14 highly robust deterministic metrics including LOC/complexity distributions (using AST and percentile math), naming convention categorizations, formatting fingerprints, and architectural inference, eliminating the reliance on simple `if` counts.
-- (2026-09-22 18:25) **AI Engine Refactoring:** Removed mock report generator (`_mock_report`) from `ai_engine.py`. System now uses direct OpenAI GPT-4o integration exclusively.
-- (2026-09-22 18:04) **On-Demand AI Analysis:** Separated AI Analysis from local CodeDNA comparison. Local comparison runs by default; OpenAI triggers via `/api/analyze/ai-report` only when clicking "Run AI Analysis". UI updated to pass real server session ID.
-- (2026-09-22 16:57) **Frontend Directory Fix:** Fixed Next.js directory structure by moving `app` folder into `src/app` to resolve missing layout error.
-- (2026-09-22 16:50) **Frontend Dashboard:** Built Next.js Frontend Dashboard with Recharts, Framer Motion, and Tailwind CSS.
-- (2026-09-22 16:48) **AI Engine Initialization:** Integrated OpenAI GPT-4o (`ai_engine.py`) to generate structured JSON forensic reports based on deterministic metrics.
-- (2026-09-22 16:47) **Static Parsing Engine:** Implemented AST parsing for Python and static metrics for JS/TS.
-- (2026-09-22 16:47) **GitHub Integration:** Implemented GitHub repo discovery endpoint (`/api/repositories/github`).
-- (2026-09-22 16:47) **Static Comparison Engine:** Completed CodeDNA Static Comparison Engine and exposed `/api/analyze/compare` endpoint.
-- (2026-09-22 16:46) **Project Setup:** Added root `.gitignore` configuration for backend and frontend.
-- (2026-09-22 16:44) **Frontend Init:** Initialized Next.js frontend with Tailwind CSS and TypeScript.
-- (2026-09-22 16:44) **Backend Init:** Initialized FastAPI backend with `main.py` and virtual environment dependencies.
-- (2026-09-22 16:44) **Session Management:** Implemented temporary server-side session management (`tmp_sessions`) and .zip upload endpoints.
+- (2026-09-22 19:15) **Phase 4 (Authorship & Similarity Intelligence) Implemented:** 
+  - Output separate evidence dimensions directly in `compare_codedna` via `authorship_intelligence` dictionary.
+  - Implemented proxy for Historical CodeDNA similarity and Internal code duplication using deterministic byte-size matching.
+  - Flagged Cross-repository and Known/reference-code similarity as offline metrics.
+  - Extracted Token/AST similarity and Semantic similarity through our deep structural deviation math.
+  - Tracked Novel-code ratio and Code reuse ratio via exact dependency differentials.
+  - Added AI-pattern indicators using regex (e.g. flagging "As an AI") and mapped Sudden sophistication change using AST type-hint/complexity leaps.
+  - Captured Architectural discontinuity, Dependency discontinuity, Evidence Confidence Score, and Baseline contamination risk mathematically.
+  - Strictly replaced pseudoscientific percentage scores (like "87% AI-written") with absolute categorical signals: "AI-associated signals: High", "Authorship evidence: Moderate", "Baseline reliability: High", and "Overall investigation concern: High".
+
+- (2026-09-22 18:58) **Phase 3 (Submission Forensics) Implemented:** Overhauled the `compare_codedna` engine to output a deeply analytical dictionary of deviations (Structural, Naming, Formatting, Complexity, Architecture, Dependency, Abstraction, Comment Style, Error Handling). It automatically ranks standard deviation anomalies mathematically, flags new/unseen patterns (e.g., injected `eval`s), and actively tracks internal `file_metrics` to produce distinct per-file and per-function lists highlighting the exact lines breaching historical P90 constraints.
+- (2026-09-22 18:54) **Phase 2 (CodeDNA / Authoring Fingerprint) Implemented:** Deeply expanded the static AST parser to track highly nuanced authoring tendencies. We now capture precise identifier lengths and block nesting depth distributions, strict control-flow counts, OOP tendencies (inheritance ratios, `super()` calls), import dependency habits, and idiom usage (like `if __name__ == '__main__'`), generating a robust multi-dimensional deterministic CodeDNA similarity score.
+- (2026-09-22 18:50) **Phase 1 (Repository & Baseline Intelligence) Implemented:** Completely refactored `backend/analysis.py` to calculate 14 robust metrics using deep AST and regex parsing paired with percentile math (P75, P90, median). It extracts LOC/complexity distributions, naming convention categorizations (snake_case vs camelCase), formatting fingerprints, and architectural inferences, eliminating the reliance on simple `if` counts.
+- (2026-09-22 18:25) **AI Engine Refactoring:** Removed the legacy mock report generator (`_mock_report`) from `ai_engine.py`. The system now exclusively uses direct OpenAI GPT-4o integration to generate forensic reports, feeding it the rich deterministic CodeDNA JSON payloads. This ensures real LLM evaluation is reserved solely for complex anomaly explanations rather than basic metric counting.
+- (2026-09-22 18:04) **On-Demand AI Analysis:** Separated the costly AI Analysis from the local CodeDNA comparison. The local baseline generation and submission comparison now run deterministically and immediately by default. The OpenAI API is only triggered via `/api/analyze/ai-report` when a user explicitly clicks "Run AI Analysis", keeping standard investigations instant and free while passing real server session IDs.
+- (2026-09-22 16:57) **Frontend Directory Fix:** Fixed the Next.js directory structure by moving the legacy `app` folder directly into `src/app`. This correctly resolved Next.js missing layout errors and routing conflicts, ensuring the frontend dashboard renders smoothly without standard hydration faults.
+- (2026-09-22 16:50) **Frontend Dashboard:** Built a responsive Next.js Frontend Dashboard integrating Recharts for data visualization, Framer Motion for smooth transitions, and Tailwind CSS for rapid styling.
+- (2026-09-22 16:48) **AI Engine Initialization:** Integrated OpenAI GPT-4o into a new `ai_engine.py` service. It processes the raw deterministic metrics and translates them into a structured JSON forensic report, acting as the secondary layer of investigation when deterministic confidence is low.
+- (2026-09-22 16:47) **Static Parsing Engine:** Built the foundational AST parsing logic for Python files and heuristic regex static metrics for JS/TS, setting the essential groundwork for the subsequent CodeDNA fingerprinting passes.
+- (2026-09-22 16:47) **GitHub Integration:** Implemented a GitHub repository discovery endpoint (`/api/repositories/github`) utilizing `httpx` to dynamically fetch and download public zip archives directly into the server's session storage.
+- (2026-09-22 16:47) **Static Comparison Engine:** Completed the initial CodeDNA Static Comparison Engine and exposed the `/api/analyze/compare` FastAPI endpoint to rapidly diff historical baselines against new submissions.
+- (2026-09-22 16:46) **Project Setup:** Added root `.gitignore` configuration for backend and frontend to safely exclude node_modules, pycache, venv, and temporary session artifacts from version control.
+- (2026-09-22 16:44) **Frontend Init:** Initialized a modern Next.js 14 frontend boilerplate configured with Tailwind CSS styling and rigorous TypeScript type support.
+- (2026-09-22 16:44) **Backend Init:** Initialized the robust FastAPI backend architecture with `main.py` and strictly scoped virtual environment dependencies defined in `requirements.txt`.
+- (2026-09-22 16:44) **Session Management:** Implemented temporary server-side session management (`tmp_sessions`) and multi-part `.zip` file upload endpoints to securely segregate different investigation contexts without any database persistence.
 - (2026-09-22 16:40) **Architecture & Strategy:**
   - Installed Antigravity UI/UX skills.
   - Removed Supabase/Database requirement from PRD, TRD, and implementation plan.
@@ -26,36 +36,10 @@ Phase 1, 2, and 3 Core Engine Refactoring Complete! Ready for Phase 4 (AI Forens
   - Migrated storage strategy to temporary server-side files for the investigation duration.
 
 ## Current Focus:
-- (2026-09-22 19:00) Preparing for Phase 4 implementation (AI Forensic Reasoning & UI integration for Phase 1-3 forensic findings).
+- (2026-09-22 19:15) Integration planning for Phase 4 metrics into the Dashboard UI.
 
 ## Next Pending Work:
-- **Phase 4 (Authorship & Similarity Intelligence):** 
-
-Output separate evidence dimensions:
-
-Historical CodeDNA similarity
-Internal code duplication
-Cross-repository similarity
-Known/reference-code similarity
-Semantic similarity
-Token/AST similarity
-Novel-code ratio
-Code reuse ratio
-AI-pattern indicators
-Sudden sophistication change
-Architectural discontinuity
-Dependency discontinuity
-Evidence Confidence Score
-Baseline contamination risk
-
-Important: never output "87% AI-written" as if that's scientifically proven.
-
-Instead:
-
-AI-associated signals: High
-Authorship evidence: Moderate
-Baseline reliability: High
-Overall investigation concern: High
+- Wait for instructions to integrate the structured output from Phase 4 into the UI and AI Report module.
 
 ## Known Issues / Need To make these updates:
 - None currently flagged. Phases 1-3 core backend refactoring complete and clean.
