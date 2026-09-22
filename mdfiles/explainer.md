@@ -4,6 +4,7 @@
 Phase 1, 2, and 3 Core Engine Refactoring Complete! Ready for Phase 4 (AI Forensic Integration & UI Dashboard Updates).
 
 ## Completed Changes:
+- (2026-09-22 23:10) **Architecture Risk Matrix Added:** Added a concise "Architecture Vulnerabilities, Gotchas & Known Risk Matrix" section to `explainer.md` capturing SDK deprecations (`google.generativeai` vs `google-genai`), global pip leaks vs venv isolation, model name shifts, JS/TS static parsing limits, zip bomb limits, GitHub unauthenticated rate limits, session disk volatility, wildcard CORS risks, and secret leakage mitigations.
 - (2026-09-22 21:40) **Migrated AI Engine to Google Gemini Flash:** Completely replaced OpenAI (`gpt-4o`) with `google-generativeai` (`gemini-1.5-flash`). Uses `response_mime_type="application/json"` for strict JSON schema enforcement. Falls back gracefully to a highly realistic mock report on quota exhaustion or missing key. Updated `requirements.txt` and `.env.example`. The Gemini free tier provides 15 RPM and 1M TPM at no cost — resolving OpenAI's exhausted-credit problem permanently.
 - (2026-09-22 21:30) **Session & File Cleanup on New Investigation:** Updated `handleNewInvestigation` in `frontend/src/app/page.tsx` to issue a server-side `DELETE /api/session/{session_id}` request to wipe session files from disk, reset all input fields (`githubLink`, `repoFiles`, `submissionFile`), and force recreation of the file input DOM components using a dynamic key (`resetKey`).
 - (2026-09-22 19:33) **Security Hardening:** Untracked `backend/.env` from git index, added a safe `backend/.env.example` template, and updated root `.gitignore` to strictly exclude all environment and secret files (`.env`, `.env.*`, `*.env`) across the workspace.
@@ -44,6 +45,23 @@ Phase 1, 2, and 3 Core Engine Refactoring Complete! Ready for Phase 4 (AI Forens
 
 ## Next Pending Work:
 - Build the final Frontend UI Dashboard to display the top-level stats (Baseline Reliability, CodeDNA Consistency, Structural Deviation, etc.) and render the "Why?" → evidence → exact code flow natively in the browser.
+- **SDK & Model Migration:** Two issues: the `google.generativeai` SDK is deprecated, and the model name is wrong for that API version. Fix is to switch to the new `google-genai` SDK.
 
 ## Known Issues / Need To make these updates:
+- **SDK & Model Name Issue:** Two issues: the `google.generativeai` SDK is deprecated, and the model name is wrong for that API version. Fix is to switch to the new `google-genai` SDK.
 - If OpenAI returns a 429 Quota Exhausted error (or if the API key is "mock"), `ai_engine.py` will now automatically intercept the error and return a highly detailed, schema-compliant Mock Phase 5 Report so frontend UI testing can continue uninterrupted without API costs.
+
+## Architecture Vulnerabilities, Gotchas & Known Risk Matrix:
+
+| Risk / Gotcha | Issue (In Simple Words) | Fix / Solution |
+| :--- | :--- | :--- |
+| **Deprecated Gemini SDK** | `google.generativeai` package is deprecated in favor of `google-genai`. | Migrate import to `from google import genai` and use `client = genai.Client()`. |
+| **Model Name Mismatch** | Hardcoded `gemini-1.5-flash` may fail or be deprecated on newer API keys. | Make model configurable via `.env` (`GEMINI_MODEL=gemini-2.5-flash`). |
+| **Global Python Environment Leak** | `pip install` run without activating `venv` installs packages globally. | Always use `.\venv\Scripts\python.exe -m pip install -r requirements.txt`. |
+| **JS/TS Static Metric Limits** | Python has deep AST parsing; JS/TS uses regex heuristics which miss complex syntax. | Integrate Tree-Sitter or TypeScript AST CLI parser for JS/TS files. |
+| **Unbounded ZIP Extraction Risk** | Uploading massive `.zip` files can exhaust disk space or trigger zip bombs. | Add 50MB file size limit and max file count checks during zip extraction in `main.py`. |
+| **GitHub Rate Limiting** | GitHub discovery endpoint makes unauthenticated calls (60 requests/hr max limit). | Support optional `GITHUB_TOKEN` header to increase limit to 5,000 requests/hr. |
+| **Session Volatility (No DB)** | `tmp_sessions/` lives on local disk; server restarts wipe active investigation state. | Add periodic disk cleanup job or use Redis/S3 for production multi-node scaling. |
+| **Wildcard CORS Policy** | `main.py` uses `allow_origins=["*"]`, exposing API to any frontend. | Restrict CORS allowed origins to `http://localhost:3000` in production. |
+| **Secret Leakage Risk** | ACCIDENTAL commit of `GEMINI_API_KEY` or `OPENAI_API_KEY` to public Git repos. | Keep `.env` strictly in `.gitignore`, use `.env.example` templates, and run `check-ignore` audits. |
+
