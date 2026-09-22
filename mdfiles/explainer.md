@@ -21,10 +21,12 @@ MVP Implementation Complete! Ready for End-to-End Testing.
 - Added support for manual upload of historical repositories as primary workflow.
 - Migrated storage strategy to temporary server-side files for the investigation duration.
 ## Current Focus:
-
+- (2026-09-22 18:45) Restructuring deterministic static analysis engine into 5 rich Forensic Phases to maximize offline/instant insights and reduce AI token dependency.
 
 ## Next Pending Work:
-
+- Implement Phase 1 of 5 Forensic Phases in backend analysis engine.
 
 ## Known Issues / Need To make these updates:
+- Static analysis currently relies on simple complexity proxy (if statement counts), which is insufficient for deep forensic assessment.
+
 
