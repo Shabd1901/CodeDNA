@@ -8,6 +8,7 @@ import os
 import shutil
 import zipfile
 from analysis import build_repository_codedna, compare_codedna
+from ai_engine import generate_forensic_report
 
 app = FastAPI(title="CodeDNA API", version="1.0.0")
 
@@ -130,8 +131,8 @@ async def upload_submission(session_id: str = Form(...), file: UploadFile = File
     return {"status": "success", "message": "Submission uploaded successfully"}
 
 @app.post("/api/analyze/compare")
-def analyze_and_compare(session_id: str = Form(...)):
-    """Run CodeDNA baseline extraction and compare against the submission."""
+async def analyze_and_compare(session_id: str = Form(...)):
+    """Run CodeDNA baseline extraction, compare against the submission, and generate AI report."""
     session_path = os.path.join(SESSION_DIR, session_id)
     if not os.path.exists(session_path):
         raise HTTPException(status_code=404, detail="Session not found")
@@ -145,10 +146,17 @@ def analyze_and_compare(session_id: str = Form(...)):
     # 2. Build Submission DNA
     submission_dna = build_repository_codedna(sub_dir)
     
-    # 3. Compare
+    # 3. Compare (Deterministic)
     comparison_results = compare_codedna(baseline_dna, submission_dna)
     
-    return comparison_results
+    # 4. Generate AI Forensic Report
+    ai_report = await generate_forensic_report(comparison_results)
+    
+    return {
+        "status": "success",
+        "deterministic_data": comparison_results,
+        "forensic_report": ai_report
+    }
 
 @app.delete("/api/session/{session_id}")
 def cleanup_session(session_id: str):

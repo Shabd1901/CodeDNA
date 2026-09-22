@@ -1,9 +1,10 @@
 # PROJECT EXPLAINER
 
 ## Current Status:
-Integrating OpenAI Forensic Engine (Phase 4).
+Building Next.js Frontend Dashboard (Phase 5).
 
 ## Completed Changes:
+- (2026-09-22 16:48) Integrated OpenAI GPT-4o (`ai_engine.py`) to generate structured JSON forensic reports based on deterministic metrics.
 - (2026-09-22 16:47) Implemented AST parsing for Python and static metrics for JS/TS.
 - (2026-09-22 16:47) Implemented GitHub repo discovery endpoint (`/api/repositories/github`).
 - (2026-09-22 16:47) Completed CodeDNA Static Comparison Engine and exposed `/api/analyze/compare` endpoint.
