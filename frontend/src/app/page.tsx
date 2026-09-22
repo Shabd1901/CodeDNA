@@ -397,8 +397,8 @@ export default function Home() {
                 </div>
                 <div className="flex items-center gap-2">
                   {aiMode && (
-                    <span className={`px-2.5 py-1 text-xs font-semibold rounded-md border ${aiMode === "openai" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-zinc-100 text-zinc-600 border-zinc-200"}`}>
-                      {aiMode === "openai" ? "OpenAI" : "Mock AI"}
+                    <span className={`px-2.5 py-1 text-xs font-semibold rounded-md border ${aiMode === "openai" || aiMode === "gemini" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-zinc-100 text-zinc-600 border-zinc-200"}`}>
+                      {aiMode === "gemini" ? "Gemini Flash" : aiMode === "openai" ? "OpenAI GPT-4o" : "Mock Report"}
                     </span>
                   )}
                   <button
