@@ -285,26 +285,32 @@ export default function Home() {
               <div className="clean-card p-4 bg-zinc-50 border-zinc-200 shadow-sm flex flex-col justify-center">
                 <p className="text-[10px] font-bold text-zinc-500 mb-1 tracking-wider">BASELINE RELIABILITY</p>
                 <p className="text-2xl font-black text-zinc-900">{Math.round(report.deterministic_data?.authorship_intelligence?.evidence_confidence_score || 0)}<span className="text-sm font-medium text-zinc-400">/100</span></p>
+                <p className="text-[10px] text-zinc-500 mt-2 leading-tight">{report.deterministic_data?.forensics?.deviation_reasons?.baseline_reliability}</p>
               </div>
               <div className="clean-card p-4 bg-zinc-50 border-zinc-200 shadow-sm flex flex-col justify-center">
                 <p className="text-[10px] font-bold text-zinc-500 mb-1 tracking-wider">CODEDNA CONSISTENCY</p>
                 <p className="text-2xl font-black text-zinc-900">{Math.round(report.deterministic_data?.authorship_intelligence?.historical_codedna_similarity || 0)}<span className="text-sm font-medium text-zinc-400">/100</span></p>
+                <p className="text-[10px] text-zinc-500 mt-2 leading-tight">Aggregate score across 10 deterministic deviation vectors.</p>
               </div>
               <div className="clean-card p-4 bg-zinc-50 border-zinc-200 shadow-sm flex flex-col justify-center">
                 <p className="text-[10px] font-bold text-zinc-500 mb-1 tracking-wider">STRUCTURAL DEVIATION</p>
                 <p className="text-2xl font-black text-zinc-900">{Math.round(report.deterministic_data?.forensics?.structural_deviation || 0)}<span className="text-sm font-medium text-zinc-400">/100</span></p>
+                <p className="text-[10px] text-zinc-500 mt-2 leading-tight">{report.deterministic_data?.forensics?.deviation_reasons?.structural}</p>
               </div>
               <div className="clean-card p-4 bg-zinc-50 border-zinc-200 shadow-sm flex flex-col justify-center">
                 <p className="text-[10px] font-bold text-zinc-500 mb-1 tracking-wider">STYLE DEVIATION</p>
                 <p className="text-2xl font-black text-zinc-900">{Math.round(((report.deterministic_data?.forensics?.formatting_deviation || 0) + (report.deterministic_data?.forensics?.naming_deviation || 0)) / 2)}<span className="text-sm font-medium text-zinc-400">/100</span></p>
+                <p className="text-[10px] text-zinc-500 mt-2 leading-tight">{report.deterministic_data?.forensics?.deviation_reasons?.naming}</p>
               </div>
               <div className="clean-card p-4 bg-zinc-50 border-zinc-200 shadow-sm flex flex-col justify-center">
-                <p className="text-[10px] font-bold text-zinc-500 mb-1 tracking-wider">ARCHITECTURAL DEVIATION</p>
-                <p className="text-2xl font-black text-zinc-900">{Math.round(report.deterministic_data?.forensics?.architecture_deviation || 0)}<span className="text-sm font-medium text-zinc-400">/100</span></p>
+                <p className="text-[10px] font-bold text-zinc-500 mb-1 tracking-wider">COMPLEXITY DEVIATION</p>
+                <p className="text-2xl font-black text-zinc-900">{Math.round(report.deterministic_data?.forensics?.complexity_deviation || 0)}<span className="text-sm font-medium text-zinc-400">/100</span></p>
+                <p className="text-[10px] text-zinc-500 mt-2 leading-tight">{report.deterministic_data?.forensics?.deviation_reasons?.complexity}</p>
               </div>
               <div className="clean-card p-4 bg-zinc-50 border-zinc-200 shadow-sm flex flex-col justify-center">
                 <p className="text-[10px] font-bold text-zinc-500 mb-1 tracking-wider">SIMILARITY EVIDENCE</p>
                 <p className="text-2xl font-black text-zinc-900">{Math.round(report.deterministic_data?.authorship_intelligence?.token_ast_similarity || 0)}<span className="text-sm font-medium text-zinc-400">/100</span></p>
+                <p className="text-[10px] text-zinc-500 mt-2 leading-tight">{report.deterministic_data?.forensics?.deviation_reasons?.similarity}</p>
               </div>
               
               <div className={`clean-card p-4 shadow-sm flex flex-col justify-center border-l-4 ${report.deterministic_data?.authorship_intelligence?.categorical_signals?.ai_associated_signals === 'High' ? 'bg-red-50 border-red-500' : 'bg-emerald-50 border-emerald-500'}`}>
@@ -312,6 +318,7 @@ export default function Home() {
                 <p className={`text-xl font-black ${report.deterministic_data?.authorship_intelligence?.categorical_signals?.ai_associated_signals === 'High' ? 'text-red-700' : 'text-emerald-700'}`}>
                   {report.deterministic_data?.authorship_intelligence?.categorical_signals?.ai_associated_signals?.toUpperCase() || 'UNKNOWN'}
                 </p>
+                <p className="text-[10px] text-zinc-600 mt-2 leading-tight">Derived from sudden sophistication, novel deps, and regex fingerprints.</p>
               </div>
 
               <div className={`clean-card p-4 shadow-sm flex flex-col justify-center items-center text-center border ${report.deterministic_data?.authorship_intelligence?.categorical_signals?.overall_investigation_concern === 'High' ? 'bg-red-600 border-red-700 text-white' : 'bg-zinc-900 border-zinc-950 text-white'}`}>
@@ -319,6 +326,7 @@ export default function Home() {
                 <p className="text-xl font-black">
                   {report.deterministic_data?.authorship_intelligence?.categorical_signals?.overall_investigation_concern?.toUpperCase() || 'UNKNOWN'} CONCERN
                 </p>
+                <p className="text-[10px] text-zinc-300 mt-2 leading-tight text-center px-2">Offline metric computed deterministically.</p>
               </div>
             </div>
 
@@ -362,7 +370,7 @@ export default function Home() {
                 <div>
                   <h3 className="text-lg font-bold flex items-center gap-2 text-zinc-900">
                     <Sparkles className="w-5 h-5 text-blue-500" />
-                    AI Forensic Reasoning (Phase 5)
+                    AI Forensic Reasoning
                   </h3>
                   <p className="text-sm text-zinc-500 mt-1">Triggers GPT-4o to analyze the deterministic metrics above and produce an evidence-weighted narrative.</p>
                 </div>

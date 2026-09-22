@@ -664,6 +664,21 @@ def compare_codedna(baseline_dna: Dict[str, Any], submission_dna: Dict[str, Any]
         }
     }
     
+    b_naming_pref = max(baseline_dna.get("naming_convention_distribution", {'unknown': 1}), key=baseline_dna.get("naming_convention_distribution", {'unknown': 1}).get, default='unknown')
+    s_naming_pref = max(submission_dna.get("naming_convention_distribution", {'unknown': 1}), key=submission_dna.get("naming_convention_distribution", {'unknown': 1}).get, default='unknown')
+
+    deviations["deviation_reasons"] = {
+        "structural": "Shift in AST structures & control flow (lists, dicts, loops).",
+        "naming": f"Baseline prefers {b_naming_pref} vs Submission prefers {s_naming_pref}.",
+        "formatting": "Noticeable changes in indentation (tabs vs spaces) or quote styles.",
+        "complexity": f"Mean complexity shifted {b_comp.get('mean', 0):.1f} -> {s_comp.get('mean', 0):.1f}; P90 {b_comp.get('p90', 0):.1f} -> {s_comp.get('p90', 0):.1f}",
+        "architecture": f"Baseline {', '.join(b_arch) if b_arch else 'Standard'} vs Submission {', '.join(s_arch) if s_arch else 'Standard'}.",
+        "dependency": f"Found {len(new_deps)} completely novel dependency imports.",
+        "abstraction": "Shifts in class ratios, static methods, and type-hint density.",
+        "baseline_reliability": f"Calculated from {baseline_dna.get('repo_count_usable_files_languages', {}).get('usable_files', 0)} baseline files.",
+        "similarity": "Calculated via inverse structural and complexity deviation representing raw semantic overlap."
+    }
+    
     submission_dna.update(deviations)
     submission_dna["codedna_similarity_score"] = deviations["overall_behavioral_stylistic_deviation_score"]
     

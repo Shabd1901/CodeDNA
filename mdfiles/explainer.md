@@ -44,4 +44,4 @@ Phase 1, 2, and 3 Core Engine Refactoring Complete! Ready for Phase 4 (AI Forens
 - Build the final Frontend UI Dashboard to display the top-level stats (Baseline Reliability, CodeDNA Consistency, Structural Deviation, etc.) and render the "Why?" → evidence → exact code flow natively in the browser.
 
 ## Known Issues / Need To make these updates:
-- None currently flagged. Phases 1-3 core backend refactoring complete and clean.
+- If OpenAI returns a 429 Quota Exhausted error (or if the API key is "mock"), `ai_engine.py` will now automatically intercept the error and return a highly detailed, schema-compliant Mock Phase 5 Report so frontend UI testing can continue uninterrupted without API costs.
