@@ -18,6 +18,25 @@ export default function Home() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiMode, setAiMode] = useState<"mock" | "openai" | null>(null);
+  const [resetKey, setResetKey] = useState(0);
+
+  const handleNewInvestigation = async () => {
+    if (sessionId) {
+      try {
+        await fetch(`http://localhost:8000/api/session/${sessionId}`, { method: "DELETE" });
+      } catch (err) {
+        console.error("Failed to clean up session on server:", err);
+      }
+    }
+    setGithubLink("");
+    setRepoFiles(null);
+    setSubmissionFile(null);
+    setReport(null);
+    setSessionId(null);
+    setAiMode(null);
+    setResetKey((prev) => prev + 1);
+    setAppState("idle");
+  };
 
   const startAnalysis = async () => {
     if (!submissionFile) return;
@@ -177,6 +196,7 @@ export default function Home() {
                     <p className="text-sm text-zinc-700 font-medium">Drop Reference Project ZIPs</p>
                     <p className="text-xs text-zinc-500 mt-1">Upload multiple historical repos for the baseline</p>
                     <input 
+                      key={`repo-${resetKey}`}
                       type="file" 
                       multiple 
                       accept=".zip"
@@ -202,6 +222,7 @@ export default function Home() {
                   <p className="text-sm text-zinc-700 font-medium">Drop Submission ZIP</p>
                   <p className="text-xs text-zinc-500 mt-1">The student code to investigate</p>
                   <input 
+                    key={`sub-${resetKey}`}
                     type="file" 
                     accept=".zip"
                     onChange={(e) => setSubmissionFile(e.target.files?.[0] || null)}
@@ -275,7 +296,7 @@ export default function Home() {
                   </span>
                 </div>
               </div>
-              <button onClick={() => { setAppState("idle"); setReport(null); setSessionId(null); setAiMode(null); }} className="px-5 py-2.5 bg-white border border-zinc-200 shadow-sm rounded-lg text-sm font-medium hover:bg-zinc-50 text-zinc-700 transition-colors">
+              <button onClick={handleNewInvestigation} className="px-5 py-2.5 bg-white border border-zinc-200 shadow-sm rounded-lg text-sm font-medium hover:bg-zinc-50 text-zinc-700 transition-colors">
                 New Investigation
               </button>
             </div>

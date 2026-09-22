@@ -4,6 +4,7 @@
 Phase 1, 2, and 3 Core Engine Refactoring Complete! Ready for Phase 4 (AI Forensic Integration & UI Dashboard Updates).
 
 ## Completed Changes:
+- (2026-09-22 21:30) **Session & File Cleanup on New Investigation:** Updated `handleNewInvestigation` in `frontend/src/app/page.tsx` to issue a server-side `DELETE /api/session/{session_id}` request to wipe session files from disk, reset all input fields (`githubLink`, `repoFiles`, `submissionFile`), and force recreation of the file input DOM components using a dynamic key (`resetKey`).
 - (2026-09-22 19:33) **Security Hardening:** Untracked `backend/.env` from git index, added a safe `backend/.env.example` template, and updated root `.gitignore` to strictly exclude all environment and secret files (`.env`, `.env.*`, `*.env`) across the workspace.
 - (2026-09-22 19:19) **Phase 5 (AI Forensic Reasoning & Investigation) Implemented:** Completely restructured the OpenAI GPT-4o system prompt in `ai_engine.py` to ingest Phase 4 CodeDNA data and output a strictly typed forensic JSON. This final structure forces the AI to abandon pseudoscientific certainty and instead generate evidence-weighted findings, evaluate false positives and contradictory evidence, pinpoint exact affected lines, and produce actionable 'VivaGuard' interview questions for the evaluator. The engine now returns top-level dashboard metrics (Baseline Reliability, CodeDNA Consistency, Style Deviation, Investigation Status) directly supporting the final UI.
 - (2026-09-22 19:15) **Phase 4 (Authorship & Similarity Intelligence) Implemented:** 
