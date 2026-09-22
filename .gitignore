@@ -1,0 +1,21 @@
+# Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# Python
+backend/venv/
+backend/__pycache__/
+backend/*.pyc
+backend/.pytest_cache/
+
+# CodeDNA App State
+backend/tmp_sessions/
+
+# OS Files
+.DS_Store
+Thumbs.db

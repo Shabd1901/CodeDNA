@@ -1,9 +1,13 @@
 # PROJECT EXPLAINER
 
 ## Current Status:
-Developing GitHub Repository Discovery and AST Parsers (Phase 3).
+Integrating OpenAI Forensic Engine (Phase 4).
 
 ## Completed Changes:
+- (2026-09-22 16:47) Implemented AST parsing for Python and static metrics for JS/TS.
+- (2026-09-22 16:47) Implemented GitHub repo discovery endpoint (`/api/repositories/github`).
+- (2026-09-22 16:47) Completed CodeDNA Static Comparison Engine and exposed `/api/analyze/compare` endpoint.
+- (2026-09-22 16:46) Added root `.gitignore` configuration for backend and frontend.
 - (2026-09-22 16:44) Initialized Next.js frontend with Tailwind CSS and TypeScript.
 - (2026-09-22 16:44) Initialized FastAPI backend with `main.py` and virtual environment dependencies.
 - (2026-09-22 16:44) Implemented temporary server-side session management (`tmp_sessions`) and .zip upload endpoints.

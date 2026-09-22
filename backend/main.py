@@ -1,9 +1,13 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
+import httpx
+import asyncio
+import io
 import uuid
 import os
 import shutil
 import zipfile
+from analysis import build_repository_codedna, compare_codedna
 
 app = FastAPI(title="CodeDNA API", version="1.0.0")
 
@@ -55,6 +59,51 @@ async def upload_repository(session_id: str = Form(...), file: UploadFile = File
         
     return {"status": "success", "repository": file.filename[:-4]}
 
+@app.post("/api/repositories/github")
+async def fetch_github_repos(session_id: str = Form(...), username: str = Form(...)):
+    """Fetch public repositories for a GitHub user and extract them into the session."""
+    session_path = os.path.join(SESSION_DIR, session_id)
+    if not os.path.exists(session_path):
+        raise HTTPException(status_code=404, detail="Session not found")
+        
+    repos_dir = os.path.join(session_path, "repositories")
+    
+    async with httpx.AsyncClient() as client:
+        # Fetch user's public repositories
+        # Limited to 10 for MVP speed, sort by pushed
+        url = f"https://api.github.com/users/{username}/repos?sort=pushed&per_page=5"
+        response = await client.get(url)
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=400, detail=f"Failed to fetch user {username} from GitHub")
+            
+        repos = response.json()
+        downloaded = []
+        
+        # Download the zip archive for each repo
+        for repo in repos:
+            repo_name = repo["name"]
+            branch = repo["default_branch"]
+            zip_url = f"https://github.com/{username}/{repo_name}/archive/refs/heads/{branch}.zip"
+            
+            # Use streaming to download
+            zip_response = await client.get(zip_url, follow_redirects=True)
+            if zip_response.status_code == 200:
+                zip_path = os.path.join(repos_dir, f"{repo_name}.zip")
+                with open(zip_path, "wb") as f:
+                    f.write(zip_response.content)
+                
+                # Extract
+                extract_path = os.path.join(repos_dir, repo_name)
+                try:
+                    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                        zip_ref.extractall(extract_path)
+                    downloaded.append(repo_name)
+                except zipfile.BadZipFile:
+                    pass # Skip invalid zips
+                    
+    return {"status": "success", "fetched": downloaded}
+
 @app.post("/api/analyze/submission")
 async def upload_submission(session_id: str = Form(...), file: UploadFile = File(...)):
     """Upload the final submission for analysis"""
@@ -79,6 +128,27 @@ async def upload_submission(session_id: str = Form(...), file: UploadFile = File
         raise HTTPException(status_code=400, detail="Invalid zip file")
         
     return {"status": "success", "message": "Submission uploaded successfully"}
+
+@app.post("/api/analyze/compare")
+def analyze_and_compare(session_id: str = Form(...)):
+    """Run CodeDNA baseline extraction and compare against the submission."""
+    session_path = os.path.join(SESSION_DIR, session_id)
+    if not os.path.exists(session_path):
+        raise HTTPException(status_code=404, detail="Session not found")
+        
+    repos_dir = os.path.join(session_path, "repositories")
+    sub_dir = os.path.join(session_path, "submission", "extracted")
+    
+    # 1. Build Baseline DNA
+    baseline_dna = build_repository_codedna(repos_dir)
+    
+    # 2. Build Submission DNA
+    submission_dna = build_repository_codedna(sub_dir)
+    
+    # 3. Compare
+    comparison_results = compare_codedna(baseline_dna, submission_dna)
+    
+    return comparison_results
 
 @app.delete("/api/session/{session_id}")
 def cleanup_session(session_id: str):
