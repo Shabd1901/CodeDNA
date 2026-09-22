@@ -29,7 +29,33 @@ Phase 1, 2, and 3 Core Engine Refactoring Complete! Ready for Phase 4 (AI Forens
 - (2026-09-22 19:00) Preparing for Phase 4 implementation (AI Forensic Reasoning & UI integration for Phase 1-3 forensic findings).
 
 ## Next Pending Work:
-- **Phase 4 (AI Forensic Integration & UI Visualization):** Update `ai_engine.py` prompt and `src/app/page.tsx` UI to consume and visualize the rich Phase 1-3 forensic analysis results (Structural, Naming, Formatting, Complexity, Architecture, Dependency, Abstraction, Comment Style, Error Handling).
+- **Phase 4 (Authorship & Similarity Intelligence):** 
+
+Output separate evidence dimensions:
+
+Historical CodeDNA similarity
+Internal code duplication
+Cross-repository similarity
+Known/reference-code similarity
+Semantic similarity
+Token/AST similarity
+Novel-code ratio
+Code reuse ratio
+AI-pattern indicators
+Sudden sophistication change
+Architectural discontinuity
+Dependency discontinuity
+Evidence Confidence Score
+Baseline contamination risk
+
+Important: never output "87% AI-written" as if that's scientifically proven.
+
+Instead:
+
+AI-associated signals: High
+Authorship evidence: Moderate
+Baseline reliability: High
+Overall investigation concern: High
 
 ## Known Issues / Need To make these updates:
 - None currently flagged. Phases 1-3 core backend refactoring complete and clean.
