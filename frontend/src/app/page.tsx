@@ -89,14 +89,14 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen p-8 lg:p-24 max-w-7xl mx-auto">
-      <header className="flex items-center gap-3 mb-16">
-        <div className="p-3 bg-green-500/10 rounded-xl border border-green-500/20">
-          <Activity className="w-8 h-8 text-green-500" />
+    <main className="min-h-screen p-8 lg:p-24 max-w-7xl mx-auto text-zinc-900">
+      <header className="flex items-center gap-4 mb-12 border-b border-zinc-200 pb-8">
+        <div className="p-3 bg-zinc-100 rounded-xl border border-zinc-200 shadow-sm">
+          <Activity className="w-8 h-8 text-zinc-800" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white">CodeDNA</h1>
-          <p className="text-zinc-400 text-sm">AI Forensic Code Investigation</p>
+          <h1 className="text-3xl font-bold tracking-tight text-zinc-900">CodeDNA Platform</h1>
+          <p className="text-zinc-500 text-sm font-medium mt-1">Academic Integrity & Forensic Analysis System</p>
         </div>
       </header>
 
@@ -111,89 +111,96 @@ export default function Home() {
           >
             {/* Input Section */}
             <div className="space-y-6">
-              <div className="glass-panel p-6 rounded-2xl">
-                <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                  <span className="bg-zinc-800 p-1.5 rounded-md"><Search className="w-5 h-5 text-zinc-300"/></span>
+              <div className="clean-card p-8">
+                <h2 className="text-lg font-semibold mb-6 flex items-center gap-2 text-zinc-800">
+                  <span className="bg-zinc-100 p-2 rounded-md border border-zinc-200"><Search className="w-4 h-4 text-zinc-600"/></span>
                   Historical Baseline (CodeDNA)
                 </h2>
                 
                 <div className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-sm text-zinc-400">GitHub Project Link <span className="text-xs text-zinc-500">(Optional - Scans user's public repos)</span></label>
+                    <label className="text-sm font-medium text-zinc-700">GitHub Project Link <span className="text-xs font-normal text-zinc-500">(Optional - Scans user's public repos)</span></label>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
                       <input 
                         type="text" 
                         value={githubLink}
                         onChange={(e) => setGithubLink(e.target.value)}
                         placeholder="e.g. https://github.com/torvalds/linux"
-                        className="w-full bg-black/50 border border-zinc-800 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/50 transition-all"
+                        className="w-full bg-white border border-zinc-300 rounded-lg py-2.5 pl-10 pr-4 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-800 focus:ring-1 focus:ring-zinc-800 transition-all shadow-sm"
                       />
                     </div>
                   </div>
                   
                   <div className="relative">
                     <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t border-zinc-800" />
+                      <span className="w-full border-t border-zinc-200" />
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-[#141416] px-2 text-zinc-500 font-medium">And / Or</span>
+                      <span className="bg-white px-3 text-zinc-400 font-semibold">And / Or</span>
                     </div>
                   </div>
 
-                  <div className="border-2 border-dashed border-zinc-800 rounded-xl p-8 text-center bg-black/20 hover:bg-black/40 transition-all group">
-                    <FileArchive className="w-10 h-10 text-zinc-600 mx-auto mb-4 group-hover:text-green-500 transition-colors" />
-                    <p className="text-sm text-zinc-300 font-medium">Drop Reference Project ZIPs</p>
-                    <p className="text-xs text-zinc-500 mt-1">Upload multiple historical repos</p>
+                  <div className="border-2 border-dashed border-zinc-200 rounded-xl p-8 text-center bg-zinc-50 hover:bg-zinc-100 transition-all group cursor-pointer relative">
+                    <FileArchive className="w-8 h-8 text-zinc-400 mx-auto mb-3 group-hover:text-zinc-600 transition-colors" />
+                    <p className="text-sm text-zinc-700 font-medium">Drop Reference Project ZIPs</p>
+                    <p className="text-xs text-zinc-500 mt-1">Upload multiple historical repos for the baseline</p>
                     <input 
                       type="file" 
                       multiple 
                       accept=".zip"
                       onChange={(e) => setRepoFiles(e.target.files)}
-                      className="mt-4 text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 cursor-pointer"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
+                    {repoFiles && repoFiles.length > 0 && (
+                      <div className="mt-4 inline-block bg-white border border-zinc-200 px-3 py-1 rounded-md text-xs font-medium text-zinc-700 shadow-sm">
+                        {repoFiles.length} file(s) selected
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
 
-              <div className="glass-panel p-6 rounded-2xl">
-                <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                  <span className="bg-zinc-800 p-1.5 rounded-md"><FileCode2 className="w-5 h-5 text-zinc-300"/></span>
+              <div className="clean-card p-8">
+                <h2 className="text-lg font-semibold mb-6 flex items-center gap-2 text-zinc-800">
+                  <span className="bg-zinc-100 p-2 rounded-md border border-zinc-200"><FileCode2 className="w-4 h-4 text-zinc-600"/></span>
                   New Submission
                 </h2>
-                <div className="border-2 border-dashed border-zinc-800 rounded-xl p-8 text-center bg-black/20 hover:bg-black/40 transition-all group">
-                  <Upload className="w-10 h-10 text-zinc-600 mx-auto mb-4 group-hover:text-blue-500 transition-colors" />
-                  <p className="text-sm text-zinc-300 font-medium">Drop submission ZIP here</p>
-                  <p className="text-xs text-zinc-500 mt-1">The code to investigate</p>
+                <div className="border-2 border-dashed border-zinc-200 rounded-xl p-8 text-center bg-zinc-50 hover:bg-zinc-100 transition-all group cursor-pointer relative h-[calc(100%-4rem)] flex flex-col justify-center">
+                  <Upload className="w-8 h-8 text-zinc-400 mx-auto mb-3 group-hover:text-zinc-600 transition-colors" />
+                  <p className="text-sm text-zinc-700 font-medium">Drop Submission ZIP</p>
+                  <p className="text-xs text-zinc-500 mt-1">The student code to investigate</p>
                   <input 
                     type="file" 
                     accept=".zip"
                     onChange={(e) => setSubmissionFile(e.target.files?.[0] || null)}
-                    className="mt-4 text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 cursor-pointer"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   />
+                  {submissionFile && (
+                    <div className="mt-4 inline-block bg-white border border-zinc-200 px-3 py-1 rounded-md text-xs font-medium text-zinc-700 shadow-sm">
+                      {submissionFile.name}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
             {/* Action Section */}
-            <div className="flex flex-col justify-center items-center p-12 glass-panel rounded-2xl text-center">
-              <div className="w-24 h-24 bg-gradient-to-tr from-green-500/20 to-blue-500/20 rounded-full flex items-center justify-center mb-8 border border-white/10">
-                <ShieldAlert className="w-10 h-10 text-white" />
+            <div className="flex flex-col justify-center items-center p-12 clean-card text-center">
+              <div className="w-20 h-20 bg-zinc-100 rounded-full flex items-center justify-center mb-6 border border-zinc-200 shadow-sm">
+                <ShieldAlert className="w-8 h-8 text-zinc-700" />
               </div>
-              <h3 className="text-2xl font-bold mb-2">Ready to Investigate</h3>
-              <p className="text-zinc-400 mb-8 max-w-sm">
-                CodeDNA will parse the AST of the provided historical code, establish a unique baseline signature, and run a deterministic comparison backed by GPT-4o reasoning.
+              <h3 className="text-2xl font-bold mb-3 text-zinc-900">Ready to Investigate</h3>
+              <p className="text-zinc-500 mb-8 max-w-md leading-relaxed">
+                CodeDNA will parse the AST of the historical baseline, establish a unique semantic signature, and run a deterministic comparison against the submission.
               </p>
               <button 
                 onClick={startAnalysis}
                 disabled={!submissionFile || (!githubLink && (!repoFiles || repoFiles.length === 0))}
-                className="group relative px-8 py-4 bg-white text-black font-semibold rounded-xl hover:bg-zinc-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+                className="group flex items-center gap-2 px-8 py-3.5 bg-zinc-900 text-white font-medium rounded-lg hover:bg-zinc-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-blue-400/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <span className="flex items-center gap-2 relative z-10">
-                  Begin Forensic Analysis
-                  <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </span>
+                Begin Forensic Analysis
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
           </motion.div>
@@ -204,19 +211,19 @@ export default function Home() {
             key="analyzing"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center justify-center h-[50vh] glass-panel rounded-2xl"
+            className="flex flex-col items-center justify-center h-[50vh] clean-card p-12 text-center"
           >
-            <div className="relative w-32 h-32 mb-8">
-              <div className="absolute inset-0 border-4 border-zinc-800 rounded-full"></div>
+            <div className="relative w-24 h-24 mb-6">
+              <div className="absolute inset-0 border-4 border-zinc-100 rounded-full"></div>
               <motion.div 
-                className="absolute inset-0 border-4 border-green-500 rounded-full border-t-transparent"
+                className="absolute inset-0 border-4 border-zinc-900 rounded-full border-t-transparent"
                 animate={{ rotate: 360 }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
               />
-              <Activity className="absolute inset-0 m-auto w-10 h-10 text-green-500" />
+              <Activity className="absolute inset-0 m-auto w-8 h-8 text-zinc-900" />
             </div>
-            <h2 className="text-2xl font-bold mb-2">Extracting CodeDNA...</h2>
-            <p className="text-zinc-400">Parsing AST, analyzing dependencies, and generating forensic report.</p>
+            <h2 className="text-2xl font-bold mb-2 text-zinc-900">Extracting CodeDNA...</h2>
+            <p className="text-zinc-500">Parsing AST, analyzing dependencies, and generating forensic report.</p>
           </motion.div>
         )}
 
@@ -227,98 +234,98 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-8"
           >
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between border-b border-zinc-200 pb-6">
               <div>
-                <h2 className="text-3xl font-bold">Investigation Report</h2>
-                <p className="text-zinc-400 mt-1">
-                  Baseline Reliability: 
-                  <span className={`ml-2 px-2 py-1 text-xs font-semibold rounded-md ${report.deterministic_data?.reliability === 'Reliable' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
+                <h2 className="text-2xl font-bold text-zinc-900">Investigation Report</h2>
+                <div className="flex items-center gap-3 mt-2">
+                  <span className="text-zinc-500 text-sm">Baseline Reliability:</span>
+                  <span className={`px-2.5 py-1 text-xs font-semibold rounded-md border ${report.deterministic_data?.reliability === 'Reliable' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
                     {report.deterministic_data?.reliability || "Unknown"}
                   </span>
-                </p>
+                </div>
               </div>
-              <button onClick={() => setAppState("idle")} className="px-4 py-2 bg-zinc-800 rounded-lg text-sm font-medium hover:bg-zinc-700 transition-colors">
+              <button onClick={() => setAppState("idle")} className="px-5 py-2.5 bg-white border border-zinc-200 shadow-sm rounded-lg text-sm font-medium hover:bg-zinc-50 text-zinc-700 transition-colors">
                 New Investigation
               </button>
             </div>
 
             {/* AI Summary */}
-            <div className="glass-panel p-8 rounded-2xl border-l-4 border-l-blue-500">
-              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <CheckCircle className="w-6 h-6 text-blue-500" />
+            <div className="clean-card p-8 border-l-4 border-l-blue-500">
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-zinc-900">
+                <CheckCircle className="w-5 h-5 text-blue-500" />
                 AI Conclusion
               </h3>
-              <p className="text-lg leading-relaxed text-zinc-300">
+              <p className="text-[15px] leading-relaxed text-zinc-600">
                 {report.forensic_report?.summary || "No summary provided."}
               </p>
             </div>
 
             <div className="grid lg:grid-cols-3 gap-8">
               {/* Findings */}
-              <div className="lg:col-span-2 space-y-4">
-                <h3 className="text-xl font-bold">Forensic Findings</h3>
+              <div className="lg:col-span-2 space-y-5">
+                <h3 className="text-lg font-bold text-zinc-900">Forensic Findings</h3>
                 {report.forensic_report?.findings?.map((finding: any, i: number) => (
-                  <div key={i} className="glass-panel p-6 rounded-xl border border-white/5 hover:border-white/10 transition-colors">
+                  <div key={i} className="clean-card p-6">
                     <div className="flex items-start justify-between mb-3">
-                      <h4 className="font-semibold text-lg">{finding.reason}</h4>
-                      <span className={`px-2.5 py-1 text-xs font-bold uppercase rounded-md tracking-wide ${
-                        finding.severity === 'high' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 
-                        finding.severity === 'medium' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' : 
-                        'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                      <h4 className="font-semibold text-[15px] text-zinc-900">{finding.reason}</h4>
+                      <span className={`px-2.5 py-1 text-xs font-bold uppercase rounded-md tracking-wide border ${
+                        finding.severity === 'high' ? 'bg-red-50 text-red-700 border-red-200' : 
+                        finding.severity === 'medium' ? 'bg-orange-50 text-orange-700 border-orange-200' : 
+                        'bg-blue-50 text-blue-700 border-blue-200'
                       }`}>
                         {finding.severity} Risk
                       </span>
                     </div>
-                    <p className="text-sm text-zinc-400 mb-4">{finding.evidence}</p>
+                    <p className="text-sm text-zinc-500 mb-5 leading-relaxed">{finding.evidence}</p>
                     
-                    <div className="flex flex-wrap gap-2 mb-4">
+                    <div className="flex flex-wrap gap-2 mb-5">
                       {finding.affected_files?.slice(0, 3).map((f: string, j: number) => (
-                        <span key={j} className="text-xs bg-black/50 px-2 py-1 rounded text-zinc-300 border border-zinc-800">
+                        <span key={j} className="text-xs bg-zinc-100 px-2 py-1 rounded text-zinc-600 border border-zinc-200 font-mono">
                           {f}
                         </span>
                       ))}
                       {finding.affected_files?.length > 3 && (
-                        <span className="text-xs text-zinc-500 px-2 py-1">+{finding.affected_files.length - 3} more</span>
+                        <span className="text-xs text-zinc-400 px-2 py-1">+{finding.affected_files.length - 3} more</span>
                       )}
                     </div>
                     
-                    <div className="bg-black/30 p-3 rounded-lg border border-white/5">
-                      <p className="text-xs text-zinc-300"><span className="text-zinc-500">Recommendation:</span> {finding.recommended_action}</p>
+                    <div className="bg-zinc-50 p-4 rounded-lg border border-zinc-100">
+                      <p className="text-sm text-zinc-700"><span className="font-medium text-zinc-900 mr-1">Recommendation:</span> {finding.recommended_action}</p>
                     </div>
                   </div>
                 ))}
               </div>
 
               {/* CodeDNA Metrics */}
-              <div className="space-y-6">
-                <h3 className="text-xl font-bold">CodeDNA Profile</h3>
+              <div className="space-y-5">
+                <h3 className="text-lg font-bold text-zinc-900">CodeDNA Profile</h3>
                 
-                <div className="glass-panel p-6 rounded-xl">
-                  <h4 className="text-sm font-semibold text-zinc-400 mb-4 uppercase tracking-wider">Complexity Signature</h4>
-                  <div className="h-[250px] w-full">
+                <div className="clean-card p-6">
+                  <h4 className="text-xs font-bold text-zinc-400 mb-6 uppercase tracking-wider">Complexity Signature</h4>
+                  <div className="h-[220px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <RadarChart data={[
                         { metric: 'Avg Lines', baseline: report.deterministic_data?.baseline_metrics?.total_lines / (report.deterministic_data?.baseline_metrics?.total_files || 1), sub: report.deterministic_data?.submission_metrics?.total_lines / (report.deterministic_data?.submission_metrics?.total_files || 1) },
                         { metric: 'Avg Complexity', baseline: report.deterministic_data?.baseline_metrics?.total_complexity / (report.deterministic_data?.baseline_metrics?.total_files || 1) * 10, sub: report.deterministic_data?.submission_metrics?.total_complexity / (report.deterministic_data?.submission_metrics?.total_files || 1) * 10 },
                         { metric: 'Avg Functions', baseline: report.deterministic_data?.baseline_metrics?.total_functions / (report.deterministic_data?.baseline_metrics?.total_files || 1) * 5, sub: report.deterministic_data?.submission_metrics?.total_functions / (report.deterministic_data?.submission_metrics?.total_files || 1) * 5 },
                       ]}>
-                        <PolarGrid stroke="rgba(255,255,255,0.1)" />
-                        <PolarAngleAxis dataKey="metric" tick={{ fill: '#a1a1aa', fontSize: 12 }} />
-                        <Radar name="Baseline" dataKey="baseline" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.3} />
-                        <Radar name="Submission" dataKey="sub" stroke="#22c55e" fill="#22c55e" fillOpacity={0.5} />
-                        <RechartsTooltip contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a' }} />
+                        <PolarGrid stroke="#e4e4e7" />
+                        <PolarAngleAxis dataKey="metric" tick={{ fill: '#71717a', fontSize: 11 }} />
+                        <Radar name="Baseline" dataKey="baseline" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.15} />
+                        <Radar name="Submission" dataKey="sub" stroke="#18181b" fill="#18181b" fillOpacity={0.2} />
+                        <RechartsTooltip contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e4e4e7', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
                       </RadarChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
                 
-                <div className="glass-panel p-6 rounded-xl">
-                  <h4 className="text-sm font-semibold text-zinc-400 mb-4 uppercase tracking-wider">Language Distribution</h4>
+                <div className="clean-card p-6">
+                  <h4 className="text-xs font-bold text-zinc-400 mb-4 uppercase tracking-wider">Language Distribution</h4>
                   <div className="space-y-3">
                     {Object.entries(report.deterministic_data?.submission_metrics?.languages || {}).map(([lang, count]: [string, any]) => (
-                      <div key={lang} className="flex items-center justify-between">
-                        <span className="text-sm text-zinc-300 capitalize">{lang}</span>
-                        <span className="text-sm font-medium">{count} files</span>
+                      <div key={lang} className="flex items-center justify-between border-b border-zinc-100 pb-2 last:border-0 last:pb-0">
+                        <span className="text-sm text-zinc-600 capitalize">{lang}</span>
+                        <span className="text-sm font-semibold text-zinc-900">{count} files</span>
                       </div>
                     ))}
                   </div>
