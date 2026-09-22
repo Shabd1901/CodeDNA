@@ -108,3 +108,26 @@ AI reasoning
 Confidence/limitations
 VivaGuard
 Exportable report
+
+11. MVP Priority
+
+P0 — Must work
+
+GitHub repository discovery
+Repository/code parsing
+CodeDNA
+New submission upload
+Comparison
+Forensic findings
+AI reasoning
+Dashboard
+PDF/export report
+GitHub commit-history analysis
+
+P1 — If time
+VivaGuard
+
+P2 — Polish
+Advanced visualizations
+More language support
+Advanced repository filtering

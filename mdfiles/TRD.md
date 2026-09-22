@@ -18,6 +18,11 @@ OpenAI API
 AI Reasoning / Report / Viva
        ↓
 PostgreSQL / Supabase
+
+
+----------
+
+
 Stack
 Frontend: Next.js + TypeScript + Tailwind
 Backend: Python + FastAPI
@@ -43,6 +48,10 @@ Analysis
 Evidence
 VivaSession
 Report
+
+--------
+
+
 AI Input
 
 Never send an entire repository blindly.
@@ -60,6 +69,9 @@ similarity results
 flagged regions
 +
 historical-vs-new differences
+
+----
+
 AI Output
 
 Structured JSON:
