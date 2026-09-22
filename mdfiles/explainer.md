@@ -4,6 +4,7 @@
 MVP Implementation Complete! Ready for End-to-End Testing.
 
 ## Completed Changes:
+- (2026-09-22 16:57) Fixed Next.js directory structure by moving `app` folder into `src/app` to resolve missing layout error.
 - (2026-09-22 16:50) Built Next.js Frontend Dashboard with Recharts, Framer Motion, and Tailwind CSS.
 - (2026-09-22 16:48) Integrated OpenAI GPT-4o (`ai_engine.py`) to generate structured JSON forensic reports based on deterministic metrics.
 - (2026-09-22 16:47) Implemented AST parsing for Python and static metrics for JS/TS.
