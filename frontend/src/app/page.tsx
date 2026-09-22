@@ -7,10 +7,9 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
 
 export default function Home() {
   const [appState, setAppState] = useState<"idle" | "analyzing" | "results">("idle");
-  const [inputMethod, setInputMethod] = useState<"github" | "manual">("github");
   
   // Form State
-  const [githubUser, setGithubUser] = useState("");
+  const [githubLink, setGithubLink] = useState("");
   const [repoFiles, setRepoFiles] = useState<FileList | null>(null);
   const [submissionFile, setSubmissionFile] = useState<File | null>(null);
 
@@ -32,15 +31,24 @@ export default function Home() {
       const formData = new FormData();
       formData.append("session_id", sessionId);
       
-      if (inputMethod === "github" && githubUser) {
-        formData.append("username", githubUser);
+      let targetUsername = githubLink.trim();
+      if (targetUsername.includes('github.com/')) {
+          const parts = targetUsername.split('github.com/')[1].split('/');
+          if (parts.length > 0) {
+              targetUsername = parts[0];
+          }
+      }
+      
+      if (targetUsername) {
+        formData.append("username", targetUsername);
         await fetch("http://localhost:8000/api/repositories/github", {
           method: "POST",
           body: formData
         });
-      } else if (inputMethod === "manual" && repoFiles) {
-        // For MVP, just uploading the first one for simplicity, 
-        // a real app would map over all files and upload them.
+      }
+      
+      if (repoFiles && repoFiles.length > 0) {
+        // Upload all selected reference ZIPs
         for (let i = 0; i < repoFiles.length; i++) {
             const repoData = new FormData();
             repoData.append("session_id", sessionId);
@@ -106,43 +114,37 @@ export default function Home() {
               <div className="glass-panel p-6 rounded-2xl">
                 <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                   <span className="bg-zinc-800 p-1.5 rounded-md"><Search className="w-5 h-5 text-zinc-300"/></span>
-                  Historical Baseline
+                  Historical Baseline (CodeDNA)
                 </h2>
                 
-                <div className="flex bg-black/40 p-1 rounded-lg mb-6 border border-white/5">
-                  <button 
-                    onClick={() => setInputMethod("github")}
-                    className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${inputMethod === "github" ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-400 hover:text-white"}`}
-                  >
-                    GitHub Scan
-                  </button>
-                  <button 
-                    onClick={() => setInputMethod("manual")}
-                    className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${inputMethod === "manual" ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-400 hover:text-white"}`}
-                  >
-                    Manual Upload
-                  </button>
-                </div>
-
-                {inputMethod === "github" ? (
+                <div className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-sm text-zinc-400">Target GitHub Username</label>
+                    <label className="text-sm text-zinc-400">GitHub Project Link <span className="text-xs text-zinc-500">(Optional - Scans user's public repos)</span></label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
                       <input 
                         type="text" 
-                        value={githubUser}
-                        onChange={(e) => setGithubUser(e.target.value)}
-                        placeholder="e.g. torvalds"
+                        value={githubLink}
+                        onChange={(e) => setGithubLink(e.target.value)}
+                        placeholder="e.g. https://github.com/torvalds/linux"
                         className="w-full bg-black/50 border border-zinc-800 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/50 transition-all"
                       />
                     </div>
                   </div>
-                ) : (
+                  
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-zinc-800" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-[#141416] px-2 text-zinc-500 font-medium">And / Or</span>
+                    </div>
+                  </div>
+
                   <div className="border-2 border-dashed border-zinc-800 rounded-xl p-8 text-center bg-black/20 hover:bg-black/40 transition-all group">
                     <FileArchive className="w-10 h-10 text-zinc-600 mx-auto mb-4 group-hover:text-green-500 transition-colors" />
-                    <p className="text-sm text-zinc-300 font-medium">Drop repository ZIPs here</p>
-                    <p className="text-xs text-zinc-500 mt-1">Upload up to 5 historical repos</p>
+                    <p className="text-sm text-zinc-300 font-medium">Drop Reference Project ZIPs</p>
+                    <p className="text-xs text-zinc-500 mt-1">Upload multiple historical repos</p>
                     <input 
                       type="file" 
                       multiple 
@@ -151,7 +153,7 @@ export default function Home() {
                       className="mt-4 text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 cursor-pointer"
                     />
                   </div>
-                )}
+                </div>
               </div>
 
               <div className="glass-panel p-6 rounded-2xl">
@@ -184,7 +186,7 @@ export default function Home() {
               </p>
               <button 
                 onClick={startAnalysis}
-                disabled={!submissionFile || (inputMethod === 'github' ? !githubUser : !repoFiles)}
+                disabled={!submissionFile || (!githubLink && (!repoFiles || repoFiles.length === 0))}
                 className="group relative px-8 py-4 bg-white text-black font-semibold rounded-xl hover:bg-zinc-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-blue-400/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
