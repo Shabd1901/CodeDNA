@@ -17,8 +17,18 @@ export default function Home() {
   const [report, setReport] = useState<any>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
-  const [aiMode, setAiMode] = useState<"mock" | "openai" | null>(null);
+  const [aiMode, setAiMode] = useState<"openai" | "gemini" | null>(null);
   const [resetKey, setResetKey] = useState(0);
+
+  // Progress tracking
+  const [analysisStep, setAnalysisStep] = useState(0);
+  const STEPS = [
+    { label: "Starting session",        detail: "Initialising secure forensic session on server…" },
+    { label: "Uploading baseline",      detail: "Transferring historical repositories to analysis engine…" },
+    { label: "Uploading submission",    detail: "Uploading new submission ZIP for comparison…" },
+    { label: "Extracting CodeDNA",      detail: "Parsing AST, computing complexity distribution, naming fingerprints…" },
+    { label: "Running comparison",      detail: "Calculating 10-vector deviation scores against baseline…" },
+  ];
 
   const handleNewInvestigation = async () => {
     if (sessionId) {
@@ -44,16 +54,19 @@ export default function Home() {
     setAppState("analyzing");
     setReport(null);
     setAiMode(null);
+    setAnalysisStep(0);
     
     try {
-      // 1. Start Session — use the server-issued id for all later calls
+      // Step 0 — Start Session
+      setAnalysisStep(0);
       const sessionRes = await fetch("http://localhost:8000/api/session/start", { method: "POST" });
       const sessionData = await sessionRes.json();
       const sessionId = sessionData.session_id as string;
       if (!sessionId) throw new Error("No session_id returned");
       setSessionId(sessionId);
       
-      // 2. Upload Repositories / Fetch GitHub
+      // Step 1 — Upload Baseline Repositories
+      setAnalysisStep(1);
       const formData = new FormData();
       formData.append("session_id", sessionId);
       
@@ -74,7 +87,6 @@ export default function Home() {
       }
       
       if (repoFiles && repoFiles.length > 0) {
-        // Upload all selected reference ZIPs
         for (let i = 0; i < repoFiles.length; i++) {
             const repoData = new FormData();
             repoData.append("session_id", sessionId);
@@ -86,7 +98,8 @@ export default function Home() {
         }
       }
 
-      // 3. Upload Submission
+      // Step 2 — Upload Submission
+      setAnalysisStep(2);
       const subData = new FormData();
       subData.append("session_id", sessionId);
       subData.append("file", submissionFile);
@@ -95,7 +108,12 @@ export default function Home() {
         body: subData
       });
 
-      // 4. Compare and Analyze
+      // Step 3 — Extracting CodeDNA (just before the heaviest call)
+      setAnalysisStep(3);
+      await new Promise(r => setTimeout(r, 200)); // let UI render the step
+
+      // Step 4 — Running comparison
+      setAnalysisStep(4);
       const compareData = new FormData();
       compareData.append("session_id", sessionId);
       const res = await fetch("http://localhost:8000/api/analyze/compare", {
@@ -113,6 +131,7 @@ export default function Home() {
       alert("Analysis failed. Ensure backend is running at :8000");
       setAppState("idle");
       setSessionId(null);
+      setAnalysisStep(0);
     }
   };
 
@@ -128,7 +147,7 @@ export default function Home() {
       });
       if (!res.ok) throw new Error("AI report failed");
       const data = await res.json();
-      setAiMode(data.ai_mode === "openai" ? "openai" : "mock");
+      setAiMode(data.ai_mode === "gemini" ? "gemini" : "openai");
       setReport((prev: any) => ({ ...prev, forensic_report: data.forensic_report }));
     } catch (error) {
       console.error(error);
@@ -261,21 +280,96 @@ export default function Home() {
         {appState === "analyzing" && (
           <motion.div 
             key="analyzing"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center justify-center h-[50vh] clean-card p-12 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="clean-card p-12 max-w-2xl mx-auto w-full"
           >
-            <div className="relative w-24 h-24 mb-6">
-              <div className="absolute inset-0 border-4 border-zinc-100 rounded-full"></div>
-              <motion.div 
-                className="absolute inset-0 border-4 border-zinc-900 rounded-full border-t-transparent"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
-              />
-              <Activity className="absolute inset-0 m-auto w-8 h-8 text-zinc-900" />
+            {/* Header */}
+            <div className="flex items-center gap-4 mb-10">
+              <div className="relative w-12 h-12 shrink-0">
+                <div className="absolute inset-0 border-3 border-zinc-100 rounded-full" />
+                <motion.div
+                  className="absolute inset-0 border-3 border-zinc-900 rounded-full border-t-transparent"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1.1, repeat: Infinity, ease: "linear" }}
+                />
+                <Activity className="absolute inset-0 m-auto w-5 h-5 text-zinc-900" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-zinc-900">Forensic Analysis Running</h2>
+                <p className="text-sm text-zinc-500 mt-0.5">{STEPS[analysisStep]?.detail}</p>
+              </div>
             </div>
-            <h2 className="text-2xl font-bold mb-2 text-zinc-900">Extracting CodeDNA...</h2>
-            <p className="text-zinc-500">Parsing AST, analyzing dependencies, and running a local CodeDNA comparison.</p>
+
+            {/* Overall progress bar */}
+            <div className="mb-8">
+              <div className="flex justify-between text-xs text-zinc-400 mb-2">
+                <span>Overall Progress</span>
+                <span>{Math.round(((analysisStep) / (STEPS.length - 1)) * 100)}%</span>
+              </div>
+              <div className="w-full h-2 bg-zinc-100 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-zinc-900 rounded-full"
+                  animate={{ width: `${((analysisStep) / (STEPS.length - 1)) * 100}%` }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                />
+              </div>
+            </div>
+
+            {/* Step list */}
+            <div className="space-y-3">
+              {STEPS.map((step, i) => {
+                const isDone    = i < analysisStep;
+                const isCurrent = i === analysisStep;
+                const isPending = i > analysisStep;
+                return (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.06 }}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg border transition-all ${
+                      isDone    ? "bg-emerald-50 border-emerald-200" :
+                      isCurrent ? "bg-zinc-50 border-zinc-300 shadow-sm" :
+                                  "bg-white border-zinc-100 opacity-40"
+                    }`}
+                  >
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${
+                      isDone    ? "bg-emerald-500 text-white" :
+                      isCurrent ? "bg-zinc-900 text-white" :
+                                  "bg-zinc-200 text-zinc-400"
+                    }`}>
+                      {isDone ? (
+                        <CheckCircle className="w-3.5 h-3.5" />
+                      ) : isCurrent ? (
+                        <motion.span animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1 }}>
+                          {i + 1}
+                        </motion.span>
+                      ) : (
+                        <span>{i + 1}</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-semibold ${isDone ? "text-emerald-700" : isCurrent ? "text-zinc-900" : "text-zinc-400"}`}>
+                        {step.label}
+                      </p>
+                    </div>
+                    {isCurrent && (
+                      <motion.div
+                        className="w-20 h-1 bg-zinc-100 rounded-full overflow-hidden"
+                      >
+                        <motion.div
+                          className="h-full bg-zinc-900 rounded-full"
+                          animate={{ x: ["-100%", "100%"] }}
+                          transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}
+                        />
+                      </motion.div>
+                    )}
+                    {isDone && <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />}
+                  </motion.div>
+                );
+              })}
+            </div>
           </motion.div>
         )}
 
@@ -397,8 +491,8 @@ export default function Home() {
                 </div>
                 <div className="flex items-center gap-2">
                   {aiMode && (
-                    <span className={`px-2.5 py-1 text-xs font-semibold rounded-md border ${aiMode === "openai" || aiMode === "gemini" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-zinc-100 text-zinc-600 border-zinc-200"}`}>
-                      {aiMode === "gemini" ? "Gemini Flash" : aiMode === "openai" ? "OpenAI GPT-4o" : "Mock Report"}
+                    <span className="px-2.5 py-1 text-xs font-semibold rounded-md border bg-emerald-50 text-emerald-700 border-emerald-200">
+                      {aiMode === "gemini" ? "Gemini Flash" : "OpenAI GPT-4o"}
                     </span>
                   )}
                   <button
