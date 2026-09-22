@@ -21,14 +21,15 @@ MVP Implementation Complete! Ready for End-to-End Testing.
 - Added support for manual upload of historical repositories as primary workflow.
 - Migrated storage strategy to temporary server-side files for the investigation duration.
 ## Completed Changes:
+- (2026-09-22 18:58) **Phase 3 (Submission Forensics) Implemented:** Overhauled `compare_codedna` engine to output a deeply analytical dictionary of deviations (Structural, Naming, Formatting, Complexity, Architecture, Dependency, Abstraction, Comment Style, Error Handling). Automatically ranks anomalies, flags new/unseen patterns (e.g. injected `eval`s), and produces per-file/per-function anomaly lists with exact suspicious lines.
 - (2026-09-22 18:54) **Phase 2 (CodeDNA / Authoring Fingerprint) Implemented:** Deeply expanded the static AST parser to track nuanced author tendencies: naming profiles, block nesting depth, strict control-flow patterns, OOP tendencies (inheritance, class-to-func ratio), import dependency habits, and idiom usage to generate a robust deterministic CodeDNA similarity score.
 - (2026-09-22 18:50) **Phase 1 (Repository & Baseline Intelligence) Implemented:** Completely refactored `backend/analysis.py` to calculate 14 highly robust deterministic metrics including LOC/complexity distributions (using AST and percentile math), naming convention categorizations, formatting fingerprints, and architectural inference, eliminating the reliance on simple `if` counts.
 
 ## Current Focus:
-- (2026-09-22 18:54) Awaiting Phase 3 instructions to continue restructuring the deterministic static analysis engine.
+- (2026-09-22 18:58) Awaiting Phase 4 instructions.
 
 ## Next Pending Work:
-- Implement Phase 3 of the Forensic Analysis.
+- Implement Phase 4 of the Forensic Analysis.
 
 ## Known Issues / Need To make these updates:
 - (Phase 1 complete, ready for next phase)

@@ -75,6 +75,7 @@ def is_usable_file(filepath: str) -> bool:
 class PythonVisitor(ast.NodeVisitor):
     def __init__(self):
         self.functions = []
+        self.function_details = []
         self.classes = []
         self.imports = []
         self.complexity_scores = []
@@ -82,7 +83,6 @@ class PythonVisitor(ast.NodeVisitor):
         self.names = []
         self.identifier_lengths = []
         
-        # Phase 2 metrics
         self.current_depth = 0
         self.nesting_depths = []
         self.control_flow = {'if': 0, 'for': 0, 'while': 0, 'try': 0, 'break': 0, 'continue': 0, 'yield': 0, 'await': 0}
@@ -94,11 +94,8 @@ class PythonVisitor(ast.NodeVisitor):
 
     def generic_visit(self, node):
         is_block = hasattr(node, 'body') and isinstance(node.body, list)
-        if is_block:
-            self.current_depth += 1
-            
+        if is_block: self.current_depth += 1
         super().generic_visit(node)
-        
         if is_block:
             self.nesting_depths.append(self.current_depth)
             self.current_depth -= 1
@@ -110,7 +107,8 @@ class PythonVisitor(ast.NodeVisitor):
     def visit_FunctionDef(self, node):
         self.functions.append(node.name)
         self.register_name(node.name, 'function')
-        self.function_lengths.append(getattr(node, 'end_lineno', node.lineno) - node.lineno + 1)
+        flen = getattr(node, 'end_lineno', node.lineno) - node.lineno + 1
+        self.function_lengths.append(flen)
         
         if node.decorator_list:
             self.ast_structures['decorators'] += len(node.decorator_list)
@@ -130,6 +128,14 @@ class PythonVisitor(ast.NodeVisitor):
                 else:
                     complexity += 1
         self.complexity_scores.append(complexity)
+        
+        self.function_details.append({
+            "name": node.name,
+            "line": node.lineno,
+            "length": flen,
+            "complexity": complexity
+        })
+        
         self.generic_visit(node)
 
     def visit_AsyncFunctionDef(self, node):
@@ -168,7 +174,6 @@ class PythonVisitor(ast.NodeVisitor):
         for target in node.targets:
             if isinstance(target, ast.Name):
                 self.register_name(target.id, 'variable')
-            # type hints
         self.generic_visit(node)
         
     def visit_AnnAssign(self, node):
@@ -179,7 +184,6 @@ class PythonVisitor(ast.NodeVisitor):
 
     def visit_If(self, node):
         self.control_flow['if'] += 1
-        # Check for if __name__ == '__main__'
         try:
             if isinstance(node.test, ast.Compare) and isinstance(node.test.left, ast.Name) and node.test.left.id == '__name__':
                 self.idioms['name_main'] += 1
@@ -218,7 +222,7 @@ def analyze_python_file(filepath: str, content: str) -> Dict:
         "function_lengths": [], "complexities": [], "docstrings": 0,
         "identifier_lengths": [], "nesting_depths": [],
         "control_flow": {}, "ast_structures": {}, "error_handling": {},
-        "oop": {}, "import_habits": {}, "idioms": {}
+        "oop": {}, "import_habits": {}, "idioms": {}, "function_details": []
     }
     try:
         tree = ast.parse(content)
@@ -238,6 +242,7 @@ def analyze_python_file(filepath: str, content: str) -> Dict:
         metrics["oop"] = visitor.oop
         metrics["import_habits"] = visitor.import_habits
         metrics["idioms"] = visitor.idioms
+        metrics["function_details"] = visitor.function_details
         
         for node in ast.walk(tree):
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Module)):
@@ -257,7 +262,8 @@ def analyze_js_ts_file(filepath: str, content: str, lines: List[str]) -> Dict:
         "error_handling": {'raise': 0, 'custom_exceptions': 0},
         "oop": {'inheritance_count': 0, 'super_calls': 0, 'static_methods': 0, 'class_methods': 0},
         "import_habits": {'aliased': 0, 'from_import': 0, 'relative': 0},
-        "idioms": {'is_none': 0, 'name_main': 0}
+        "idioms": {'is_none': 0, 'name_main': 0},
+        "function_details": []
     }
     in_function = False
     func_start = 0
@@ -288,12 +294,13 @@ def analyze_js_ts_file(filepath: str, content: str, lines: List[str]) -> Dict:
             bracket_level += line.count("{") - line.count("}")
             max_nesting = max(max_nesting, bracket_level)
             if bracket_level <= 0:
-                metrics["function_lengths"].append(i - func_start + 1)
+                length = i - func_start + 1
+                metrics["function_lengths"].append(length)
                 metrics["nesting_depths"].append(max_nesting)
+                metrics["function_details"].append({"name": "anonymous_or_js_func", "line": func_start+1, "length": length, "complexity": 1}) # Rough approx
                 in_function = False
                 max_nesting = 0
                 
-        # basic control flow regex heuristics for JS
         if line.startswith("if ("): metrics["control_flow"]["if"] += 1
         if line.startswith("for ("): metrics["control_flow"]["for"] += 1
         if line.startswith("while ("): metrics["control_flow"]["while"] += 1
@@ -304,7 +311,7 @@ def analyze_js_ts_file(filepath: str, content: str, lines: List[str]) -> Dict:
 
         if any(kw in line for kw in ["if (", "for (", "while (", "catch (", "?", "&&", "||"]):
             metrics["complexities"].append(1)
-
+            
     return metrics
 
 def analyze_file(filepath: str) -> Dict[str, Any]:
@@ -325,7 +332,8 @@ def analyze_file(filepath: str) -> Dict[str, Any]:
         "docstrings": 0, "comment_lines": 0, "inline_comments": 0, "block_comments": 0,
         "todos": 0, "bare_excepts": 0, "evals": 0, "secrets": 0,
         "spaces_indent": 0, "tabs_indent": 0, "trailing_ws": 0,
-        "single_quotes": 0, "double_quotes": 0, "magic_numbers": 0
+        "single_quotes": 0, "double_quotes": 0, "magic_numbers": 0,
+        "function_details": []
     }
     
     if lang == 'unknown': return metrics
@@ -348,7 +356,6 @@ def analyze_file(filepath: str) -> Dict[str, Any]:
                 sline = line.lstrip()
                 if not sline: continue
                 
-                # Comments (block vs inline)
                 if ext in ['.js', '.ts', '.java', '.c', '.cpp', '.cs']:
                     if sline.startswith('/*'): in_block_comment = True
                     if in_block_comment:
@@ -387,7 +394,6 @@ def analyze_file(filepath: str) -> Dict[str, Any]:
     return metrics
 
 def build_repository_codedna(repo_dir: str) -> Dict[str, Any]:
-    # Phase 1 metrics base
     dna = {
         "repo_count_usable_files_languages": {"total_repos": 0, "usable_files": 0, "languages": {}},
         "loc_distribution": {}, "file_size_distribution": {},
@@ -398,10 +404,7 @@ def build_repository_codedna(repo_dir: str) -> Dict[str, Any]:
         "naming_convention_distribution": {"snake_case": 0, "camelCase": 0, "PascalCase": 0, "UPPER_CASE": 0, "other": 0},
         "formatting_indentation_fingerprint": {"spaces_indent": 0, "tabs_indent": 0, "trailing_ws": 0, "single_quotes": 0, "double_quotes": 0},
         "complexity_distribution": {}, "historical_consistency_score": 0.0, "baseline_reliability_score": 0.0,
-        
-        # Phase 2 metrics
-        "identifier_length_distribution": {},
-        "nesting_depth_distribution": {},
+        "identifier_length_distribution": {}, "nesting_depth_distribution": {},
         "control_flow_patterns": {'if': 0, 'for': 0, 'while': 0, 'try': 0, 'break': 0, 'continue': 0, 'yield': 0, 'await': 0},
         "ast_structural_patterns": {'list_comp': 0, 'dict_comp': 0, 'lambda': 0, 'decorators': 0, 'type_hints': 0},
         "error_handling_patterns": {'raise': 0, 'custom_exceptions': 0, 'bare_excepts': 0},
@@ -411,7 +414,8 @@ def build_repository_codedna(repo_dir: str) -> Dict[str, Any]:
         "comment_style": {"inline_comments": 0, "block_comments": 0},
         "repeated_coding_idioms": {'is_none': 0, 'name_main': 0},
         "codedna_similarity_score": 0.0,
-        "historical_variance_confidence": "HIGH"
+        "historical_variance_confidence": "HIGH",
+        "file_metrics": [] # New for Phase 3
     }
     
     all_loc, all_bytes, all_function_lengths, all_complexities = [], [], [], []
@@ -430,6 +434,10 @@ def build_repository_codedna(repo_dir: str) -> Dict[str, Any]:
                 dna["repo_count_usable_files_languages"]["usable_files"] += 1
                 
                 m = analyze_file(filepath)
+                # Store relative filepath and append raw file stats for Phase 3 forensics
+                m["filepath"] = os.path.relpath(filepath, repo_dir)
+                dna["file_metrics"].append(m)
+                
                 lang = m["lang"]
                 dna["repo_count_usable_files_languages"]["languages"][lang] = dna["repo_count_usable_files_languages"]["languages"].get(lang, 0) + 1
                 
@@ -447,7 +455,6 @@ def build_repository_codedna(repo_dir: str) -> Dict[str, Any]:
                 classes_per_file.append(m["classes"])
                 all_imports.extend(m["imports"])
                 
-                # Accumulate flat counts
                 for k in ["todos", "bare_excepts", "evals", "secrets", "magic_numbers"]:
                     dna["code_quality_error_patterns"][k] += m[k]
                 dna["error_handling_patterns"]["bare_excepts"] += m["bare_excepts"]
@@ -476,7 +483,6 @@ def build_repository_codedna(repo_dir: str) -> Dict[str, Any]:
                         elif k in dna.get("abstraction_level", {}):
                             dna["abstraction_level"][k] += v
                             
-    # Compute stats
     dna["loc_distribution"] = compute_stats(all_loc)
     dna["file_size_distribution"] = compute_stats(all_bytes)
     dna["identifier_length_distribution"] = compute_stats(all_identifier_lengths)
@@ -512,14 +518,12 @@ def build_repository_codedna(repo_dir: str) -> Dict[str, Any]:
     elif dna["repo_count_usable_files_languages"]["usable_files"] < 5: dna["architecture_fingerprint"].append('Script-based')
     else: dna["architecture_fingerprint"].append('Monolith')
 
-    # Reliability and Variance Confidence
     files_count = dna["repo_count_usable_files_languages"]["usable_files"]
     reliability = 40 if files_count > 50 else (20 if files_count > 10 else 0)
     if dna["repo_count_usable_files_languages"]["total_repos"] > 2: reliability += 30
     if total_loc > 0 and dna["loc_distribution"]["mean"] > 50: reliability += 30
     dna["baseline_reliability_score"] = min(100, reliability)
     
-    # Simple variance logic based on naming consistency
     names = dna["naming_convention_distribution"]
     total_names = sum(names.values())
     if total_names > 0:
@@ -531,55 +535,120 @@ def build_repository_codedna(repo_dir: str) -> Dict[str, Any]:
     return dna
 
 def compare_codedna(baseline_dna: Dict[str, Any], submission_dna: Dict[str, Any]) -> Dict[str, Any]:
-    # Phase 2: Compute CodeDNA Similarity Score (0-100)
-    score = 100.0
-    
-    # 1. Formatting match (Weight: 20%)
-    b_fmt = baseline_dna.get("formatting_indentation_fingerprint", {})
-    s_fmt = submission_dna.get("formatting_indentation_fingerprint", {})
-    b_pref = 'spaces' if b_fmt.get("spaces_indent", 0) > b_fmt.get("tabs_indent", 0) else 'tabs'
-    s_pref = 'spaces' if s_fmt.get("spaces_indent", 0) > s_fmt.get("tabs_indent", 0) else 'tabs'
-    if b_pref != s_pref and sum(b_fmt.values()) > 0 and sum(s_fmt.values()) > 0: score -= 20.0
+    def calc_dev(b_val, s_val):
+        if b_val == 0 and s_val == 0: return 0.0
+        if b_val == 0: return 100.0
+        return min(100.0, (abs(s_val - b_val) / max(0.1, b_val)) * 100.0)
         
-    # 2. Naming Conventions (Weight: 20%)
-    b_names = baseline_dna.get("naming_convention_distribution", {})
-    s_names = submission_dna.get("naming_convention_distribution", {})
-    b_primary = max(b_names, key=b_names.get) if sum(b_names.values()) > 0 else None
-    s_primary = max(s_names, key=s_names.get) if sum(s_names.values()) > 0 else None
-    if b_primary and s_primary and b_primary != s_primary: score -= 20.0
+    def dict_dev(b_dict, s_dict):
+        devs = []
+        for k in set(list(b_dict.keys()) + list(s_dict.keys())):
+            devs.append(calc_dev(b_dict.get(k, 0), s_dict.get(k, 0)))
+        return sum(devs) / max(1, len(devs))
         
-    # 3. Complexity & Size Distribution (Weight: 30%)
-    b_comp = baseline_dna.get("complexity_distribution", {}).get("mean", 0)
-    s_comp = submission_dna.get("complexity_distribution", {}).get("mean", 0)
-    if b_comp > 0:
-        variance = abs(b_comp - s_comp) / b_comp
-        if variance > 0.5: score -= 15.0
-        elif variance > 0.2: score -= 5.0
-            
-    b_mean_loc = baseline_dna.get("loc_distribution", {}).get("mean", 0)
-    s_mean_loc = submission_dna.get("loc_distribution", {}).get("mean", 0)
-    if b_mean_loc > 0:
-        variance = abs(b_mean_loc - s_mean_loc) / b_mean_loc
-        if variance > 0.5: score -= 15.0
-        elif variance > 0.2: score -= 5.0
-            
-    # 4. Idioms & Error Handling (Weight: 30%)
-    # Very basic deviation penalty for OOP and idiomatic habits
-    b_oop = baseline_dna.get("oop_composition_inheritance_tendencies", {}).get("class_to_func_ratio", 0)
-    s_oop = submission_dna.get("oop_composition_inheritance_tendencies", {}).get("class_to_func_ratio", 0)
-    if abs(b_oop - s_oop) > 0.5: score -= 15.0
+    # Phase 3 calculations
+    deviations = {}
     
-    b_bare_excepts = baseline_dna.get("error_handling_patterns", {}).get("bare_excepts", 0)
-    s_bare_excepts = submission_dna.get("error_handling_patterns", {}).get("bare_excepts", 0)
-    if b_bare_excepts == 0 and s_bare_excepts > 2: score -= 15.0 # Sudden introduction of bad practice
+    # Structural
+    deviations["structural_deviation"] = (dict_dev(baseline_dna.get("ast_structural_patterns", {}), submission_dna.get("ast_structural_patterns", {})) +
+                                         dict_dev(baseline_dna.get("control_flow_patterns", {}), submission_dna.get("control_flow_patterns", {}))) / 2
 
-    submission_dna["codedna_similarity_score"] = max(0.0, score)
-    submission_dna["historical_consistency_score"] = max(0.0, score) # Alias for Phase 1 backwards comp
+    # Naming
+    deviations["naming_deviation"] = dict_dev(baseline_dna.get("naming_convention_distribution", {}), submission_dna.get("naming_convention_distribution", {}))
     
+    # Formatting
+    deviations["formatting_deviation"] = dict_dev(baseline_dna.get("formatting_indentation_fingerprint", {}), submission_dna.get("formatting_indentation_fingerprint", {}))
+    
+    # Complexity
+    b_comp = baseline_dna.get("complexity_distribution", {})
+    s_comp = submission_dna.get("complexity_distribution", {})
+    deviations["complexity_deviation"] = (calc_dev(b_comp.get("mean", 0), s_comp.get("mean", 0)) + calc_dev(b_comp.get("p90", 0), s_comp.get("p90", 0))) / 2
+    
+    # Architecture (Simple heuristic deviation based on framework overlap)
+    b_arch = set(baseline_dna.get("architecture_fingerprint", []))
+    s_arch = set(submission_dna.get("architecture_fingerprint", []))
+    deviations["architecture_deviation"] = 100.0 if b_arch != s_arch else 0.0
+    
+    # Dependency
+    b_deps = set(baseline_dna.get("dependency_library_fingerprint", {}).get("all", []))
+    s_deps = set(submission_dna.get("dependency_library_fingerprint", {}).get("all", []))
+    new_deps = s_deps - b_deps
+    deviations["dependency_deviation"] = min(100.0, (len(new_deps) / max(1, len(s_deps))) * 100.0)
+    
+    # Abstraction
+    deviations["abstraction_deviation"] = dict_dev(baseline_dna.get("abstraction_level", {}), submission_dna.get("abstraction_level", {}))
+    
+    # Comment
+    deviations["comment_style_deviation"] = dict_dev(baseline_dna.get("comment_style", {}), submission_dna.get("comment_style", {}))
+    
+    # Error Handling
+    deviations["error_handling_deviation"] = dict_dev(baseline_dna.get("error_handling_patterns", {}), submission_dna.get("error_handling_patterns", {}))
+
+    # Calculate Overall Score (Inverse of average deviation)
+    avg_dev = sum(deviations.values()) / len(deviations)
+    deviations["overall_behavioral_stylistic_deviation_score"] = max(0.0, 100.0 - avg_dev)
+    
+    # New / Unseen patterns
+    new_patterns = []
+    if new_deps: new_patterns.append(f"New libraries used: {', '.join(list(new_deps)[:5])}")
+    for k in ["bare_excepts", "evals", "secrets"]:
+        if submission_dna.get("code_quality_error_patterns", {}).get(k, 0) > 0 and baseline_dna.get("code_quality_error_patterns", {}).get(k, 0) == 0:
+            new_patterns.append(f"Introduced {k} never seen in baseline.")
+    deviations["new_unseen_patterns"] = new_patterns
+    
+    # Distribution Shifts
+    deviations["distribution_shifts"] = {
+        "complexity_p90_shift": f"{b_comp.get('p90', 0)} -> {s_comp.get('p90', 0)}",
+        "loc_p90_shift": f"{baseline_dna.get('loc_distribution', {}).get('p90', 0)} -> {submission_dna.get('loc_distribution', {}).get('p90', 0)}"
+    }
+
+    # Per-file & Per-function Anomaly Scores
+    per_file_scores = []
+    per_function_scores = []
+    suspicious_regions = []
+    
+    b_p90_comp = b_comp.get("p90", 10)
+    b_mean_loc = baseline_dna.get("loc_distribution", {}).get("mean", 50)
+    
+    for f_metrics in submission_dna.get("file_metrics", []):
+        f_score = 0
+        if f_metrics.get("loc", 0) > b_mean_loc * 3: f_score += 30
+        
+        funcs = f_metrics.get("function_details", [])
+        for fn in funcs:
+            fn_score = 0
+            if fn["complexity"] > b_p90_comp * 1.5:
+                fn_score += 50
+                suspicious_regions.append({
+                    "file": f_metrics["filepath"],
+                    "line": fn["line"],
+                    "reason": f"Function {fn['name']} complexity ({fn['complexity']}) exceeds baseline P90 ({b_p90_comp})"
+                })
+            if fn_score > 0:
+                per_function_scores.append({"file": f_metrics["filepath"], "function": fn["name"], "anomaly_score": fn_score})
+                
+        f_score += sum(fn["anomaly_score"] for fn in per_function_scores if fn["file"] == f_metrics["filepath"])
+        if f_score > 0:
+            per_file_scores.append({"file": f_metrics["filepath"], "anomaly_score": min(100, f_score)})
+            
+    deviations["per_file_anomaly_scores"] = sorted(per_file_scores, key=lambda x: x["anomaly_score"], reverse=True)
+    deviations["per_function_anomaly_scores"] = sorted(per_function_scores, key=lambda x: x["anomaly_score"], reverse=True)
+    deviations["exact_suspicious_regions_lines"] = suspicious_regions
+    
+    # Anomaly Ranking
+    ranked = sorted([(k, v) for k, v in deviations.items() if k.endswith("_deviation")], key=lambda x: x[1], reverse=True)
+    deviations["anomaly_ranking"] = ranked
+    
+    # Merge deviations back up
+    submission_dna.update(deviations)
+    submission_dna["codedna_similarity_score"] = deviations["overall_behavioral_stylistic_deviation_score"]
+    
+    # To keep response size manageable we remove file_metrics from the final JSON
+    baseline_dna.pop("file_metrics", None)
+    submission_dna.pop("file_metrics", None)
+
     return {
         "baseline_metrics": baseline_dna,
         "submission_metrics": submission_dna,
-        "codedna_similarity_score": submission_dna["codedna_similarity_score"],
-        "historical_consistency_score": submission_dna["historical_consistency_score"],
-        "anomalies": []
+        "forensics": deviations
     }
