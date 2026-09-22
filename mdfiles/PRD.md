@@ -9,9 +9,7 @@ Analyze a student's historical public GitHub code, build a CodeDNA fingerprint, 
 
 
 3. Core Flow
-GitHub Username
-      ↓
-Discover Public Repositories
+Historical Repositories Input (Manual Upload or GitHub Username)
       ↓
 Analyze Historical Code
       ↓
@@ -113,7 +111,7 @@ Exportable report
 
 P0 — Must work
 
-GitHub repository discovery
+Manual upload of historical repositories & GitHub discovery
 Repository/code parsing
 CodeDNA
 New submission upload

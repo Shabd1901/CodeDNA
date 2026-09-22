@@ -17,7 +17,7 @@ OpenAI API
        ↓
 AI Reasoning / Report / Viva
        ↓
-PostgreSQL / Supabase
+Temporary Server-side File Storage
 
 
 ----------
@@ -29,7 +29,7 @@ Backend: Python + FastAPI
 Code analysis: Python AST + language-specific parsers where practical
 GitHub: GitHub REST API
 AI: OpenAI API
-Database: Supabase PostgreSQL
+Storage: Temporary server-side file system / memory (no database)
 Charts: Recharts
 Deployment: Vercel + backend hosting
 Main Backend Modules
@@ -40,14 +40,12 @@ Main Backend Modules
 /api/forensics
 /api/viva
 /api/reports
-Data Models
-User/Case
-Repository
-CodeDNA
-Analysis
-Evidence
-VivaSession
-Report
+In-Memory / Temporary File Structures
+InvestigationSession
+Repository (Uploaded/Cloned)
+CodeDNABaseline
+AnalysisEvidence
+ForensicReport
 
 --------
 
