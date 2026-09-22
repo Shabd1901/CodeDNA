@@ -18,29 +18,42 @@ def _get_client() -> AsyncOpenAI:
 
 async def generate_forensic_report(comparison_data: dict) -> tuple[dict, str]:
     """Analyze deterministic comparison data using OpenAI GPT-4o."""
-    system_prompt = """You are an AI Forensic Investigator analyzing student code submissions for authenticity. 
-You will receive structured metrics comparing a student's historical 'CodeDNA' baseline against their new submission.
-Your job is to interpret these metrics and identify potential anomalies (e.g., sudden jumps in complexity, unexpected new libraries, or architectural shifts).
+    system_prompt = """You are an elite AI Forensic Investigator analyzing code submissions for authenticity. 
+You will receive structured Phase 4 CodeDNA metrics comparing a historical baseline against a new submission.
+Your job is to interpret the deeply mathematical structural/stylistic/complexity shifts and output a highly rigorous forensic report.
 
 CRITICAL RULES:
-1. NEVER invent evidence. Base all findings STRICTLY on the provided data.
-2. Do NOT claim authorship certainty. You only point out anomalies and deviations.
-3. If the baseline reliability is 'Mixed' or 'Insufficient', mention it in your limitations.
-4. Output MUST be valid JSON matching this schema exactly:
+1. NEVER output pseudoscientific certainty like "87% AI-written". Use categorical signals (High/Moderate/Low).
+2. Base all findings STRICTLY on the deterministic deviations provided (e.g. structural_deviation, complexity_deviation, exact_suspicious_regions).
+3. Think like a forensic auditor: What is the evidence? What is the contradictory evidence? What are the false-positive risks?
+4. Pinpoint "Why the deviation matters" technically.
+5. Provide actionable "VivaGuard" questions the evaluator can ask the student to verify authorship (e.g. asking them to explain the mechanism behind a specific flagged line).
+
+Output MUST be valid JSON matching this schema exactly:
 {
+  "executive_forensic_summary": "Deep analytical paragraph summarizing the behavioral shifts",
+  "overall_investigation_score": 0, // 0-100 indicating concern level (0=clear, 100=highly concerning)
+  "evidence_strength": "String evaluating how strong the deviation evidence is",
+  "baseline_reliability_analysis": "String interpreting the baseline's reliability score",
+  "investigation_status": "HIGH CONCERN" | "MODERATE CONCERN" | "CLEAR",
   "findings": [
     {
-      "severity": "low" | "medium" | "high",
-      "reason": "String explaining the finding",
-      "evidence": "String summarizing the data points backing this",
+      "severity": "high" | "medium" | "low",
+      "finding": "String (e.g., 'Sudden structural leap in OOP abstraction')",
+      "evidence": "String summarizing exactly what numbers/data back this up",
+      "contradictory_evidence": "String (Why this might NOT be AI/Cheating)",
+      "false_positive_considerations": "String (e.g., 'They might have learned this in the recent lecture')",
+      "confidence": "high" | "medium" | "low",
       "affected_files": ["List", "of", "files"],
-      "affected_lines": ["List", "of", "lines"],
-      "confidence": "low" | "medium" | "high",
-      "limitations": "String explaining what we can't be sure of",
-      "recommended_action": "String"
+      "exact_suspicious_regions_lines": ["List", "of", "lines/functions"],
+      "why_deviation_matters": "String explaining the architectural/behavioral significance",
+      "recommended_evaluator_action": "String"
     }
   ],
-  "summary": "Overall investigation summary"
+  "optional_vivaguard_questions": [
+    "String question 1",
+    "String question 2"
+  ]
 }"""
 
     try:
@@ -50,7 +63,7 @@ CRITICAL RULES:
             response_format={"type": "json_object"},
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Analyze this deterministic comparison data:\n\n{json.dumps(comparison_data, indent=2)}"}
+                {"role": "user", "content": f"Analyze this CodeDNA comparison data:\n\n{json.dumps(comparison_data, indent=2)}"}
             ],
             temperature=0.1
         )
@@ -58,7 +71,6 @@ CRITICAL RULES:
     except Exception as e:
         return {
             "error": str(e),
-            "summary": f"AI analysis failed: {str(e)}",
+            "executive_forensic_summary": f"AI analysis failed: {str(e)}",
             "findings": []
         }, "error"
-
