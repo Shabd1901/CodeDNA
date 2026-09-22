@@ -280,37 +280,92 @@ export default function Home() {
               </button>
             </div>
 
+            {/* Top Level Dashboards (Deterministic Phase 4) */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="clean-card p-4 bg-zinc-50 border-zinc-200 shadow-sm flex flex-col justify-center">
+                <p className="text-[10px] font-bold text-zinc-500 mb-1 tracking-wider">BASELINE RELIABILITY</p>
+                <p className="text-2xl font-black text-zinc-900">{Math.round(report.deterministic_data?.authorship_intelligence?.evidence_confidence_score || 0)}<span className="text-sm font-medium text-zinc-400">/100</span></p>
+              </div>
+              <div className="clean-card p-4 bg-zinc-50 border-zinc-200 shadow-sm flex flex-col justify-center">
+                <p className="text-[10px] font-bold text-zinc-500 mb-1 tracking-wider">CODEDNA CONSISTENCY</p>
+                <p className="text-2xl font-black text-zinc-900">{Math.round(report.deterministic_data?.authorship_intelligence?.historical_codedna_similarity || 0)}<span className="text-sm font-medium text-zinc-400">/100</span></p>
+              </div>
+              <div className="clean-card p-4 bg-zinc-50 border-zinc-200 shadow-sm flex flex-col justify-center">
+                <p className="text-[10px] font-bold text-zinc-500 mb-1 tracking-wider">STRUCTURAL DEVIATION</p>
+                <p className="text-2xl font-black text-zinc-900">{Math.round(report.deterministic_data?.forensics?.structural_deviation || 0)}<span className="text-sm font-medium text-zinc-400">/100</span></p>
+              </div>
+              <div className="clean-card p-4 bg-zinc-50 border-zinc-200 shadow-sm flex flex-col justify-center">
+                <p className="text-[10px] font-bold text-zinc-500 mb-1 tracking-wider">STYLE DEVIATION</p>
+                <p className="text-2xl font-black text-zinc-900">{Math.round(((report.deterministic_data?.forensics?.formatting_deviation || 0) + (report.deterministic_data?.forensics?.naming_deviation || 0)) / 2)}<span className="text-sm font-medium text-zinc-400">/100</span></p>
+              </div>
+              <div className="clean-card p-4 bg-zinc-50 border-zinc-200 shadow-sm flex flex-col justify-center">
+                <p className="text-[10px] font-bold text-zinc-500 mb-1 tracking-wider">ARCHITECTURAL DEVIATION</p>
+                <p className="text-2xl font-black text-zinc-900">{Math.round(report.deterministic_data?.forensics?.architecture_deviation || 0)}<span className="text-sm font-medium text-zinc-400">/100</span></p>
+              </div>
+              <div className="clean-card p-4 bg-zinc-50 border-zinc-200 shadow-sm flex flex-col justify-center">
+                <p className="text-[10px] font-bold text-zinc-500 mb-1 tracking-wider">SIMILARITY EVIDENCE</p>
+                <p className="text-2xl font-black text-zinc-900">{Math.round(report.deterministic_data?.authorship_intelligence?.token_ast_similarity || 0)}<span className="text-sm font-medium text-zinc-400">/100</span></p>
+              </div>
+              
+              <div className={`clean-card p-4 shadow-sm flex flex-col justify-center border-l-4 ${report.deterministic_data?.authorship_intelligence?.categorical_signals?.ai_associated_signals === 'High' ? 'bg-red-50 border-red-500' : 'bg-emerald-50 border-emerald-500'}`}>
+                <p className="text-[10px] font-bold text-zinc-500 mb-1 tracking-wider">AI-ASSOCIATED SIGNALS</p>
+                <p className={`text-xl font-black ${report.deterministic_data?.authorship_intelligence?.categorical_signals?.ai_associated_signals === 'High' ? 'text-red-700' : 'text-emerald-700'}`}>
+                  {report.deterministic_data?.authorship_intelligence?.categorical_signals?.ai_associated_signals?.toUpperCase() || 'UNKNOWN'}
+                </p>
+              </div>
+
+              <div className={`clean-card p-4 shadow-sm flex flex-col justify-center items-center text-center border ${report.deterministic_data?.authorship_intelligence?.categorical_signals?.overall_investigation_concern === 'High' ? 'bg-red-600 border-red-700 text-white' : 'bg-zinc-900 border-zinc-950 text-white'}`}>
+                <p className="text-[10px] font-bold text-zinc-200 mb-1 tracking-wider">INVESTIGATION STATUS</p>
+                <p className="text-xl font-black">
+                  {report.deterministic_data?.authorship_intelligence?.categorical_signals?.overall_investigation_concern?.toUpperCase() || 'UNKNOWN'} CONCERN
+                </p>
+              </div>
+            </div>
+
             {/* Local anomalies (always available, no API cost) */}
             <div className="clean-card p-8">
-              <h3 className="text-lg font-bold mb-4 text-zinc-900">Local Comparison Anomalies</h3>
-              {report.deterministic_data?.anomalies?.length ? (
-                <ul className="space-y-3">
-                  {report.deterministic_data.anomalies.map((anomaly: any, i: number) => (
-                    <li key={i} className="border border-zinc-200 rounded-lg p-4 bg-zinc-50">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400 mb-1">{String(anomaly.type || "anomaly").replace(/_/g, " ")}</p>
-                      <p className="text-sm text-zinc-700">{anomaly.message}</p>
-                      {Array.isArray(anomaly.details) && anomaly.details.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-3">
-                          {anomaly.details.map((d: string, j: number) => (
-                            <span key={j} className="text-xs bg-white px-2 py-1 rounded text-zinc-600 border border-zinc-200 font-mono">{d}</span>
-                          ))}
-                        </div>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+              <h3 className="text-lg font-bold mb-4 text-zinc-900 border-b border-zinc-100 pb-2">Deterministic Anomalies (Instant & Free)</h3>
+              
+              {/* Unseen Patterns */}
+              {report.deterministic_data?.forensics?.new_unseen_patterns?.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="text-sm font-bold text-red-600 uppercase tracking-wide mb-2 flex items-center gap-2"><ShieldAlert className="w-4 h-4"/> Unseen Behavioral Patterns</h4>
+                  <ul className="space-y-2">
+                    {report.deterministic_data.forensics.new_unseen_patterns.map((p: string, i: number) => (
+                      <li key={i} className="text-sm bg-red-50 text-red-700 px-3 py-2 rounded-md border border-red-100">{p}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Function Anomalies */}
+              {report.deterministic_data?.forensics?.per_function_anomaly_scores?.length > 0 ? (
+                <div>
+                  <h4 className="text-sm font-bold text-zinc-700 uppercase tracking-wide mb-2 flex items-center gap-2"><FileCode2 className="w-4 h-4"/> Suspicious Code Regions</h4>
+                  <ul className="space-y-3">
+                    {report.deterministic_data.forensics.exact_suspicious_regions_lines?.map((anomaly: any, i: number) => (
+                      <li key={i} className="border border-amber-200 rounded-lg p-4 bg-amber-50">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-amber-700 mb-1">{anomaly.file} (Line {anomaly.line})</p>
+                        <p className="text-sm text-zinc-800 font-medium">{anomaly.reason}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ) : (
-                <p className="text-sm text-zinc-500">No local anomalies detected against the baseline.</p>
+                <p className="text-sm text-zinc-500">No strict mathematical anomalies detected against the baseline.</p>
               )}
             </div>
 
             {/* AI — explicit step */}
             <div className="clean-card p-8 border-l-4 border-l-blue-500">
               <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-                <h3 className="text-lg font-bold flex items-center gap-2 text-zinc-900">
-                  <CheckCircle className="w-5 h-5 text-blue-500" />
-                  AI Forensic Reasoning
-                </h3>
+                <div>
+                  <h3 className="text-lg font-bold flex items-center gap-2 text-zinc-900">
+                    <Sparkles className="w-5 h-5 text-blue-500" />
+                    AI Forensic Reasoning (Phase 5)
+                  </h3>
+                  <p className="text-sm text-zinc-500 mt-1">Triggers GPT-4o to analyze the deterministic metrics above and produce an evidence-weighted narrative.</p>
+                </div>
                 <div className="flex items-center gap-2">
                   {aiMode && (
                     <span className={`px-2.5 py-1 text-xs font-semibold rounded-md border ${aiMode === "openai" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-zinc-100 text-zinc-600 border-zinc-200"}`}>
@@ -327,96 +382,109 @@ export default function Home() {
                   </button>
                 </div>
               </div>
+
               {aiLoading && (
-                <p className="text-sm text-zinc-500">Generating forensic reasoning…</p>
+                <div className="flex items-center gap-3 text-zinc-500 py-8 justify-center border-t border-zinc-100 mt-4">
+                  <Activity className="w-5 h-5 animate-spin" />
+                  <p className="text-sm font-medium">Generating forensic reasoning…</p>
+                </div>
               )}
+              
               {!aiLoading && !report.forensic_report && (
-                <p className="text-[15px] leading-relaxed text-zinc-600">
-                  AI forensic reasoning has not been run. Local CodeDNA comparison is complete; click Run AI Analysis for an investigation summary.
-                </p>
+                <div className="py-6 border-t border-zinc-100 mt-4">
+                   <p className="text-[15px] leading-relaxed text-zinc-600">
+                    AI forensic reasoning has not been run. Click 'Run AI Analysis' for deep investigation logic.
+                  </p>
+                </div>
               )}
+
               {!aiLoading && report.forensic_report && (
-                <p className="text-[15px] leading-relaxed text-zinc-600">
-                  {report.forensic_report.summary || "No summary provided."}
-                </p>
-              )}
-            </div>
+                <div className="mt-8 space-y-8 border-t border-zinc-100 pt-8">
+                  {/* Executive Summary */}
+                  <div>
+                    <h4 className="text-xs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Executive Summary</h4>
+                    <p className="text-[15px] leading-relaxed text-zinc-800 font-medium bg-zinc-50 p-4 rounded-lg border border-zinc-200">
+                      {report.forensic_report.executive_forensic_summary}
+                    </p>
+                  </div>
 
-            <div className="grid lg:grid-cols-3 gap-8">
-              {/* Findings */}
-              <div className="lg:col-span-2 space-y-5">
-                <h3 className="text-lg font-bold text-zinc-900">Forensic Findings</h3>
-                {!report.forensic_report?.findings?.length && (
-                  <p className="text-sm text-zinc-500">Findings appear after you run AI analysis.</p>
-                )}
-                {report.forensic_report?.findings?.map((finding: any, i: number) => (
-                  <div key={i} className="clean-card p-6">
-                    <div className="flex items-start justify-between mb-3">
-                      <h4 className="font-semibold text-[15px] text-zinc-900">{finding.reason}</h4>
-                      <span className={`px-2.5 py-1 text-xs font-bold uppercase rounded-md tracking-wide border ${
-                        finding.severity === 'high' ? 'bg-red-50 text-red-700 border-red-200' : 
-                        finding.severity === 'medium' ? 'bg-orange-50 text-orange-700 border-orange-200' : 
-                        'bg-blue-50 text-blue-700 border-blue-200'
-                      }`}>
-                        {finding.severity} Risk
-                      </span>
-                    </div>
-                    <p className="text-sm text-zinc-500 mb-5 leading-relaxed">{finding.evidence}</p>
-                    
-                    <div className="flex flex-wrap gap-2 mb-5">
-                      {finding.affected_files?.slice(0, 3).map((f: string, j: number) => (
-                        <span key={j} className="text-xs bg-zinc-100 px-2 py-1 rounded text-zinc-600 border border-zinc-200 font-mono">
-                          {f}
-                        </span>
+                  {/* Findings */}
+                  <div>
+                     <h4 className="text-xs font-bold text-zinc-400 mb-4 uppercase tracking-wide">Forensic Findings</h4>
+                     <div className="space-y-4">
+                      {report.forensic_report.findings?.map((finding: any, i: number) => (
+                        <div key={i} className="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">
+                          <div className="flex items-start justify-between mb-4">
+                            <h5 className="font-bold text-zinc-900 text-lg">{finding.finding}</h5>
+                            <span className={`px-2.5 py-1 text-xs font-bold uppercase rounded-md tracking-wide border ${
+                              finding.severity === 'high' ? 'bg-red-50 text-red-700 border-red-200' : 
+                              finding.severity === 'medium' ? 'bg-orange-50 text-orange-700 border-orange-200' : 
+                              'bg-blue-50 text-blue-700 border-blue-200'
+                            }`}>
+                              {finding.severity} Risk
+                            </span>
+                          </div>
+                          
+                          <div className="grid md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                              <p className="text-xs font-bold text-zinc-400 uppercase mb-1">Evidence</p>
+                              <p className="text-sm text-zinc-700">{finding.evidence}</p>
+                            </div>
+                            <div>
+                               <p className="text-xs font-bold text-zinc-400 uppercase mb-1">Why it matters</p>
+                               <p className="text-sm text-zinc-700">{finding.why_deviation_matters}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="grid md:grid-cols-2 gap-6 mb-6 bg-zinc-50 p-4 rounded-lg border border-zinc-200">
+                             <div>
+                              <p className="text-xs font-bold text-zinc-500 uppercase mb-1">False Positives</p>
+                              <p className="text-sm text-zinc-600">{finding.false_positive_considerations}</p>
+                            </div>
+                            <div>
+                               <p className="text-xs font-bold text-zinc-500 uppercase mb-1">Contradictory Evidence</p>
+                               <p className="text-sm text-zinc-600">{finding.contradictory_evidence}</p>
+                            </div>
+                          </div>
+
+                          {finding.exact_suspicious_regions_lines?.length > 0 && (
+                            <div className="mb-4">
+                              <p className="text-xs font-bold text-zinc-400 uppercase mb-2">Affected Lines</p>
+                              <div className="flex flex-wrap gap-2">
+                                {finding.exact_suspicious_regions_lines.map((line: string, j: number) => (
+                                  <span key={j} className="text-xs font-mono bg-zinc-900 text-zinc-100 px-2 py-1 rounded">{line}</span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="border-t border-zinc-100 pt-4 mt-2">
+                             <p className="text-sm text-blue-700 font-medium flex items-center gap-2"><CheckCircle className="w-4 h-4"/> {finding.recommended_evaluator_action}</p>
+                          </div>
+                        </div>
                       ))}
-                      {finding.affected_files?.length > 3 && (
-                        <span className="text-xs text-zinc-400 px-2 py-1">+{finding.affected_files.length - 3} more</span>
-                      )}
-                    </div>
-                    
-                    <div className="bg-zinc-50 p-4 rounded-lg border border-zinc-100">
-                      <p className="text-sm text-zinc-700"><span className="font-medium text-zinc-900 mr-1">Recommendation:</span> {finding.recommended_action}</p>
-                    </div>
+                     </div>
                   </div>
-                ))}
-              </div>
 
-              {/* CodeDNA Metrics */}
-              <div className="space-y-5">
-                <h3 className="text-lg font-bold text-zinc-900">CodeDNA Profile</h3>
-                
-                <div className="clean-card p-6">
-                  <h4 className="text-xs font-bold text-zinc-400 mb-6 uppercase tracking-wider">Complexity Signature</h4>
-                  <div className="h-[220px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <RadarChart data={[
-                        { metric: 'Avg Lines', baseline: report.deterministic_data?.baseline_metrics?.total_lines / (report.deterministic_data?.baseline_metrics?.total_files || 1), sub: report.deterministic_data?.submission_metrics?.total_lines / (report.deterministic_data?.submission_metrics?.total_files || 1) },
-                        { metric: 'Avg Complexity', baseline: report.deterministic_data?.baseline_metrics?.total_complexity / (report.deterministic_data?.baseline_metrics?.total_files || 1) * 10, sub: report.deterministic_data?.submission_metrics?.total_complexity / (report.deterministic_data?.submission_metrics?.total_files || 1) * 10 },
-                        { metric: 'Avg Functions', baseline: report.deterministic_data?.baseline_metrics?.total_functions / (report.deterministic_data?.baseline_metrics?.total_files || 1) * 5, sub: report.deterministic_data?.submission_metrics?.total_functions / (report.deterministic_data?.submission_metrics?.total_files || 1) * 5 },
-                      ]}>
-                        <PolarGrid stroke="#e4e4e7" />
-                        <PolarAngleAxis dataKey="metric" tick={{ fill: '#71717a', fontSize: 11 }} />
-                        <Radar name="Baseline" dataKey="baseline" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.15} />
-                        <Radar name="Submission" dataKey="sub" stroke="#18181b" fill="#18181b" fillOpacity={0.2} />
-                        <RechartsTooltip contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e4e4e7', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                      </RadarChart>
-                    </ResponsiveContainer>
-                  </div>
+                  {/* VivaGuard */}
+                  {report.forensic_report.optional_vivaguard_questions?.length > 0 && (
+                    <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-6">
+                      <h4 className="text-sm font-bold text-indigo-900 mb-4 uppercase tracking-wide flex items-center gap-2">
+                        <User className="w-4 h-4"/> VivaGuard Interview Strategy
+                      </h4>
+                      <ul className="space-y-3">
+                        {report.forensic_report.optional_vivaguard_questions.map((q: string, i: number) => (
+                          <li key={i} className="text-sm text-indigo-800 flex items-start gap-3">
+                            <span className="font-bold mt-0.5">{i+1}.</span>
+                            <span>{q}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
                 </div>
-                
-                <div className="clean-card p-6">
-                  <h4 className="text-xs font-bold text-zinc-400 mb-4 uppercase tracking-wider">Language Distribution</h4>
-                  <div className="space-y-3">
-                    {Object.entries(report.deterministic_data?.submission_metrics?.languages || {}).map(([lang, count]: [string, any]) => (
-                      <div key={lang} className="flex items-center justify-between border-b border-zinc-100 pb-2 last:border-0 last:pb-0">
-                        <span className="text-sm text-zinc-600 capitalize">{lang}</span>
-                        <span className="text-sm font-semibold text-zinc-900">{count} files</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-              </div>
+              )}
             </div>
           </motion.div>
         )}
