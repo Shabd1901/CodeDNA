@@ -40,16 +40,53 @@ Phase 1, 2, and 3 Core Engine Refactoring Complete! Ready for Phase 4 (AI Forens
   - Added support for manual upload of historical repositories as primary workflow.
   - Migrated storage strategy to temporary server-side files for the investigation duration.
 
+## How to Start the Project
+
+### Prerequisites
+- Python 3.10+ with a virtual environment inside `backend/venv`
+- Node.js 18+ for the frontend
+- A Gemini API key from [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) (free, no billing required)
+
+### 1. Set up Environment
+Create `backend/.env` (copy from `backend/.env.example`) and add your key:
+```
+GEMINI_API_KEY=AIza...your_key_here
+```
+
+### 2. Start the Backend
+```powershell
+# From the backend/ directory — activate venv FIRST
+.\venv\Scripts\Activate.ps1
+
+# Then start the server
+python -m uvicorn main:app --reload --port 8000
+```
+
+### 3. Start the Frontend
+```powershell
+# From the frontend/ directory
+npm run dev
+```
+
+### 4. Open the App
+Navigate to `http://localhost:3000`
+
+### 5. Run an Investigation
+1. Drop historical reference ZIPs (or enter a GitHub username) under **Historical Baseline**
+2. Drop the submission ZIP under **New Submission**
+3. Click **Begin Forensic Analysis** — the deterministic 8-metric dashboard appears instantly for free
+4. Optionally click **Run AI Analysis** to trigger Gemini Flash for deep forensic reasoning
+
+---
+
 ## Current Focus:
-- (2026-09-22 19:20) **Frontend Integration:** Now that the 5-phase backend forensic engine is fully complete, the focus shifts to mapping these detailed JSON schemas into the Next.js Dashboard UI (Framer Motion, Recharts) to render the final forensic view.
+- (2026-09-23 09:55) **SDK Migration Complete:** Migrated from deprecated `google.generativeai` to new `google-genai` SDK. Now using `gemini-2.0-flash` model. All mock report code removed. Platform is fully live on real Gemini API.
 
 ## Next Pending Work:
 - Build the final Frontend UI Dashboard to display the top-level stats (Baseline Reliability, CodeDNA Consistency, Structural Deviation, etc.) and render the "Why?" → evidence → exact code flow natively in the browser.
-- **SDK & Model Migration:** Two issues: the `google.generativeai` SDK is deprecated, and the model name is wrong for that API version. Fix is to switch to the new `google-genai` SDK.
 
 ## Known Issues / Need To make these updates:
-- **SDK & Model Name Issue:** Two issues: the `google.generativeai` SDK is deprecated, and the model name is wrong for that API version. Fix is to switch to the new `google-genai` SDK.
-- If OpenAI returns a 429 Quota Exhausted error (or if the API key is "mock"), `ai_engine.py` will now automatically intercept the error and return a highly detailed, schema-compliant Mock Phase 5 Report so frontend UI testing can continue uninterrupted without API costs.
+- None currently. All SDK and model migration issues resolved.
 
 ## Architecture Vulnerabilities, Gotchas & Known Risk Matrix:
 

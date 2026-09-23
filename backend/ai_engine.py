@@ -1,27 +1,21 @@
 import os
 import json
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
-_model = None
+_client = None
 
 def _api_key() -> str:
     return (os.getenv("GEMINI_API_KEY") or "").strip()
 
-def _get_model():
-    global _model
-    if _model is None:
+def _get_client():
+    global _client
+    if _client is None:
         key = _api_key()
         if not key:
             raise ValueError("GEMINI_API_KEY is not set in backend/.env")
-        genai.configure(api_key=key)
-        _model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
-            generation_config=genai.GenerationConfig(
-                response_mime_type="application/json",
-                temperature=0.1,
-            )
-        )
-    return _model
+        _client = genai.Client(api_key=key)
+    return _client
 
 SYSTEM_PROMPT = """You are an elite AI Forensic Investigator analyzing code submissions for authenticity. 
 You will receive structured Phase 4 CodeDNA metrics comparing a historical baseline against a new submission.
@@ -63,11 +57,19 @@ Output MUST be valid JSON matching this schema exactly:
 
 
 async def generate_forensic_report(comparison_data: dict) -> tuple[dict, str]:
-    """Analyze deterministic comparison data using Google Gemini Flash."""
+    """Analyze deterministic comparison data using Google Gemini Flash (new google-genai SDK)."""
     try:
-        model = _get_model()
+        client = _get_client()
         prompt = f"{SYSTEM_PROMPT}\n\nAnalyze this CodeDNA comparison data:\n\n{json.dumps(comparison_data, indent=2)}"
-        response = model.generate_content(prompt)
+        
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                temperature=0.1,
+            )
+        )
         result = json.loads(response.text)
         return result, "gemini"
     except Exception as e:
