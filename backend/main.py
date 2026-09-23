@@ -174,8 +174,11 @@ async def generate_ai_report(session_id: str = Form(...)):
         
     with open(results_path, "r") as f:
         comparison_results = json.load(f)
-        
-    ai_report, ai_mode = await generate_forensic_report(comparison_results)
+    
+    try:
+        ai_report, ai_mode = await generate_forensic_report(comparison_results)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"AI analysis failed: {str(e)}")
     
     return {
         "status": "success",

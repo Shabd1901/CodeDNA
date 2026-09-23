@@ -145,13 +145,16 @@ export default function Home() {
         method: "POST",
         body: formData
       });
-      if (!res.ok) throw new Error("AI report failed");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ detail: "Unknown error" }));
+        throw new Error(errData.detail || `Server error ${res.status}`);
+      }
       const data = await res.json();
       setAiMode(data.ai_mode === "gemini" ? "gemini" : "openai");
       setReport((prev: any) => ({ ...prev, forensic_report: data.forensic_report }));
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("AI analysis failed. Ensure the backend is running and comparison completed.");
+      alert(`AI analysis failed: ${error.message}`);
     } finally {
       setAiLoading(false);
     }
