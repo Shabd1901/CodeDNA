@@ -58,19 +58,29 @@ Output MUST be valid JSON matching this schema exactly:
 
 async def generate_forensic_report(comparison_data: dict) -> tuple[dict, str]:
     """Analyze deterministic comparison data using Google Gemini Flash (new google-genai SDK)."""
-    try:
-        client = _get_client()
-        prompt = f"{SYSTEM_PROMPT}\n\nAnalyze this CodeDNA comparison data:\n\n{json.dumps(comparison_data, indent=2)}"
-        
-        response = client.models.generate_content(
-            model="gemini-3.6-flash",
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                temperature=0.1,
+    import asyncio
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            client = _get_client()
+            prompt = f"{SYSTEM_PROMPT}\n\nAnalyze this CodeDNA comparison data:\n\n{json.dumps(comparison_data, indent=2)}"
+            
+            response = client.models.generate_content(
+                model="gemini-3.6-flash",
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    temperature=0.1,
+                )
             )
-        )
-        result = json.loads(response.text)
-        return result, "gemini"
-    except Exception as e:
-        raise RuntimeError(f"Gemini analysis failed: {str(e)}")
+            result = json.loads(response.text)
+            return result, "gemini"
+        except Exception as e:
+            error_msg = str(e)
+            is_transient = any(x in error_msg for x in ["503", "UNAVAILABLE", "overloaded", "high demand", "try again"])
+            if is_transient and attempt < max_retries - 1:
+                wait = 2 ** attempt  # 1s, 2s, 4s
+                print(f"Gemini 503 overload on attempt {attempt + 1}. Retrying in {wait}s…")
+                await asyncio.sleep(wait)
+                continue
+            raise RuntimeError(f"Gemini analysis failed: {error_msg}")
