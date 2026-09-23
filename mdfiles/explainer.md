@@ -77,16 +77,28 @@ Navigate to `http://localhost:3000`
 3. Click **Begin Forensic Analysis** — the deterministic 8-metric dashboard appears instantly for free
 4. Optionally click **Run AI Analysis** to trigger Gemini Flash for deep forensic reasoning
 
+## Fundamental System Limitations (Honest Assessment):
+
+1. **Consistent AI Authors (Baseline Contamination):**
+   - **The Problem:** If a student *always* uses AI (even across all historical baseline repositories), their historical CodeDNA will be inherently AI-derived. Comparing a new AI submission against an AI baseline yields **low behavioral deviation** (because they match), but **high AI-associated signals**.
+   - **The Solution (Implemented):** CodeDNA distinguishes between `Consistent AI Author` (low behavioral deviation + AI signals present in baseline & submission) vs `Sudden AI Introduction` (baseline is clean, submission introduces AI patterns). For `Consistent AI Author`, the investigation concern is downgraded from **HIGH** to **MODERATE** with an explicit diagnostic note: *"This student consistently uses AI. Focus investigation on AI policy compliance, not substitution fraud."*
+
+2. **Intra-Author Topic Variance:**
+   - A single author writing a CLI script vs a React UI vs a Database ORM will naturally use different libraries, naming conventions, and AST structures. CodeDNA mitigates this using non-linear sigmoid normalization so small/natural drifts do not inflate anomaly scores.
+
+3. **Language-Specific AST Coverage:**
+   - Deep AST parsing is currently active for Python. JS/TS files use regex-based static heuristics which capture control flow and function density but lack full AST depth.
+
 ---
 
 ## Current Focus:
-- (2026-09-23 09:55) **SDK Migration Complete:** Migrated from deprecated `google.generativeai` to new `google-genai` SDK. Now using `gemini-2.0-flash` model. All mock report code removed. Platform is fully live on real Gemini API.
+- (2026-09-23 10:15) **Engine Calibration & False Positive Mitigation:** Implemented non-linear sigmoid deviation scaling, partial Jaccard architectural distance, and multi-tier AI Author Profiling (`Consistent AI Author` vs `Sudden AI Introduction`).
 
 ## Next Pending Work:
-- Build the final Frontend UI Dashboard to display the top-level stats (Baseline Reliability, CodeDNA Consistency, Structural Deviation, etc.) and render the "Why?" → evidence → exact code flow natively in the browser.
+- Cohort normalization: compare a student's CodeDNA against a class/course baseline, not just their own history.
 
 ## Known Issues / Need To make these updates:
-- None currently. All SDK and model migration issues resolved.
+- None currently. Calibration, thresholding, and SDK issues resolved.
 
 ## Architecture Vulnerabilities, Gotchas & Known Risk Matrix:
 

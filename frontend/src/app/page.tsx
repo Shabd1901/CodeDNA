@@ -444,9 +444,35 @@ export default function Home() {
                 <p className="text-xl font-black">
                   {report.deterministic_data?.authorship_intelligence?.categorical_signals?.overall_investigation_concern?.toUpperCase() || 'UNKNOWN'} CONCERN
                 </p>
-                <p className="text-[10px] text-zinc-300 mt-2 leading-tight text-center px-2">Offline metric computed deterministically.</p>
+                <p className="text-[10px] text-zinc-300 mt-2 leading-tight text-center px-2">
+                  {report.deterministic_data?.authorship_intelligence?.ai_author_profile || "Offline metric"}
+                </p>
               </div>
             </div>
+
+            {/* AI Author Profile Banner (Explanation for False Positives) */}
+            {report.deterministic_data?.authorship_intelligence?.ai_author_profile && (
+              <div className={`p-4 rounded-xl border flex items-start gap-3 ${
+                report.deterministic_data.authorship_intelligence.ai_author_profile === "Consistent AI Author"
+                  ? "bg-amber-50 border-amber-200 text-amber-900"
+                  : report.deterministic_data.authorship_intelligence.ai_author_profile === "Sudden AI Introduction"
+                  ? "bg-red-50 border-red-200 text-red-900"
+                  : "bg-blue-50 border-blue-200 text-blue-900"
+              }`}>
+                <ShieldAlert className="w-5 h-5 shrink-0 mt-0.5" />
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-sm">Author Profile Diagnosis:</span>
+                    <span className="font-mono text-xs px-2 py-0.5 bg-white/80 rounded border font-semibold">
+                      {report.deterministic_data.authorship_intelligence.ai_author_profile}
+                    </span>
+                  </div>
+                  <p className="text-xs mt-1 leading-relaxed opacity-90">
+                    {report.deterministic_data.authorship_intelligence.concern_reason}
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Local anomalies (always available, no API cost) */}
             <div className="clean-card p-8">

@@ -537,9 +537,14 @@ def build_repository_codedna(repo_dir: str) -> Dict[str, Any]:
 
 def compare_codedna(baseline_dna: Dict[str, Any], submission_dna: Dict[str, Any]) -> Dict[str, Any]:
     def calc_dev(b_val, s_val):
+        """Non-linear deviation: small natural drifts score low, only extreme outliers score high."""
         if b_val == 0 and s_val == 0: return 0.0
-        if b_val == 0: return 100.0
-        return min(100.0, (abs(s_val - b_val) / max(0.1, b_val)) * 100.0)
+        if b_val == 0: return 60.0  # Appeared from nothing — notable but not catastrophic
+        raw_ratio = abs(s_val - b_val) / max(0.1, b_val)
+        # Sigmoid-style curve: <20% change → low, 50% → moderate, >100% → high
+        # Maps: 0→0, 0.2→15, 0.5→40, 1.0→70, 2.0→90, 3.0→97
+        score = 100.0 * (1.0 - 1.0 / (1.0 + (raw_ratio / 0.5) ** 1.4))
+        return min(100.0, score)
         
     def dict_dev(b_dict, s_dict):
         devs = []
@@ -560,7 +565,13 @@ def compare_codedna(baseline_dna: Dict[str, Any], submission_dna: Dict[str, Any]
     
     b_arch = set(baseline_dna.get("architecture_fingerprint", []))
     s_arch = set(submission_dna.get("architecture_fingerprint", []))
-    deviations["architecture_deviation"] = 100.0 if b_arch != s_arch else 0.0
+    # Fix 2: Partial Jaccard distance — overlapping architectures score proportionally, not binary 0/100
+    if not b_arch and not s_arch:
+        deviations["architecture_deviation"] = 0.0
+    else:
+        intersection = len(b_arch & s_arch)
+        union = len(b_arch | s_arch)
+        deviations["architecture_deviation"] = round((1.0 - intersection / max(1, union)) * 100.0, 1)
     
     b_deps = set(baseline_dna.get("dependency_library_fingerprint", {}).get("all", []))
     s_deps = set(submission_dna.get("dependency_library_fingerprint", {}).get("all", []))
@@ -619,7 +630,8 @@ def compare_codedna(baseline_dna: Dict[str, Any], submission_dna: Dict[str, Any]
     
     # --- PHASE 4: Authorship & Similarity Intelligence ---
     
-    ai_indicators = submission_dna.get("code_quality_error_patterns", {}).get("ai_patterns", 0) 
+    b_ai_indicators = baseline_dna.get("code_quality_error_patterns", {}).get("ai_patterns", 0)
+    s_ai_indicators = submission_dna.get("code_quality_error_patterns", {}).get("ai_patterns", 0)
     
     b_type_hint_ratio = baseline_dna.get("abstraction_level", {}).get("type_hint_ratio", 0)
     s_type_hint_ratio = submission_dna.get("abstraction_level", {}).get("type_hint_ratio", 0)
@@ -630,16 +642,43 @@ def compare_codedna(baseline_dna: Dict[str, Any], submission_dna: Dict[str, Any]
     internal_dupe_ratio = (dupes / len(sizes) * 100) if sizes else 0.0
 
     b_reliability = baseline_dna.get("baseline_reliability_score", 0)
-    baseline_contamination = "High" if baseline_dna.get("code_quality_error_patterns", {}).get("ai_patterns", 0) > 0 else "Low"
+    
+    # Fix 3: AI Author Profile Tiers
+    # Tier A: Baseline already has AI patterns AND submission also has them → "Consistent AI Author"
+    # Tier B: Baseline is clean BUT submission introduces AI patterns → "Sudden AI Introduction"
+    # Tier C: No AI patterns detected in either → "No AI signal"
+    baseline_already_ai = b_ai_indicators > 0
+    submission_has_ai   = s_ai_indicators > 0 or sudden_sophistication == "High"
 
-    ai_signals = "Low"
-    if ai_indicators > 0 or sudden_sophistication == "High" or deviations["dependency_deviation"] > 80:
+    if baseline_already_ai and submission_has_ai:
+        ai_author_profile = "Consistent AI Author"
         ai_signals = "High"
-    elif deviations["overall_behavioral_stylistic_deviation_score"] < 50:
+        concern_reason = "Both baseline and submission exhibit AI-associated patterns. This student may consistently use AI tools. Deviation from their own baseline is low — investigation should focus on AI policy compliance, not substitution fraud."
+    elif not baseline_already_ai and submission_has_ai:
+        ai_author_profile = "Sudden AI Introduction"
+        ai_signals = "High"
+        concern_reason = "Baseline shows no AI patterns, but submission introduces them suddenly. This is a stronger forensic signal of possible substitution."
+    elif not baseline_already_ai and not submission_has_ai and deviations["overall_behavioral_stylistic_deviation_score"] < 40:
+        ai_author_profile = "Low Evidence"
+        ai_signals = "Low"
+        concern_reason = "Submission behaviorally matches the baseline. No forensic anomalies detected."
+    else:
+        ai_author_profile = "Uncertain"
         ai_signals = "Moderate"
+        concern_reason = "Partial deviations detected. Insufficient evidence to conclude either way."
 
-    authorship_ev = "Strong" if deviations["overall_behavioral_stylistic_deviation_score"] > 80 else "Weak"
-    concern = "High" if ai_signals == "High" or authorship_ev == "Weak" else "Low"
+    baseline_contamination = "High" if baseline_already_ai else "Low"
+    authorship_ev = "Strong" if deviations["overall_behavioral_stylistic_deviation_score"] > 75 else ("Moderate" if deviations["overall_behavioral_stylistic_deviation_score"] > 50 else "Weak")
+    
+    # Overall concern respects the tiered model
+    if ai_author_profile == "Consistent AI Author":
+        concern = "Moderate"  # Not "High" — this is a policy question, not substitution
+    elif ai_author_profile == "Sudden AI Introduction":
+        concern = "High"
+    elif authorship_ev == "Weak":
+        concern = "Moderate"
+    else:
+        concern = "Low"
 
     phase4 = {
         "historical_codedna_similarity": deviations["overall_behavioral_stylistic_deviation_score"],
@@ -650,8 +689,11 @@ def compare_codedna(baseline_dna: Dict[str, Any], submission_dna: Dict[str, Any]
         "token_ast_similarity": max(0.0, 100.0 - (deviations["structural_deviation"] * 0.7 + deviations["complexity_deviation"] * 0.3)),
         "novel_code_ratio": deviations["dependency_deviation"],
         "code_reuse_ratio": 100.0 - deviations["dependency_deviation"],
-        "ai_pattern_indicators": ai_indicators,
+        "ai_pattern_indicators": s_ai_indicators,
+        "baseline_ai_pattern_indicators": b_ai_indicators,
         "sudden_sophistication_change": sudden_sophistication,
+        "ai_author_profile": ai_author_profile,
+        "concern_reason": concern_reason,
         "architectural_discontinuity": "High" if deviations["architecture_deviation"] > 50 else "Low",
         "dependency_discontinuity": "High" if deviations["dependency_deviation"] > 50 else "Low",
         "evidence_confidence_score": b_reliability,
