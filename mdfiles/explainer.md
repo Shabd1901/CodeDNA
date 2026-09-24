@@ -4,6 +4,7 @@
 Phase 1, 2, and 3 Core Engine Refactoring Complete! Ready for Phase 4 (AI Forensic Integration & UI Dashboard Updates).
 
 ## Completed Changes:
+- (2026-09-24 18:36) **UI Copy Updated for Gemini Flash:** Replaced misleading reference to 'GPT-4o' in `frontend/src/app/page.tsx` line 519 with 'Google Gemini Flash' to align UI copy with backend engine.
 - (2026-09-22 23:10) **Architecture Risk Matrix Added:** Added a concise "Architecture Vulnerabilities, Gotchas & Known Risk Matrix" section to `explainer.md` capturing SDK deprecations (`google.generativeai` vs `google-genai`), global pip leaks vs venv isolation, model name shifts, JS/TS static parsing limits, zip bomb limits, GitHub unauthenticated rate limits, session disk volatility, wildcard CORS risks, and secret leakage mitigations.
 - (2026-09-22 21:40) **Migrated AI Engine to Google Gemini Flash:** Completely replaced OpenAI (`gpt-4o`) with `google-generativeai` (`gemini-1.5-flash`). Uses `response_mime_type="application/json"` for strict JSON schema enforcement. Falls back gracefully to a highly realistic mock report on quota exhaustion or missing key. Updated `requirements.txt` and `.env.example`. The Gemini free tier provides 15 RPM and 1M TPM at no cost — resolving OpenAI's exhausted-credit problem permanently.
 - (2026-09-22 21:30) **Session & File Cleanup on New Investigation:** Updated `handleNewInvestigation` in `frontend/src/app/page.tsx` to issue a server-side `DELETE /api/session/{session_id}` request to wipe session files from disk, reset all input fields (`githubLink`, `repoFiles`, `submissionFile`), and force recreation of the file input DOM components using a dynamic key (`resetKey`).
@@ -98,7 +99,7 @@ Navigate to `http://localhost:3000`
 - Cohort normalization: compare a student's CodeDNA against a class/course baseline, not just their own history.
 
 ## Known Issues / Need To make these updates:
-- None currently. Calibration, thresholding, and SDK issues resolved.
+- *None currently open.*
 
 ## Architecture Vulnerabilities, Gotchas & Known Risk Matrix:
 

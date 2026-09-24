@@ -516,7 +516,7 @@ export default function Home() {
                     <Sparkles className="w-5 h-5 text-blue-500" />
                     AI Forensic Reasoning
                   </h3>
-                  <p className="text-sm text-zinc-500 mt-1">Triggers GPT-4o to analyze the deterministic metrics above and produce an evidence-weighted narrative.</p>
+                  <p className="text-sm text-zinc-500 mt-1">Triggers Google Gemini Flash to analyze the deterministic metrics above and produce an evidence-weighted narrative.</p>
                 </div>
                 <div className="flex items-center gap-2">
                   {aiMode && (
