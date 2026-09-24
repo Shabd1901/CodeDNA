@@ -4,6 +4,7 @@
 Phase 1, 2, and 3 Core Engine Refactoring Complete! Ready for Phase 4 (AI Forensic Integration & UI Dashboard Updates).
 
 ## Completed Changes:
+- (2026-09-24 18:45) **Configurable Gemini Model & Multi-Tier Fallback Chain Implemented:** Configured `GEMINI_MODEL` environment variable in `ai_engine.py` (default: `gemini-3.6-flash`) with an automated failover sequence to `gemini-3.5-flash-lite` and `gemini-3.5-flash` on 503 capacity overload or 404 deprecation errors. Empirically verified automatic recovery during server demand spikes.
 - (2026-09-24 18:36) **UI Copy Updated for Gemini Flash:** Replaced misleading reference to 'GPT-4o' in `frontend/src/app/page.tsx` line 519 with 'Google Gemini Flash' to align UI copy with backend engine.
 - (2026-09-22 23:10) **Architecture Risk Matrix Added:** Added a concise "Architecture Vulnerabilities, Gotchas & Known Risk Matrix" section to `explainer.md` capturing SDK deprecations (`google.generativeai` vs `google-genai`), global pip leaks vs venv isolation, model name shifts, JS/TS static parsing limits, zip bomb limits, GitHub unauthenticated rate limits, session disk volatility, wildcard CORS risks, and secret leakage mitigations.
 - (2026-09-22 21:40) **Migrated AI Engine to Google Gemini Flash:** Completely replaced OpenAI (`gpt-4o`) with `google-generativeai` (`gemini-1.5-flash`). Uses `response_mime_type="application/json"` for strict JSON schema enforcement. Falls back gracefully to a highly realistic mock report on quota exhaustion or missing key. Updated `requirements.txt` and `.env.example`. The Gemini free tier provides 15 RPM and 1M TPM at no cost — resolving OpenAI's exhausted-credit problem permanently.
@@ -106,7 +107,7 @@ Navigate to `http://localhost:3000`
 | Risk / Gotcha | Issue (In Simple Words) | Fix / Solution |
 | :--- | :--- | :--- |
 | **Deprecated Gemini SDK** | `google.generativeai` package is deprecated in favor of `google-genai`. | Migrate import to `from google import genai` and use `client = genai.Client()`. |
-| **Model Name Mismatch** | Hardcoded `gemini-1.5-flash` may fail or be deprecated on newer API keys. | Make model configurable via `.env` (`GEMINI_MODEL=gemini-2.5-flash`). |
+| **Model Name Mismatch & High Demand 503s** | Hardcoded model or peak demand 503s can cause investigation failures. | Configured `GEMINI_MODEL` via `.env` with automatic fallback chain (`gemini-3.6-flash` -> `gemini-3.5-flash-lite`). |
 | **Global Python Environment Leak** | `pip install` run without activating `venv` installs packages globally. | Always use `.\venv\Scripts\python.exe -m pip install -r requirements.txt`. |
 | **JS/TS Static Metric Limits** | Python has deep AST parsing; JS/TS uses regex heuristics which miss complex syntax. | Integrate Tree-Sitter or TypeScript AST CLI parser for JS/TS files. |
 | **Unbounded ZIP Extraction Risk** | Uploading massive `.zip` files can exhaust disk space or trigger zip bombs. | Add 50MB file size limit and max file count checks during zip extraction in `main.py`. |

@@ -57,30 +57,46 @@ Output MUST be valid JSON matching this schema exactly:
 
 
 async def generate_forensic_report(comparison_data: dict) -> tuple[dict, str]:
-    """Analyze deterministic comparison data using Google Gemini Flash (new google-genai SDK)."""
+    """Analyze deterministic comparison data using Google Gemini Flash with automatic resilient model failover."""
     import asyncio
-    max_retries = 3
-    for attempt in range(max_retries):
-        try:
-            client = _get_client()
-            prompt = f"{SYSTEM_PROMPT}\n\nAnalyze this CodeDNA comparison data:\n\n{json.dumps(comparison_data, indent=2)}"
+    
+    primary_model = (os.getenv("GEMINI_MODEL") or "gemini-3.6-flash").strip()
+    # Resilient fallback chain: Primary -> Gemini 3.5 Flash-Lite -> Gemini 3.5 Flash
+    fallback_chain = [primary_model, "gemini-3.5-flash-lite", "gemini-3.5-flash"]
+    # Deduplicate while preserving order
+    candidate_models = []
+    for m in fallback_chain:
+        if m not in candidate_models:
+            candidate_models.append(m)
             
-            response = client.models.generate_content(
-                model="gemini-3.6-flash",
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    temperature=0.1,
+    client = _get_client()
+    prompt = f"{SYSTEM_PROMPT}\n\nAnalyze this CodeDNA comparison data:\n\n{json.dumps(comparison_data, indent=2)}"
+    
+    last_error = None
+    for model_name in candidate_models:
+        for attempt in range(2):
+            try:
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                        temperature=0.1,
+                    )
                 )
-            )
-            result = json.loads(response.text)
-            return result, "gemini"
-        except Exception as e:
-            error_msg = str(e)
-            is_transient = any(x in error_msg for x in ["503", "UNAVAILABLE", "overloaded", "high demand", "try again"])
-            if is_transient and attempt < max_retries - 1:
-                wait = 2 ** attempt  # 1s, 2s, 4s
-                print(f"Gemini 503 overload on attempt {attempt + 1}. Retrying in {wait}s…")
-                await asyncio.sleep(wait)
-                continue
-            raise RuntimeError(f"Gemini analysis failed: {error_msg}")
+                result = json.loads(response.text)
+                return result, f"gemini ({model_name})"
+            except Exception as e:
+                last_error = e
+                error_msg = str(e)
+                is_transient = any(x in error_msg.lower() for x in ["503", "unavailable", "overloaded", "high demand", "try again", "resource_exhausted", "429"])
+                if is_transient and attempt < 1:
+                    print(f"Gemini {model_name} overload on attempt {attempt + 1}. Retrying in 1s…")
+                    await asyncio.sleep(1)
+                    continue
+                else:
+                    print(f"Model {model_name} failed: {error_msg}. Trying fallback model if available…")
+                    break
+
+    raise RuntimeError(f"All Gemini models in fallback chain failed. Last error: {str(last_error)}")
+
