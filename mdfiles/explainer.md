@@ -54,9 +54,11 @@ Navigate to `http://localhost:3000`
 Phase 1, 2, and 3 Core Engine Refactoring Complete! Ready for Phase 4 (AI Forensic Integration & UI Dashboard Updates).
 
 ## Completed Changes:
+- (2026-09-24 20:05) **GitHub Rate Limit Handling & Frontend Alert Banner:** Added optional `GITHUB_TOKEN` support to `main.py` (increasing limit to 5,000 req/hr). Implemented explicit HTTP 429 rate limit exception handling in FastAPI and created an interactive error notice card in `page.tsx` to display clear rate-limit feedback instead of a perpetual loading spinner.
 - (2026-09-24 19:08) **Non-Blocking Gemini Execution & Flash-Lite Optimization:** Wrapped synchronous `client.models.generate_content` in `asyncio.to_thread()` in `ai_engine.py` to prevent event-loop freezing. Defaulted primary model to `gemini-3.5-flash-lite` for near-instant responses with 0 capacity delays while maintaining automatic failover.
 - (2026-09-24 18:45) **Configurable Gemini Model & Multi-Tier Fallback Chain Implemented:** Configured `GEMINI_MODEL` environment variable in `ai_engine.py` (default: `gemini-3.5-flash-lite`) with an automated failover sequence to `gemini-3.5-flash` on 503 capacity overload or 404 deprecation errors. Empirically verified automatic recovery during server demand spikes.
 - (2026-09-24 18:36) **UI Copy Updated for Gemini Flash:** Replaced misleading reference to 'GPT-4o' in `frontend/src/app/page.tsx` line 519 with 'Google Gemini Flash' to align UI copy with backend engine.
+- (2026-09-23 10:15) **Engine Calibration & False Positive Mitigation:** Implemented non-linear sigmoid deviation scaling, partial Jaccard architectural distance, and multi-tier AI Author Profiling (`Consistent AI Author` vs `Sudden AI Introduction`).
 - (2026-09-22 23:10) **Architecture Risk Matrix Added:** Added a concise "Architecture Vulnerabilities, Gotchas & Known Risk Matrix" section to `explainer.md` capturing SDK deprecations (`google.generativeai` vs `google-genai`), global pip leaks vs venv isolation, model name shifts, JS/TS static parsing limits, zip bomb limits, GitHub unauthenticated rate limits, session disk volatility, wildcard CORS risks, and secret leakage mitigations.
 - (2026-09-22 21:40) **Migrated AI Engine to Google Gemini Flash:** Completely replaced OpenAI (`gpt-4o`) with `google-generativeai` (`gemini-1.5-flash`). Uses `response_mime_type="application/json"` for strict JSON schema enforcement. Falls back gracefully to a highly realistic mock report on quota exhaustion or missing key. Updated `requirements.txt` and `.env.example`. The Gemini free tier provides 15 RPM and 1M TPM at no cost — resolving OpenAI's exhausted-credit problem permanently.
 - (2026-09-22 21:30) **Session & File Cleanup on New Investigation:** Updated `handleNewInvestigation` in `frontend/src/app/page.tsx` to issue a server-side `DELETE /api/session/{session_id}` request to wipe session files from disk, reset all input fields (`githubLink`, `repoFiles`, `submissionFile`), and force recreation of the file input DOM components using a dynamic key (`resetKey`).
@@ -95,8 +97,8 @@ Phase 1, 2, and 3 Core Engine Refactoring Complete! Ready for Phase 4 (AI Forens
 
 ---
 
-## Current Focus:
-- (2026-09-23 10:15) **Engine Calibration & False Positive Mitigation:** Implemented non-linear sigmoid deviation scaling, partial Jaccard architectural distance, and multi-tier AI Author Profiling (`Consistent AI Author` vs `Sudden AI Introduction`).
+## Skipped for Now:
+- (2026-09-24) **ZIP Extraction Protection & Zip Bomb Prevention:** Postponed 50MB archive size limits and zip bomb entry count validation in `main.py`.
 
 ## Next Pending Work:
 - Cohort normalization: compare a student's CodeDNA against a class/course baseline, not just their own history.
@@ -113,7 +115,7 @@ Phase 1, 2, and 3 Core Engine Refactoring Complete! Ready for Phase 4 (AI Forens
 | **Global Python Environment Leak** | `pip install` run without activating `venv` installs packages globally. | Always use `.\venv\Scripts\python.exe -m pip install -r requirements.txt`. |
 | **JS/TS Static Metric Limits** | Python has deep AST parsing; JS/TS uses regex heuristics which miss complex syntax. | Integrate Tree-Sitter or TypeScript AST CLI parser for JS/TS files. |
 | **Unbounded ZIP Extraction Risk** | Uploading massive `.zip` files can exhaust disk space or trigger zip bombs. | Add 50MB file size limit and max file count checks during zip extraction in `main.py`. |
-| **GitHub Rate Limiting** | GitHub discovery endpoint makes unauthenticated calls (60 requests/hr max limit). | Support optional `GITHUB_TOKEN` header to increase limit to 5,000 requests/hr. |
+| **GitHub Rate Limiting** | Unauthenticated requests are capped at 60 req/hr, freezing UI on limits. | Supported `GITHUB_TOKEN` in `main.py` (5,000 req/hr) and added frontend HTTP 429 error alert card. |
 | **Session Volatility (No DB)** | `tmp_sessions/` lives on local disk; server restarts wipe active investigation state. | Add periodic disk cleanup job or use Redis/S3 for production multi-node scaling. |
 | **Wildcard CORS Policy** | `main.py` uses `allow_origins=["*"]`, exposing API to any frontend. | Restrict CORS allowed origins to `http://localhost:3000` in production. |
 | **Secret Leakage Risk** | ACCIDENTAL commit of `GEMINI_API_KEY` or `OPENAI_API_KEY` to public Git repos. | Keep `.env` strictly in `.gitignore`, use `.env.example` templates, and run `check-ignore` audits. |

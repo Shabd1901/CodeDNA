@@ -74,39 +74,54 @@ async def fetch_github_repos(session_id: str = Form(...), username: str = Form(.
         
     repos_dir = os.path.join(session_path, "repositories")
     
-    async with httpx.AsyncClient() as client:
-        # Fetch user's public repositories
-        # Limited to 10 for MVP speed, sort by pushed
+    github_token = (os.getenv("GITHUB_TOKEN") or "").strip()
+    headers = {"User-Agent": "CodeDNA-Forensic-App"}
+    if github_token:
+        headers["Authorization"] = f"Bearer {github_token}"
+    
+    async with httpx.AsyncClient(headers=headers, timeout=15.0) as client:
         url = f"https://api.github.com/users/{username}/repos?sort=pushed&per_page=5"
-        response = await client.get(url)
+        try:
+            response = await client.get(url)
+        except httpx.RequestError as exc:
+            raise HTTPException(status_code=502, detail=f"Network error connecting to GitHub: {str(exc)}")
         
-        if response.status_code != 200:
-            raise HTTPException(status_code=400, detail=f"Failed to fetch user {username} from GitHub")
+        if response.status_code in (403, 429) or "rate limit" in response.text.lower():
+            raise HTTPException(
+                status_code=429,
+                detail="GitHub API rate limit exceeded (60 requests/hr limit for unauthenticated users). Add a GITHUB_TOKEN to backend/.env to increase limit to 5,000 requests/hr, or upload reference ZIPs manually."
+            )
+        elif response.status_code == 404:
+            raise HTTPException(status_code=404, detail=f"GitHub user '{username}' was not found.")
+        elif response.status_code != 200:
+            raise HTTPException(status_code=400, detail=f"Failed to fetch repositories for '{username}' (HTTP {response.status_code}).")
             
         repos = response.json()
+        if not isinstance(repos, list) or len(repos) == 0:
+            raise HTTPException(status_code=404, detail=f"No public repositories found for GitHub user '{username}'.")
+
         downloaded = []
-        
-        # Download the zip archive for each repo
         for repo in repos:
             repo_name = repo["name"]
-            branch = repo["default_branch"]
+            branch = repo.get("default_branch", "main")
             zip_url = f"https://github.com/{username}/{repo_name}/archive/refs/heads/{branch}.zip"
             
-            # Use streaming to download
-            zip_response = await client.get(zip_url, follow_redirects=True)
-            if zip_response.status_code == 200:
-                zip_path = os.path.join(repos_dir, f"{repo_name}.zip")
-                with open(zip_path, "wb") as f:
-                    f.write(zip_response.content)
-                
-                # Extract
-                extract_path = os.path.join(repos_dir, repo_name)
-                try:
-                    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                        zip_ref.extractall(extract_path)
-                    downloaded.append(repo_name)
-                except zipfile.BadZipFile:
-                    pass # Skip invalid zips
+            try:
+                zip_response = await client.get(zip_url, follow_redirects=True)
+                if zip_response.status_code == 200:
+                    zip_path = os.path.join(repos_dir, f"{repo_name}.zip")
+                    with open(zip_path, "wb") as f:
+                        f.write(zip_response.content)
+                    
+                    extract_path = os.path.join(repos_dir, repo_name)
+                    try:
+                        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                            zip_ref.extractall(extract_path)
+                        downloaded.append(repo_name)
+                    except zipfile.BadZipFile:
+                        pass
+            except httpx.RequestError:
+                pass
                     
     return {"status": "success", "fetched": downloaded}
 

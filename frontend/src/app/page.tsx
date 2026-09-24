@@ -19,6 +19,7 @@ export default function Home() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiMode, setAiMode] = useState<"openai" | "gemini" | null>(null);
   const [resetKey, setResetKey] = useState(0);
+  const [errorNotice, setErrorNotice] = useState<{ title: string; detail: string; isRateLimit?: boolean } | null>(null);
 
   // Progress tracking
   const [analysisStep, setAnalysisStep] = useState(0);
@@ -44,6 +45,7 @@ export default function Home() {
     setReport(null);
     setSessionId(null);
     setAiMode(null);
+    setErrorNotice(null);
     setResetKey((prev) => prev + 1);
     setAppState("idle");
   };
@@ -54,12 +56,16 @@ export default function Home() {
     setAppState("analyzing");
     setReport(null);
     setAiMode(null);
+    setErrorNotice(null);
     setAnalysisStep(0);
     
     try {
       // Step 0 — Start Session
       setAnalysisStep(0);
       const sessionRes = await fetch("http://localhost:8000/api/session/start", { method: "POST" });
+      if (!sessionRes.ok) {
+        throw { title: "Session Error", detail: "Failed to initialize server investigation session." };
+      }
       const sessionData = await sessionRes.json();
       const sessionId = sessionData.session_id as string;
       if (!sessionId) throw new Error("No session_id returned");
@@ -80,10 +86,19 @@ export default function Home() {
       
       if (targetUsername) {
         formData.append("username", targetUsername);
-        await fetch("http://localhost:8000/api/repositories/github", {
+        const ghRes = await fetch("http://localhost:8000/api/repositories/github", {
           method: "POST",
           body: formData
         });
+        if (!ghRes.ok) {
+          const errData = await ghRes.json().catch(() => ({ detail: "Failed to fetch GitHub repositories." }));
+          const isRateLimit = ghRes.status === 429 || (errData.detail && errData.detail.toLowerCase().includes("rate limit"));
+          throw {
+            title: isRateLimit ? "GitHub API Rate Limit Reached" : "GitHub Fetch Failed",
+            detail: errData.detail || "Unable to download repositories from GitHub.",
+            isRateLimit
+          };
+        }
       }
       
       if (repoFiles && repoFiles.length > 0) {
@@ -91,10 +106,14 @@ export default function Home() {
             const repoData = new FormData();
             repoData.append("session_id", sessionId);
             repoData.append("file", repoFiles[i]);
-            await fetch("http://localhost:8000/api/repositories/upload", {
+            const upRes = await fetch("http://localhost:8000/api/repositories/upload", {
                 method: "POST",
                 body: repoData
             });
+            if (!upRes.ok) {
+              const errData = await upRes.json().catch(() => ({ detail: "Upload repository failed." }));
+              throw { title: "Baseline Upload Error", detail: errData.detail || `Failed to upload ZIP ${repoFiles[i].name}.` };
+            }
         }
       }
 
@@ -103,10 +122,14 @@ export default function Home() {
       const subData = new FormData();
       subData.append("session_id", sessionId);
       subData.append("file", submissionFile);
-      await fetch("http://localhost:8000/api/analyze/submission", {
+      const subRes = await fetch("http://localhost:8000/api/analyze/submission", {
         method: "POST",
         body: subData
       });
+      if (!subRes.ok) {
+        const errData = await subRes.json().catch(() => ({ detail: "Submission upload failed." }));
+        throw { title: "Submission Upload Error", detail: errData.detail || "Failed to upload submission archive." };
+      }
 
       // Step 3 — Extracting CodeDNA (just before the heaviest call)
       setAnalysisStep(3);
@@ -121,17 +144,28 @@ export default function Home() {
         body: compareData
       });
       
-      if (!res.ok) throw new Error("Compare failed");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ detail: "Compare failed." }));
+        throw { title: "CodeDNA Comparison Error", detail: errData.detail || "Static metric comparison failed." };
+      }
       const data = await res.json();
       setReport(data);
       setAppState("results");
       
-    } catch (error) {
-      console.error(error);
-      alert("Analysis failed. Ensure backend is running at :8000");
+    } catch (error: any) {
+      console.error("Analysis execution error:", error);
       setAppState("idle");
       setSessionId(null);
       setAnalysisStep(0);
+      if (error && error.title && error.detail) {
+        setErrorNotice({ title: error.title, detail: error.detail, isRateLimit: error.isRateLimit });
+      } else {
+        setErrorNotice({
+          title: "Analysis Failure",
+          detail: error?.message || "Analysis failed. Please check that the backend is running at http://localhost:8000.",
+          isRateLimit: false
+        });
+      }
     }
   };
 
@@ -171,6 +205,41 @@ export default function Home() {
           <p className="text-zinc-500 text-sm font-medium mt-1">Academic Integrity & Forensic Analysis System</p>
         </div>
       </header>
+
+      {errorNotice && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`mb-8 p-5 rounded-xl border flex items-start gap-4 ${
+            errorNotice.isRateLimit 
+              ? "bg-amber-50 border-amber-300 text-amber-900 shadow-sm"
+              : "bg-red-50 border-red-300 text-red-900 shadow-sm"
+          }`}
+        >
+          <div className={`p-2 rounded-lg shrink-0 ${errorNotice.isRateLimit ? "bg-amber-100 text-amber-800" : "bg-red-100 text-red-800"}`}>
+            <ShieldAlert className="w-6 h-6" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-bold text-base flex items-center justify-between">
+              <span>{errorNotice.title}</span>
+              {errorNotice.isRateLimit && (
+                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-900">
+                  HTTP 429 Rate Limited
+                </span>
+              )}
+            </h3>
+            <p className="text-xs mt-1.5 leading-relaxed opacity-90">
+              {errorNotice.detail}
+            </p>
+          </div>
+          <button 
+            onClick={() => setErrorNotice(null)}
+            className="text-xs font-semibold px-3 py-1.5 rounded-md bg-white/80 hover:bg-white border text-zinc-700 transition-colors shrink-0 shadow-sm"
+          >
+            Dismiss
+          </button>
+        </motion.div>
+      )}
 
       <AnimatePresence mode="wait">
         {appState === "idle" && (
