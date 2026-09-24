@@ -100,6 +100,7 @@ Phase 1, 2, and 3 Core Engine Refactoring Complete! Ready for Phase 4 (AI Forens
 ## Skipped for Now:
 - (2026-09-24) **ZIP Extraction Protection & Zip Bomb Prevention:** Postponed 50MB archive size limits and zip bomb entry count validation in `main.py`.
 
+
 ## Next Pending Work:
 - Cohort normalization: compare a student's CodeDNA against a class/course baseline, not just their own history.
 
