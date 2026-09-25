@@ -300,6 +300,10 @@ This sequence prioritizes low-risk, high-reward items that build confidence and 
 
 Based on the audit reports and the primary technical goals for competition readiness, the following phased implementation plan will be executed.
 
+### Phase 0: Workspace Restructuring & Cleanup
+* **Repository Organization:** Restructure the project folder (e.g., consolidating all markdown and planning docs into a unified `docs/` folder) to make it highly scannable and logically organized for AI agents and evaluators.
+* **Redundancy Removal:** Clean up temporary files, legacy drafts, and disconnected documentation that do not contribute to the working functionalities.
+
 ### Phase 1: Foundation & Documentation (Quick Wins)
 * **API Documentation:** Expose FastAPI OpenAPI (`/docs`) to demonstrate production readiness.
 * **Architecture Diagrams:** Generate C4 model diagrams and data flow documentation to satisfy evaluator expectations.
