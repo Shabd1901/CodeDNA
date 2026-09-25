@@ -298,26 +298,69 @@ This sequence prioritizes low-risk, high-reward items that build confidence and 
 
 ## Max-Out Implementation Roadmap (Phased)
 
-Based on the audit reports and the primary technical goals for competition readiness, the following phased implementation plan will be executed.
+Based on the audit reports, competition rubric (Innovation 20pts, AI Implementation 30pts, Functionality 25pts, UI/UX 15pts, Documentation 10pts), and the primary technical goals in `projectvalimplementation.md`, the following phased implementation plan is being executed.
+
+---
 
 ### Phase 0: Workspace Restructuring & Cleanup (✅ Completed)
-* [x] **Repository Organization:** Restructure the project folder (e.g., consolidating all markdown and planning docs into a unified `docs/` folder) to make it highly scannable and logically organized for AI agents and evaluators.
-* [x] **Redundancy Removal:** Clean up temporary files, legacy drafts, and disconnected documentation that do not contribute to the working functionalities.
+* [x] **Repository Organization:** Restructure the project folder (consolidating all markdown and planning docs into a unified `docs/` folder) to make it scannable and logically organized for AI agents and evaluators.
+* [x] **Redundancy Removal:** Clean up temporary files, legacy drafts, and disconnected documentation that do not contribute to working functionalities.
 
 ### Phase 1: Foundation & Documentation (✅ Completed)
-* [x] **API Documentation:** Expose FastAPI OpenAPI (`/docs`) to demonstrate production readiness.
-* [x] **Architecture Diagrams:** Generate C4 model diagrams and data flow documentation to satisfy evaluator expectations.
+* [x] **API Documentation:** Expose FastAPI OpenAPI (`/docs`) with structured tags, schemas, and endpoint summaries to demonstrate production readiness.
+* [x] **Architecture Diagrams:** Generate C4 model diagrams and data flow documentation (`docs/architecture.md`) to satisfy evaluator expectations.
 
-### Phase 2: Evidence Visualization & UX Polish
-* [ ] **Evidence Dashboard:** Implement visual evidence graphs (radar charts, metric contributions) to make AI reasoning interpretable.
-* [ ] **Code Similarity Diffs:** Show side-by-side AST comparisons highlighting structural differences in flagged regions.
-* [ ] **Accessibility:** Ensure UI meets WCAG 2.1 AA standards (keyboard navigation, ARIA, contrast).
+---
 
-### Phase 3: Deep AI/ML Innovation (Core Competition Value)
-* [ ] **Temporal Authorship Modeling:** Implement time-series analysis and change-point detection on historical commits to distinguish natural skill improvement from sudden anomalies.
-* [ ] **Learned CodeDNA Embeddings:** Develop a Siamese neural network to learn similarity embeddings, transitioning from pure heuristics to a hybrid deterministic/ML architecture.
-* [ ] **Calibrated Confidence Scoring:** Apply Platt scaling/isotonic regression to map deviation scores to empirical probabilities.
+### Phase 2: Evidence-Centric Forensic Workstation UI/UX (🚀 In Implementation)
+* [x] **UI Forensic Workstation Architecture:** Redesign the CodeDNA interface as a premium forensic investigation workstation inspired by Linear (information density & hierarchy), Sentry (issue & evidence grouping), GitHub (code diffs & symbol inspection), and SOC incident investigation consoles (case timelines & provenance).
+  - Communicates the full investigation lifecycle: `CASE → BASELINE → COMPARISON → EVIDENCE → INVESTIGATION → AI REASONING → REPORT`.
+* [x] **Persistent Investigation Context:**
+  - Case metadata header with Session ID, Student Baseline status, Submission metrics, and live Reliability / Concern indicators.
+  - Quick action toolbar: New Investigation, Run/Re-run AI Analysis, Export Forensic Dossier, Copy Session ID.
+* [x] **Investigation Pipeline Navigation:**
+  - Dedicated tabs: `Overview`, `Baseline Profile`, `Vector Comparison`, `Traceable Evidence & Code Inspector`, `AI Forensic Reasoning`, `Evaluator Report & VivaGuard`.
+  - Seamless keyboard navigation (numeric shortcuts `1` through `6` and arrow keys) for high-efficiency audit workflow.
+* [x] **Visual Evidence Graphs (SVG/Radar):**
+  - High-precision 8-vector Radar Deviation Chart (Structural, Naming, Formatting, Complexity, Architecture, Dependencies, Abstraction, Error Handling) with baseline norm overlay.
+  - Metric contribution and anomaly ranking charts displaying mathematical deviation deltas.
+* [x] **Side-by-Side Baseline vs Submission Comparator:**
+  - Naming conventions breakdown (camelCase vs snake_case preference shifts).
+  - Complexity distribution (Mean & P90 shifts with visual delta badges).
+  - Dependency analysis (highlighting novel external packages).
+  - Architecture fingerprint comparison (framework & paradigm changes).
+* [x] **Traceable Evidence Hierarchy & Code Inspector:**
+  - End-to-end provenance: `Overall Finding → Metric Contribution → Anomaly → File → Function → Line → Supporting Evidence → Explanation`.
+  - Interactive Code Inspector previewing exact suspicious code regions with line numbers and rationale.
+* [x] **AI Forensic Reasoning & VivaGuard Panel:**
+  - Executive summary and structured findings with Severity, Concrete Evidence, Why Deviation Matters, False-Positive Considerations, and Contradictory Evidence.
+  - Interactive VivaGuard Interview Strategy with copyable probing questions.
+* [x] **Accessibility & Information Polish:**
+  - High WCAG-compliant contrast ratios, accessible ARIA attributes, restrained typography, and subtle purposeful micro-interactions with zero decorative clutter.
 
-### Phase 4: Robustness & Cross-Language Parity
-* [ ] **Cross-Language Normalization:** Map AST concepts across programming languages (Python, JS/TS) for agnostic feature vectors.
-* [ ] **Adversarial Robustness Testing:** Create test suites targeting evasion techniques (benign comment injection, dead code, renaming) and measure detection rates.
+---
+
+### Phase 3: Deep AI/ML Innovation & Learned Representations
+* [ ] **Siamese CodeDNA Neural Embeddings:** Develop a contrastive Siamese network trained on AST node token sequences and structural metrics to produce learned author style embeddings alongside deterministic features.
+* [ ] **Hybrid Forensic Scoring Engine:** Integrate deterministic heuristic vectors with learned embedding distances into a calibrated composite anomaly score.
+* [ ] **Statistical Calibration (Platt / Isotonic):** Map raw deviation scores to empirical probabilities with confidence intervals, separating "deviation score" from "calibrated probability".
+
+---
+
+### Phase 4: Temporal Authorship Modeling & Change-Point Detection
+* [ ] **Commit Timeline Extraction:** Parse historical git commit history to construct a temporal sequence of CodeDNA snapshots over time.
+* [ ] **Change-Point Detection (CUSUM / BOCPD):** Distinguish gradual natural skill progression from abrupt architectural or stylistic discontinuities.
+* [ ] **Temporal Evolution Visualizer:** Plot author metric trajectory over chronological commits, showing where the current submission fits on the historical trend line.
+
+---
+
+### Phase 5: Cross-Language AST Parity & AST Normalization
+* [ ] **Language-Agnostic AST Representation:** Create normalized AST schema for Python, JavaScript, TypeScript, and Java (functions, classes, control flow, error handling, imports).
+* [ ] **Unified Lexical/Syntactic Feature Extractor:** Replace regex heuristics in JS/TS with AST-based tree-sitter or Babel/Esprima parsers for uniform feature depth across languages.
+
+---
+
+### Phase 6: Empirical Benchmarking, Adversarial Testing & Hardening
+* [ ] **Automated Benchmark Suite:** Evaluate CodeDNA against controlled datasets covering 14 standard academic integrity scenarios (Clean submission, Legitimate skill growth, Framework migration, AI substitution, Plagiarism, Evasion attacks).
+* [ ] **Adversarial Robustness Testing:** Measure detection resilience against deliberate evasion techniques (variable renaming, comment flooding, dead code injection, function reordering).
+* [ ] **Empirical Validation Metrics:** Generate ROC/PR curves, compute Precision, Recall, F1, and False-Positive Rates to provide defensible empirical proof of platform efficacy.
