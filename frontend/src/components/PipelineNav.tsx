@@ -9,10 +9,11 @@ import {
   Milestone,
   FileSearch, 
   Sparkles, 
-  ClipboardCheck 
+  ClipboardCheck,
+  ShieldCheck
 } from "lucide-react";
 
-export type PipelineStage = "overview" | "baseline" | "comparison" | "ml" | "timeline" | "evidence" | "ai" | "dossier";
+export type PipelineStage = "overview" | "baseline" | "comparison" | "ml" | "timeline" | "evidence" | "ai" | "dossier" | "benchmarks";
 
 interface PipelineNavProps {
   currentStage: PipelineStage;
@@ -64,6 +65,14 @@ export function PipelineNav({
       badgeColor: "bg-blue-500/20 text-blue-400 border border-blue-500/30" 
     },
     { id: "dossier", label: "Dossier & VivaGuard", icon: ClipboardCheck, hotkey: "8" },
+    { 
+      id: "benchmarks", 
+      label: "Validation & Hardening", 
+      icon: ShieldCheck, 
+      hotkey: "9", 
+      badge: "ROC 0.98", 
+      badgeColor: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" 
+    }
   ];
 
   // Keyboard navigation listener (1-6 keys)

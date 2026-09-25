@@ -29,6 +29,7 @@ import { ForensicDossierView } from "@/components/ForensicDossierView";
 import { BaselineProfileView } from "@/components/BaselineProfileView";
 import { MLIntelligenceView } from "@/components/MLIntelligenceView";
 import { TemporalEvolutionView } from "@/components/TemporalEvolutionView";
+import { BenchmarkSuiteView } from "@/components/BenchmarkSuiteView";
 
 export default function Home() {
   const [appState, setAppState] = useState<"idle" | "analyzing" | "results">("idle");
@@ -1093,6 +1094,11 @@ export default function Home() {
                   sessionId={sessionId}
                   report={report}
                 />
+              )}
+
+              {/* STAGE: VALIDATION & ADVERSARIAL BENCHMARKING */}
+              {pipelineStage === "benchmarks" && (
+                <BenchmarkSuiteView />
               )}
             </div>
           </motion.div>

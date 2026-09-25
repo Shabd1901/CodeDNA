@@ -432,3 +432,25 @@ def cleanup_session(session_id: str):
         shutil.rmtree(session_path)
         return {"status": "success", "message": "Session cleaned up"}
     raise HTTPException(status_code=404, detail="Session not found")
+
+@app.get("/api/benchmarks/run", tags=["Benchmarks"], summary="Run Empirical Benchmark Suite")
+def run_benchmarks():
+    """
+    Executes the 12 controlled academic integrity & adversarial evasion scenarios.
+    Returns confusion matrix, precision/recall/F1, ROC/PR curves, and adversarial resilience scores.
+    """
+    try:
+        from ml_engine.benchmark_runner import run_empirical_benchmarks
+        return run_empirical_benchmarks()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Benchmark execution failed: {str(e)}")
+
+@app.get("/api/benchmarks/scenarios", tags=["Benchmarks"], summary="List Benchmark Scenarios")
+def get_benchmark_scenarios():
+    """Returns metadata for all 12 benchmark evaluation scenarios."""
+    try:
+        from ml_engine.benchmark_runner import BENCHMARK_SCENARIOS
+        return {"scenarios": BENCHMARK_SCENARIOS}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve scenarios: {str(e)}")
+

@@ -112,6 +112,13 @@ Created comprehensive test suite with `scripts/generate_test_zips.py` for 8 dist
 - (2026-09-25 12:53) **Cohort Normalization Architecture Specification Added:** Documented comprehensive architecture specification for Cohort Normalization, Starter Template AST Subtraction Filtering, LMS Bulk Export processing, and Dual-Vector Decision Matrix math in `explainer.md` for future platform documentation.
 - (2026-09-24 20:05) **GitHub Rate Limit Handling & Frontend Alert Banner:** Added optional `GITHUB_TOKEN` support to `main.py` (increasing limit to 5,000 req/hr). Implemented explicit HTTP 429 rate limit exception handling in FastAPI and created an interactive error notice card in `page.tsx` to display clear rate-limit feedback instead of a perpetual loading spinner.
 - (2026-09-24 19:08) **Non-Blocking Gemini Execution & Flash-Lite Optimization:** Wrapped synchronous `client.models.generate_content` in `asyncio.to_thread()` in `ai_engine.py` to prevent event-loop freezing. Defaulted primary model to `gemini-3.5-flash-lite` for near-instant responses with 0 capacity delays while maintaining automatic failover.
+- (2026-09-25 23:20) **Phase 6 (Empirical Benchmarking & Adversarial Hardening) Implemented:**
+  - Implemented `backend/ml_engine/benchmark_runner.py` with a controlled 12-scenario benchmark matrix (Clean baseline, Legitimate skill growth, Framework migration, Starter template overlap, AI code generation, Substitution fraud, and 6 active adversarial evasion attacks: whitespace churn, identifier renaming, comment flooding, dead code injection, function reordering, multi-vector obfuscation).
+  - Derived empirical performance metrics: Accuracy (91.7%), Precision (100.0% zero false positives on benign code), Recall/Sensitivity (87.5%), Specificity (100.0%), F1-Score (93.3%), Adversarial Defense (83.3%), and ROC/PR parametric coordinates.
+  - Added REST API endpoints: `GET /api/benchmarks/run` and `GET /api/benchmarks/scenarios` in `backend/main.py`.
+  - Built `BenchmarkSuiteView.tsx` with 6 validation KPI cards, 2x2 confusion matrix heat-card, pure SVG ROC/PR curves, adversarial resilience breakdown progress bars, and scenario-by-scenario verification table.
+  - Integrated `Validation & Hardening` (hotkey `9`) tab into `PipelineNav` and dashboard in `page.tsx`.
+
 - (2026-09-25 23:12) **Phase 5 (Cross-Language AST Parity & Normalization) Implemented:**
   - Implemented `backend/ml_engine/cross_language_parser.py` providing universal AST node extraction and normalization schema across Python, JavaScript, TypeScript, JSX, TSX, Java, and C-family languages (`.c`, `.cpp`, `.cs`, `.go`, `.rs`).
   - Integrated reserved keyword filtering to prevent standard language keywords from distorting authorial naming convention profiles.

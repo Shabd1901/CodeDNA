@@ -13,6 +13,7 @@ from .cross_language_parser import (
     parse_java,
     compute_cross_language_parity
 )
+from .benchmark_runner import run_empirical_benchmarks, BENCHMARK_SCENARIOS
 
 __all__ = [
     "extract_dense_feature_vector",
@@ -28,6 +29,9 @@ __all__ = [
     "parse_universal_file",
     "parse_javascript_typescript",
     "parse_java",
-    "compute_cross_language_parity"
+    "compute_cross_language_parity",
+    "run_empirical_benchmarks",
+    "BENCHMARK_SCENARIOS"
 ]
+
 
