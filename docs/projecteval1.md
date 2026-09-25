@@ -307,8 +307,19 @@ Based on the audit reports, competition rubric (Innovation 20pts, AI Implementat
 * [x] **Redundancy Removal:** Clean up temporary files, legacy drafts, and disconnected documentation that do not contribute to working functionalities.
 
 ### Phase 1: Foundation & Documentation (✅ Completed)
-* [x] **API Documentation:** Expose FastAPI OpenAPI (`/docs`) with structured tags, schemas, and endpoint summaries to demonstrate production readiness.
-* [x] **Architecture Diagrams:** Generate C4 model diagrams and data flow documentation (`docs/architecture.md`) to satisfy evaluator expectations.
+* [x] **FastAPI OpenAPI Production Specification:**
+  - Configured OpenAPI 3.1 schema metadata, structured operation tags (`Session`, `Ingestion`, `Analysis`, `Health`), and endpoint summaries in `backend/main.py`.
+  - Documented request payloads, multi-part form schemas, and error response models (HTTP 400 for empty extractions, HTTP 404 for missing sessions, HTTP 429 for GitHub rate limits).
+  - Exposed interactive Swagger UI (`/docs`) and ReDoc (`/redoc`) to demonstrate production-grade API readiness for external evaluators.
+* [x] **C4 Model Architecture & Data Flow Documentation (`docs/architecture.md`):**
+  - **C4 Level 1 (System Context):** Mapped external actors (Student, Evaluator, GitHub API, Google Gemini Flash API) interacting with CodeDNA.
+  - **C4 Level 2 (Container):** Documented Next.js 16 frontend, FastAPI Python backend, temporary session storage, and ML engine boundaries.
+  - **C4 Level 3 (Component):** Visualized internal modules (`AST Analyzer`, `ML Feature Extractor`, `Siamese Projection Head`, `Temporal Analyzer`, `AI Reasoning Engine`).
+  - **Dynamic Data-Flow Sequence:** Modeled end-to-end trace from baseline ingestion to deterministic comparison, ML calibration, and Gemini synthesis.
+* [x] **Session Security & Disk Isolation Guardrails:**
+  - Implemented session-scoped isolation (`SESSION_DIR/<uuid>`) ensuring zero cross-student data leakage.
+  - Added zip extraction security filters blocking path traversal (`../`) and malformed zip archives.
+  - Configured configurable CORS middleware defaulting to local origin boundaries with `ALLOWED_ORIGINS` override.
 
 ---
 
@@ -341,17 +352,50 @@ Based on the audit reports, competition rubric (Innovation 20pts, AI Implementat
 ---
 
 ### Phase 3: Deep AI/ML Innovation & Learned Representations (✅ Completed)
-* [x] **Siamese CodeDNA Neural Embeddings:** Developed a contrastive Siamese metric projection network (`backend/ml_engine/siamese_model.py`) mapping 48-dimensional dense continuous AST/lexical vectors into a 24-dimensional normalized latent authorship space to calculate cosine similarity and Euclidean hypersphere distance.
-* [x] **Hybrid Forensic Scoring Engine:** Created an ensemble engine (`backend/ml_engine/hybrid_scorer.py`) combining deterministic AST heuristics (40%), Siamese latent embedding divergence (35%), and structural outlier concentration (25%) into a unified forensic composite score.
-* [x] **Statistical Calibration (Platt Scaling):** Implemented logistic sigmoid calibration (`backend/ml_engine/calibrator.py`) mapping raw deviations to empirical probabilities $P(\text{Discontinuity} \mid \text{DNA})$ with parametric 95% confidence intervals, separating raw deviation scores from calibrated probabilities.
-* [x] **ML Intelligence Frontend Workstation Integration:** Added dedicated `MLIntelligenceView.tsx` with calibrated probability gauges, 95% CI error bars, Siamese latent space meters, and top latent feature gradient attributions.
+* [x] **1. Dense 48-Dimensional Feature Vector Extraction (`backend/ml_engine/feature_extractor.py`):**
+  - **AST Structural Topology (12 dims):** Normalized node frequencies for FunctionDef, ClassDef, ListComp, DictComp, Lambda, With, Try, Call, Assign, Type-Annotated AnnAssign, Return, and Import densities.
+  - **Lexical Identifier Naming (6 dims):** Distribution ratios for snake_case, camelCase, PascalCase, UPPER_CASE, single_letter, and normalized average identifier lengths.
+  - **Formatting & Indentation Geometry (6 dims):** Space-to-tab ratios, 2-space vs 4-space preferences, quote style distributions, blank line density, and trailing whitespace frequencies.
+  - **Cyclomatic Complexity & Flow (8 dims):** Mean, P90, and Max complexity, branch density, maximum nesting depth, loop density, early return ratio, and comprehension-to-loop ratios.
+  - **Abstraction & OOP Tendencies (6 dims):** Class-to-function ratios, methods per class, type-hint coverage, docstring density, static method frequencies, and inheritance hierarchy depths.
+  - **Error Handling & Safety Patterns (5 dims):** Exception handling density, bare except ratio, specific exception ratio, raise frequency, and custom exception definitions.
+  - **Dependency & Architecture Entropy (5 dims):** Total unique imports, stdlib vs third-party dependency ratios, and detected architectural paradigm flags (OOP vs Functional).
+* [x] **2. Siamese Metric Learning & Latent Authorship Space (`backend/ml_engine/siamese_model.py`):**
+  - **Projection Network Head:** Implemented a contrastive feedforward neural projection head ($48 \to 32 \to 24$) with calibrated orthogonal weights projecting vectors onto a 24-dimensional unit hypersphere $\mathcal{S}^{23}$ using L2 normalization.
+  - **Metric Distance Formulation:** Computed Cosine similarity ($S_C \in [-1, 1]$), Euclidean distance on the unit sphere ($d_E = \sqrt{2 - 2S_C} \in [0, 2]$), and contrastive embedding similarity percentages.
+  - **Latent Feature Attribution:** Developed gradient-weighted attribution ranking identifying the top 5 raw input dimensions driving latent divergence between baseline and submission vectors.
+* [x] **3. Statistical Platt Scaling & Empirical Confidence Intervals (`backend/ml_engine/calibrator.py`):**
+  - **Logistic Sigmoid Calibration:** Mapped composite deviation scores to true empirical probabilities: $P(\text{Discontinuity} \mid \text{DNA}) = \sigma(0.082 \cdot s - 4.10)$ with neutral decision boundary at $s=50$.
+  - **Parametric 95% Confidence Intervals:** Formulated dynamic confidence error bounds $[\text{CI}_{\text{lower}}, \text{CI}_{\text{upper}}]$ conditioned on effective sample size $N_{\text{eff}} = f(N_{\text{usable\_files}}, \text{Reliability})$.
+  - **Rigorous Distinction:** Explicitly separated heuristic "deviation scores" from "calibrated probabilities", expected Brier reliability scores, and false-positive risk tiers.
+* [x] **4. Hybrid Forensic Scoring Ensemble (`backend/ml_engine/hybrid_scorer.py`):**
+  - **Ensemble Formula:** Synthesized 40% Deterministic AST heuristics + 35% Siamese latent embedding divergence + 25% Structural file outlier concentration into a unified composite deviation score.
+  - **Pipeline Payload:** Built structured `ml_intelligence` dictionary returned via `/api/analyze/compare` and integrated into Google Gemini Flash forensic prompts.
+* [x] **5. Workstation Frontend Integration (`frontend/src/components/MLIntelligenceView.tsx`):**
+  - Added dedicated `ML & Calibration` pipeline tab featuring live probability gauges, 95% CI error bar visualizations, Siamese hypersphere meters, and gradient feature attribution ranking.
+  - Added high-visibility ML calibrated probability banner on the Overview dashboard.
 
 ---
 
 ### Phase 4: Temporal Authorship Modeling & Change-Point Detection (✅ Completed)
-* [x] **Commit Timeline Extraction:** Developed `backend/ml_engine/temporal_analyzer.py` parsing discrete historical repositories and commit epochs ($t_1, t_2, \ldots, t_k$) to construct chronological developmental sequences of CodeDNA snapshots.
-* [x] **Change-Point Detection (CUSUM):** Implemented two-sided Cumulative Sum (CUSUM) change-point detection with variance drift bounds to distinguish gradual skill progression from abrupt behavioral discontinuities (e.g. sudden complexity jumps or syntax inversions).
-* [x] **Temporal Evolution Visualizer:** Built `TemporalEvolutionView.tsx` with interactive chronological SVG trendlines (Complexity P90, LOC, Snake_case ratio, Type hint coverage), CUSUM status alerts, and milestone trajectory tables; integrated into `PipelineNav.tsx` and `page.tsx`.
+* [x] **1. Chronological Milestone Sequence Extraction (`backend/ml_engine/temporal_analyzer.py`):**
+  - Extracted discrete historical CodeDNA snapshots ($t_1, t_2, \ldots, t_k$) across multi-repository directory hierarchies (`session_path/repositories/<repo>/`) or synthesized baseline distribution epochs.
+  - Tracked developmental metrics across time: Cyclomatic Complexity (Mean & P90), Lines of Code (LOC), Type-Hint / Abstraction Density, and Lexical Naming Style.
+  - Compared historical milestones chronologically against the target submission ($t_{\mathrm{sub}}$) to capture evolutionary trajectories.
+* [x] **2. CUSUM Change-Point Detection & Trajectory Diagnosis (`backend/ml_engine/temporal_analyzer.py`):**
+  - Implemented two-sided Cumulative Sum (CUSUM) change-point detection with variance drift bounds ($k = 0.5\sigma$, $h = 2.2\sigma$) to distinguish:
+    - **Legitimate Skill Progression**: Smooth developmental learning curve within historical variance.
+    - **Abrupt Discontinuity / Outliers**: Sudden step-changes in complexity, naming conventions, or structural habits exceeding $3\sigma$ confidence limits.
+* [x] **3. Backend Engine Pipeline Integration (`backend/analysis.py` & `backend/main.py`):**
+  - Updated `compare_codedna` signature to accept `repos_dir` and `sub_dir`, orchestrating temporal milestone parsing without cross-session disk leakage.
+  - Attached `temporal_intelligence` to the `/api/analyze/compare` response and persisted results to `deterministic_results.json`.
+* [x] **4. Workstation Frontend Integration (`TemporalEvolutionView.tsx`, `PipelineNav.tsx`, `page.tsx`):**
+  - Added `Timeline Evolution` pipeline tab featuring interactive SVG chronological trendlines with metric switches (Complexity P90, LOC, Snake_case ratio, Type hint coverage), CUSUM status alerts, and milestone snapshot progression tables.
+  - Added temporal evolution callout banner in the Overview dashboard.
+* [x] **5. Verification & Audit Documentation:**
+  - Python unit testing validated multi-milestone extraction and CUSUM change-point detection.
+  - Verified Next.js 16 production build via `npm run build` with zero TypeScript errors.
+  - Updated `docs/projecteval1.md` and `docs/explainer.md`.
 
 ---
 

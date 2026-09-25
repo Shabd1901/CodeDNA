@@ -73,6 +73,8 @@ $$\text{Adjusted Anomaly Score} = \text{Personal Deviation} \times (1 - \text{Co
 Phase 0, Phase 1, Phase 2, Phase 3, and Phase 4 (Temporal Authorship Modeling & Change-Point Detection) Complete! Ready for Phase 5 (Cross-Language AST Parity & AST Normalization).
 
 ## Completed Changes:
+- (2026-09-25 23:03) **Phases 1, 3, and 4 Implementation Roadmap Fully Expanded:** Significantly expanded Phase 1 (FastAPI OpenAPI specifications, C4 Architecture models, session isolation) and Phase 3 (Dense 48-dim feature vectorization, Siamese hypersphere projection, Platt logistic calibration, 3-way hybrid scoring ensemble) in `docs/projecteval1.md` with granular mathematical definitions and sub-specifications.
+- (2026-09-25 22:53) **Phase 4 Implementation Roadmap Documentation Synchronized:** Formatted and expanded Phase 4 in `docs/projecteval1.md` with the 5-point detailed specification covering Milestone Extraction, CUSUM Change-Point Detection, Backend Pipeline Integration, Frontend Workstation Integration, and Verification.
 - (2026-09-25 22:45) **Phase 4 Temporal Authorship Modeling & Change-Point Detection Implemented:** Extended CodeDNA beyond static baselines to model chronological author developmental trajectories:
   - Created `backend/ml_engine/temporal_analyzer.py` extracting discrete historical project milestones ($t_1, t_2, \ldots, t_k$) and comparing them with the investigated submission ($t_{\mathrm{sub}}$).
   - Implemented two-sided Cumulative Sum (CUSUM) change-point detection across cyclomatic complexity (P90), code length (LOC), lexical naming conventions (snake_case ratio), and type-hint coverage.
