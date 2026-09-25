@@ -293,3 +293,27 @@ Expected rubric impact: AI Implementation +2 (strengthens statistical rigor)
     - Effort: High | Risk: Medium | Rubric impact: AI Implementation +4, Innovation +2
 
 This sequence prioritizes low-risk, high-reward items that build confidence and foundational quality first, then progresses to higher-effort innovations that will most significantly impact scores while having validated the core system. The early focus on tests, documentation, and basic visualizations creates a stronger foundation for accepting larger technical changes later.
+
+---
+
+## Max-Out Implementation Roadmap (Phased)
+
+Based on the audit reports and the primary technical goals for competition readiness, the following phased implementation plan will be executed.
+
+### Phase 1: Foundation & Documentation (Quick Wins)
+* **API Documentation:** Expose FastAPI OpenAPI (`/docs`) to demonstrate production readiness.
+* **Architecture Diagrams:** Generate C4 model diagrams and data flow documentation to satisfy evaluator expectations.
+
+### Phase 2: Evidence Visualization & UX Polish
+* **Evidence Dashboard:** Implement visual evidence graphs (radar charts, metric contributions) to make AI reasoning interpretable.
+* **Code Similarity Diffs:** Show side-by-side AST comparisons highlighting structural differences in flagged regions.
+* **Accessibility:** Ensure UI meets WCAG 2.1 AA standards (keyboard navigation, ARIA, contrast).
+
+### Phase 3: Deep AI/ML Innovation (Core Competition Value)
+* **Temporal Authorship Modeling:** Implement time-series analysis and change-point detection on historical commits to distinguish natural skill improvement from sudden anomalies.
+* **Learned CodeDNA Embeddings:** Develop a Siamese neural network to learn similarity embeddings, transitioning from pure heuristics to a hybrid deterministic/ML architecture.
+* **Calibrated Confidence Scoring:** Apply Platt scaling/isotonic regression to map deviation scores to empirical probabilities.
+
+### Phase 4: Robustness & Cross-Language Parity
+* **Cross-Language Normalization:** Map AST concepts across programming languages (Python, JS/TS) for agnostic feature vectors.
+* **Adversarial Robustness Testing:** Create test suites targeting evasion techniques (benign comment injection, dead code, renaming) and measure detection rates.
