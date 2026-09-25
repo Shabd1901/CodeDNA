@@ -384,13 +384,22 @@ def analyze_file(filepath: str) -> Dict[str, Any]:
                         for sub_k in py_metrics[k]: metrics[k][sub_k] += py_metrics[k][sub_k]
                     elif isinstance(metrics.get(k), list): metrics[k].extend(py_metrics[k])
                     else: metrics[k] += py_metrics[k]
-            elif ext in ['.js', '.jsx', '.ts', '.tsx']:
-                js_metrics = analyze_js_ts_file(filepath, content, lines)
-                for k in js_metrics:
+            elif ext in ['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs', '.java', '.c', '.cpp', '.cc', '.h', '.hpp', '.cs', '.go', '.rs']:
+                try:
+                    from .ml_engine.cross_language_parser import parse_universal_file
+                except Exception:
+                    from ml_engine.cross_language_parser import parse_universal_file
+                u_metrics = parse_universal_file(filepath, content)
+                for k in u_metrics:
+                    if k in ["lang", "bytes"]:
+                        continue
                     if isinstance(metrics.get(k), dict):
-                        for sub_k in js_metrics[k]: metrics[k][sub_k] += js_metrics[k][sub_k]
-                    elif isinstance(metrics.get(k), list): metrics[k].extend(js_metrics[k])
-                    else: metrics[k] += js_metrics[k]
+                        for sub_k in u_metrics[k]:
+                            metrics[k][sub_k] = metrics[k].get(sub_k, 0) + u_metrics[k][sub_k]
+                    elif isinstance(metrics.get(k), list):
+                        metrics[k].extend(u_metrics[k])
+                    elif k in metrics:
+                        metrics[k] += u_metrics[k]
                 
     except Exception as e:
         print(f"Error analyzing file {filepath}: {e}")
@@ -451,9 +460,8 @@ def build_repository_codedna(repo_dir: str) -> Dict[str, Any]:
                 all_identifier_lengths.extend(m["identifier_lengths"])
                 all_nesting_depths.extend(m["nesting_depths"])
                 
-                if m["lang"] == 'python': all_complexities.extend(m["complexities"])
-                else:
-                    if m["complexities"]: all_complexities.append(sum(m["complexities"]))
+                if m["complexities"]:
+                    all_complexities.extend(m["complexities"])
                         
                 funcs_per_file.append(m["functions"])
                 classes_per_file.append(m["classes"])
@@ -584,6 +592,24 @@ def compare_codedna(baseline_dna: Dict[str, Any], submission_dna: Dict[str, Any]
     deviations["abstraction_deviation"] = dict_dev(baseline_dna.get("abstraction_level", {}), submission_dna.get("abstraction_level", {}))
     deviations["comment_style_deviation"] = dict_dev(baseline_dna.get("comment_style", {}), submission_dna.get("comment_style", {}))
     deviations["error_handling_deviation"] = dict_dev(baseline_dna.get("error_handling_patterns", {}), submission_dna.get("error_handling_patterns", {}))
+
+    # Phase 5: Cross-Language AST Normalization Parity
+    cross_lang_intel = None
+    try:
+        from .ml_engine.cross_language_parser import compute_cross_language_parity
+    except Exception:
+        try:
+            from ml_engine.cross_language_parser import compute_cross_language_parity
+        except Exception:
+            compute_cross_language_parity = None
+
+    if compute_cross_language_parity:
+        cross_lang_intel = compute_cross_language_parity(baseline_dna, submission_dna)
+        if cross_lang_intel.get("is_cross_language"):
+            discount = cross_lang_intel.get("cross_language_penalty_discount", 0.3)
+            # Normalize naming & formatting penalties if author adopted target language idioms
+            deviations["naming_deviation"] = round(deviations["naming_deviation"] * (1.0 - discount), 1)
+            deviations["formatting_deviation"] = round(deviations["formatting_deviation"] * (1.0 - discount * 0.75), 1)
 
     avg_dev = sum(deviations.values()) / len(deviations)
     deviations["overall_behavioral_stylistic_deviation_score"] = max(0.0, 100.0 - avg_dev)
@@ -757,7 +783,8 @@ def compare_codedna(baseline_dna: Dict[str, Any], submission_dna: Dict[str, Any]
         "forensics": deviations,
         "authorship_intelligence": phase4,
         "ml_intelligence": ml_intel,
-        "temporal_intelligence": temporal_intel
+        "temporal_intelligence": temporal_intel,
+        "cross_language_intelligence": cross_lang_intel
     }
 
 

@@ -399,9 +399,30 @@ Based on the audit reports, competition rubric (Innovation 20pts, AI Implementat
 
 ---
 
-### Phase 5: Cross-Language AST Parity & AST Normalization
-* [ ] **Language-Agnostic AST Representation:** Create normalized AST schema for Python, JavaScript, TypeScript, and Java (functions, classes, control flow, error handling, imports).
-* [ ] **Unified Lexical/Syntactic Feature Extractor:** Replace regex heuristics in JS/TS with AST-based tree-sitter or Babel/Esprima parsers for uniform feature depth across languages.
+### Phase 5: Cross-Language AST Parity & AST Normalization (✅ Completed)
+* [x] **1. Universal Multi-Language AST Parsing Engine (`backend/ml_engine/cross_language_parser.py`):**
+  - Created standardized `UniversalFileMetrics` schema unifying syntactic, structural, and behavioral markers across Python, JavaScript, TypeScript, JSX, TSX, Java, and C-family languages (`.c`, `.cpp`, `.cs`, `.go`, `.rs`).
+  - Implemented token filtering against language-reserved keywords to eliminate false positives in naming conventions (distinguishing true authorial identifiers from language keywords).
+  - Extracted structural constructs: function lengths, cyclomatic complexity per function/method, class/interface inheritance, arrow functions, async/await constructs, generics, error handling granularity, and AI-generated comment markers.
+* [x] **2. Semantic Cognitive Invariants & Idiomatic Normalization:**
+  - Built `compute_cross_language_parity` to distinguish valid idiomatic translations (e.g., author switching from Python `snake_case` to TypeScript/Java `camelCase`) from anomalous behavioral divergence.
+  - Computed 4 language-invariant cognitive dimensions:
+    - **Complexity Density**: Cyclomatic complexity per unit function length (independent of syntactic verbosity).
+    - **Nesting Habit Profile**: Mean and P90 scope depth distribution (reflecting cognitive decomposition habits).
+    - **Identifier Cadence**: Identifier token length distribution and vocabulary habits across languages.
+    - **Comment & Hygiene Cadence**: Comment-to-code ratio and documentation habits.
+  - Applied calibrated penalty discounts to syntax and naming deviation metrics when legitimate target-language idiomatic adoption is verified.
+* [x] **3. Backend Engine Pipeline Integration (`backend/analysis.py` & `backend/ml_engine/__init__.py`):**
+  - Updated `analyze_file` to route all non-Python supported files into `parse_universal_file`, merging normalized metrics into the core CodeDNA pipeline.
+  - Unified complexity aggregation in `build_repository_codedna` to handle individual function complexities across all languages.
+  - Incorporated `compute_cross_language_parity` in `compare_codedna` and returned `cross_language_intelligence` in the forensic payload.
+* [x] **4. Workstation Frontend Integration (`BaselineProfileView.tsx`, `MetricComparisonGrid.tsx`, `page.tsx`):**
+  - Updated `BaselineProfileView` to safely parse and display multi-language distributions with per-language file counts.
+  - Added Cross-Language AST Parity banner in `MetricComparisonGrid` displaying primary language transitions ($L_{\mathrm{base}} \to L_{\mathrm{sub}}$), semantic parity scores, cognitive invariant drift metrics, and verified idiomatic adaptations.
+  - Added Cross-Language AST Parity notification banner on the Overview investigation dashboard.
+* [x] **5. Verification & Test Suite:**
+  - Python tests verified TypeScript, Java, and Python parsing parity and cross-language cognitive scoring.
+  - Next.js 16 production build verified (`npm run build`) with zero TypeScript or bundling errors.
 
 ---
 

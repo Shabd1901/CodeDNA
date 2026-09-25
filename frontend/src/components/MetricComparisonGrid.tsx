@@ -7,12 +7,14 @@ interface MetricComparisonGridProps {
   baselineMetrics: any;
   submissionMetrics: any;
   forensics: any;
+  crossLanguageIntel?: any;
 }
 
 export function MetricComparisonGrid({
   baselineMetrics,
   submissionMetrics,
   forensics,
+  crossLanguageIntel,
 }: MetricComparisonGridProps) {
   const bNaming = baselineMetrics?.naming_convention_distribution || {};
   const sNaming = submissionMetrics?.naming_convention_distribution || {};
@@ -30,8 +32,90 @@ export function MetricComparisonGrid({
   const sDeps = submissionMetrics?.dependency_library_fingerprint?.all || [];
   const newDeps = sDeps.filter((d: string) => !bDeps.includes(d));
 
+  const isCross = crossLanguageIntel?.is_cross_language;
+
   return (
     <div className="space-y-6">
+      {/* Cross-Language AST Normalization Parity Banner */}
+      {isCross && (
+        <div className="p-5 bg-gradient-to-r from-sky-50 via-indigo-50/50 to-blue-50 border border-sky-200/80 rounded-xl shadow-xs space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <span className="p-1.5 rounded-lg bg-sky-100 text-sky-700">
+                <GitCompare className="w-4 h-4" />
+              </span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-xs font-bold text-sky-950 uppercase tracking-wider">
+                    Cross-Language AST Parity Normalization
+                  </h4>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-sky-200/80 text-sky-900 font-bold">
+                    {crossLanguageIntel.primary_baseline_language?.toUpperCase()} → {crossLanguageIntel.primary_submission_language?.toUpperCase()}
+                  </span>
+                </div>
+                <p className="text-xs text-sky-800">
+                  AST constructs normalized into language-agnostic CodeDNA semantic vectors.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <span className="text-[10px] uppercase font-mono text-sky-600 font-semibold block">Semantic Parity</span>
+                <span className="text-base font-black text-sky-950">
+                  {crossLanguageIntel.semantic_parity_score}%
+                </span>
+              </div>
+              <span className="px-2 py-1 bg-white/90 border border-sky-200 text-sky-800 text-[11px] font-mono font-bold rounded-lg shadow-2xs">
+                -{Math.round((crossLanguageIntel.cross_language_penalty_discount || 0) * 100)}% Discount Applied
+              </span>
+            </div>
+          </div>
+
+          {/* Invariant Cognitive Grid */}
+          {crossLanguageIntel.language_invariant_metrics && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
+              <div className="p-2.5 bg-white/80 border border-sky-100 rounded-lg">
+                <span className="text-[10px] font-mono text-zinc-500 uppercase block">Complexity Density</span>
+                <span className="text-xs font-mono font-bold text-zinc-900">
+                  Δ {crossLanguageIntel.language_invariant_metrics.complexity_density_drift}%
+                </span>
+              </div>
+              <div className="p-2.5 bg-white/80 border border-sky-100 rounded-lg">
+                <span className="text-[10px] font-mono text-zinc-500 uppercase block">Nesting Profile</span>
+                <span className="text-xs font-mono font-bold text-zinc-900">
+                  Δ {crossLanguageIntel.language_invariant_metrics.nesting_profile_drift}%
+                </span>
+              </div>
+              <div className="p-2.5 bg-white/80 border border-sky-100 rounded-lg">
+                <span className="text-[10px] font-mono text-zinc-500 uppercase block">Identifier Cadence</span>
+                <span className="text-xs font-mono font-bold text-zinc-900">
+                  Δ {crossLanguageIntel.language_invariant_metrics.identifier_cadence_drift}%
+                </span>
+              </div>
+              <div className="p-2.5 bg-white/80 border border-sky-100 rounded-lg">
+                <span className="text-[10px] font-mono text-zinc-500 uppercase block">Comment Cadence</span>
+                <span className="text-xs font-mono font-bold text-zinc-900">
+                  Δ {crossLanguageIntel.language_invariant_metrics.comment_hygiene_drift}%
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Idiomatic Adaptations */}
+          {crossLanguageIntel.idiomatic_adaptations?.length > 0 && (
+            <div className="space-y-1">
+              {crossLanguageIntel.idiomatic_adaptations.map((note: string, idx: number) => (
+                <div key={idx} className="flex items-center gap-1.5 text-xs text-sky-900">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>{note}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Naming Convention Comparator */}
         <div className="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">

@@ -11,7 +11,12 @@ interface BaselineProfileViewProps {
 export function BaselineProfileView({ baselineMetrics, authIntel }: BaselineProfileViewProps) {
   const counts = baselineMetrics?.repo_count_usable_files_languages || {};
   const usableFiles = counts?.usable_files || 0;
-  const languages = counts?.languages || [];
+  const rawLangs = counts?.languages || {};
+  const languageList: string[] = Array.isArray(rawLangs)
+    ? rawLangs
+    : (rawLangs && typeof rawLangs === "object")
+    ? Object.entries(rawLangs).map(([lang, count]) => `${lang} (${count})`)
+    : [];
   const compDist = baselineMetrics?.complexity_distribution || { mean: 0, p90: 0 };
   const locDist = baselineMetrics?.loc_distribution || { mean: 0, p90: 0 };
   const astPatterns = baselineMetrics?.ast_structural_patterns || {};
@@ -65,8 +70,8 @@ export function BaselineProfileView({ baselineMetrics, authIntel }: BaselineProf
             </div>
             <div className="flex justify-between py-1 border-b border-zinc-100">
               <span className="text-zinc-500">Detected Languages:</span>
-              <span className="font-mono text-zinc-900 font-semibold">
-                {languages.length > 0 ? languages.join(", ") : "Python, JS"}
+              <span className="font-mono text-zinc-900 font-semibold text-right">
+                {languageList.length > 0 ? languageList.join(", ") : "Python"}
               </span>
             </div>
             <div className="flex justify-between py-1 border-b border-zinc-100">
