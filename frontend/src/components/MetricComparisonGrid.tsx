@@ -223,13 +223,13 @@ export function MetricComparisonGrid({
             </span>
           </div>
 
-          <div className="text-xs space-y-3">
+          <div className="text-xs space-y-3 max-h-52 overflow-y-auto pr-1.5 scrollbar-thin">
             <div>
               <p className="font-semibold text-zinc-500 uppercase text-[10px] tracking-wider mb-1.5">
                 New External Libraries Introduced ({newDeps.length})
               </p>
               {newDeps.length > 0 ? (
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto">
                   {newDeps.map((dep: string, i: number) => (
                     <span key={i} className="px-2 py-0.5 rounded bg-red-50 text-red-700 border border-red-200 font-mono text-[11px] font-semibold">
                       +{dep}
@@ -247,13 +247,13 @@ export function MetricComparisonGrid({
               <p className="font-semibold text-zinc-500 uppercase text-[10px] tracking-wider mb-1">
                 Baseline Historical Dependencies ({bDeps.length})
               </p>
-              <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto">
-                {bDeps.slice(0, 15).map((dep: string, i: number) => (
-                  <span key={i} className="px-1.5 py-0.2 rounded bg-zinc-100 text-zinc-600 font-mono text-[10px]">
+              <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto">
+                {bDeps.map((dep: string, i: number) => (
+                  <span key={i} className="px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600 font-mono text-[10px]">
                     {dep}
                   </span>
                 ))}
-                {bDeps.length > 15 && <span className="text-[10px] text-zinc-400">+{bDeps.length - 15} more</span>}
+                {bDeps.length === 0 && <span className="text-[10px] text-zinc-400">None detected</span>}
               </div>
             </div>
           </div>

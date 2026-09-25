@@ -864,28 +864,7 @@ export default function Home() {
                     </div>
                   )}
 
-                  {/* Cross-Language AST Parity Banner */}
-                  {report.deterministic_data?.cross_language_intelligence?.is_cross_language && (
-                    <div className="p-3.5 rounded-xl border bg-sky-50/70 border-sky-200 text-sky-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm">
-                      <div className="flex items-center gap-2.5">
-                        <span className="px-2 py-0.5 rounded bg-white font-bold font-mono text-[10px] shrink-0 border border-sky-200 text-sky-800">
-                          CROSS-LANGUAGE AST
-                        </span>
-                        <span className="font-medium">
-                          Multi-Language Transition: <strong className="font-bold">{report.deterministic_data.cross_language_intelligence.primary_baseline_language?.toUpperCase()} → {report.deterministic_data.cross_language_intelligence.primary_submission_language?.toUpperCase()}</strong>
-                          {" • "}
-                          <span>Semantic Cognitive Parity: {report.deterministic_data.cross_language_intelligence.semantic_parity_score}% (Normalized for target idioms)</span>
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => setPipelineStage("comparison")}
-                        className="px-3 py-1 rounded-lg bg-sky-900 hover:bg-sky-800 text-white font-semibold text-[11px] transition-colors shrink-0 shadow-xs flex items-center gap-1 self-start sm:self-auto"
-                      >
-                        <span>View Invariant Breakdown</span>
-                        <ArrowRight className="w-3 h-3" />
-                      </button>
-                    </div>
-                  )}
+
 
                   {/* 8-Metric Grid Cards */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

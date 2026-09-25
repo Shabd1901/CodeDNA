@@ -30,26 +30,26 @@ export function MLIntelligenceView({ mlIntelligence }: MLIntelligenceViewProps) 
   return (
     <div className="space-y-6">
       {/* Top Banner: Hybrid Intelligence Architecture */}
-      <div className="bg-zinc-950 text-white border border-zinc-800 rounded-xl p-6 shadow-md">
+      <div className="bg-gradient-to-r from-indigo-50/90 via-slate-50 to-sky-50/90 border border-indigo-200/90 text-zinc-900 rounded-xl p-6 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+              <span className="p-1.5 rounded-lg bg-indigo-100 text-indigo-700 border border-indigo-200">
                 <BrainCircuit className="w-4 h-4" />
               </span>
-              <h3 className="text-sm font-bold uppercase tracking-wider text-white">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-indigo-950">
                 Siamese Contrastive Neural Representation &amp; Statistical Calibration
               </h3>
             </div>
-            <p className="text-xs text-zinc-400">
+            <p className="text-xs text-zinc-600">
               Projects 48-dimensional AST/lexical vectors into a 24-dimensional learned latent style space, calibrated via logistic Platt scaling.
             </p>
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
-            <div className="text-right">
-              <p className="text-[10px] font-mono uppercase text-zinc-400 font-semibold">Hybrid Composite Deviation</p>
-              <p className="text-xl font-black text-amber-400">{mlIntelligence.hybrid_composite_deviation}%</p>
+            <div className="text-right px-3.5 py-1.5 bg-white border border-indigo-200/80 rounded-lg shadow-xs">
+              <p className="text-[10px] font-mono uppercase text-zinc-500 font-semibold">Hybrid Composite Deviation</p>
+              <p className="text-xl font-black text-indigo-700">{mlIntelligence.hybrid_composite_deviation}%</p>
             </div>
           </div>
         </div>

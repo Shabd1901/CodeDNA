@@ -73,6 +73,11 @@ $$\text{Adjusted Anomaly Score} = \text{Personal Deviation} \times (1 - \text{Co
 Phase 0, Phase 1, Phase 2, Phase 3, and Phase 4 (Temporal Authorship Modeling & Change-Point Detection) Complete! Ready for Phase 5 (Cross-Language AST Parity & AST Normalization).
 
 ## Completed Changes:
+- (2026-09-26 00:33) **UI UX User Evaluation Polish & Enhancements:**
+  - **Persistent Investigation Header Bar:** Removed `sticky top-4` positioning so header bar stays at its fixed place on the page instead of following scroll. Updated background from dark blackish `bg-zinc-900` to a refined dark slate gradient (`bg-gradient-to-r from-slate-900 via-slate-800 to-zinc-900 border-slate-700/80`).
+  - **Overview Dashboard:** Removed `CROSS-LANGUAGE AST` banner from the Overview stage for a cleaner primary overview metrics flow.
+  - **Metric Comparison Grid:** Added fixed-height `max-h-52` container with custom scrollbar (`overflow-y-auto scrollbar-thin`) for `Dependency Discontinuity` card items.
+  - **ML & Calibration Panel:** Updated the top architecture banner card background in `MLIntelligenceView.tsx` from black (`bg-zinc-950`) to a polished light indigo-slate gradient (`bg-gradient-to-r from-indigo-50/90 via-slate-50 to-sky-50/90 border-indigo-200/90 text-zinc-900`).
 - (2026-09-25 23:54) **Analysis Pipeline Hang Fix:** Resolved indefinite "Executing Forensic Audit Pipeline" spinner caused by synchronous CPU-bound parsing blocking the FastAPI async event loop on large repos. Three fixes applied:
   - `MAX_FILE_BYTES = 512KB` guard in `analyze_file` — skips minified/generated files before any parsing.
   - `MAX_FILES_PER_REPO = 200` cap in `build_repository_codedna` — stops the file walk after 200 files.
@@ -181,6 +186,7 @@ Created comprehensive test suite with `scripts/generate_test_zips.py` for 8 dist
 
 ## Known Issues / Need To make these updates:
 - *None currently open.*
+
 
 ## Architecture Vulnerabilities, Gotchas & Known Risk Matrix:
 
