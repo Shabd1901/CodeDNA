@@ -70,9 +70,16 @@ $$\text{Adjusted Anomaly Score} = \text{Personal Deviation} \times (1 - \text{Co
 ---
 
 ## Current Status:
-Phase 0, Phase 1, and Phase 2 (Evidence-Centric Forensic Workstation UI/UX) Complete! Ready for Phase 3 (Deep AI/ML Innovation & Learned Representations).
+Phase 0, Phase 1, Phase 2, and Phase 3 (Deep AI/ML Innovation & Learned Representations) Complete! Ready for Phase 4 (Temporal Authorship Modeling & Change-Point Detection).
 
 ## Completed Changes:
+- (2026-09-25 22:40) **Phase 3 Deep AI/ML Innovation & Learned Representations Implemented:** Transitioned CodeDNA from pure heuristics to a hybrid deterministic/ML forensic intelligence architecture:
+  - Created `backend/ml_engine/feature_extractor.py` extracting standardized 48-dimensional continuous feature vectors across lexical naming, indentation geometry, complexity distributions, AST structural frequencies, OOP abstraction, error handling, and dependency entropy.
+  - Implemented `backend/ml_engine/siamese_model.py` providing a contrastive Siamese neural metric projection head ($48 \to 32 \to 24$ L2-normalized hypersphere) computing cosine similarity, Euclidean embedding distance, and gradient feature attributions.
+  - Implemented `backend/ml_engine/calibrator.py` establishing Platt logistic calibration mapping raw deviation scores to empirical probabilities $P(\text{Discontinuity} \mid \text{DNA})$ with parametric $95\%$ confidence intervals.
+  - Implemented `backend/ml_engine/hybrid_scorer.py` synthesizing deterministic heuristics ($40\%$), Siamese latent divergence ($35\%$), and structural outlier density ($25\%$) into a unified composite score.
+  - Integrated `ml_intelligence` into `backend/analysis.py` (`compare_codedna`) and updated Gemini Flash forensic reasoning system prompt in `backend/ai_engine.py`.
+  - Built `frontend/src/components/MLIntelligenceView.tsx` with interactive probability gauges, $95\%$ CI error bounds, Siamese latent space meters, and top feature attribution rankings; added to `PipelineNav.tsx` and `page.tsx`.
 - (2026-09-25 22:30) **Phase 2 Evidence-Centric Forensic Workstation UI/UX Implemented:** Redesigned the CodeDNA interface into a forensic investigation workstation inspired by Linear, Sentry, GitHub, and SOC consoles:
   - Created `PersistentInvestigationContext` with live case session ID, author profile diagnosis, baseline reliability indicators, and quick action toolbar.
   - Built `PipelineNav` enabling 6-stage investigation workflow (`Overview`, `Baseline Profile`, `Vector Comparison`, `Traceable Evidence & Code Inspector`, `AI Forensic Reasoning`, `Forensic Dossier & VivaGuard`) with keyboard hotkeys (`1`-`6`).

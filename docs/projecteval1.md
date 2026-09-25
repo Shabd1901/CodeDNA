@@ -340,10 +340,11 @@ Based on the audit reports, competition rubric (Innovation 20pts, AI Implementat
 
 ---
 
-### Phase 3: Deep AI/ML Innovation & Learned Representations
-* [ ] **Siamese CodeDNA Neural Embeddings:** Develop a contrastive Siamese network trained on AST node token sequences and structural metrics to produce learned author style embeddings alongside deterministic features.
-* [ ] **Hybrid Forensic Scoring Engine:** Integrate deterministic heuristic vectors with learned embedding distances into a calibrated composite anomaly score.
-* [ ] **Statistical Calibration (Platt / Isotonic):** Map raw deviation scores to empirical probabilities with confidence intervals, separating "deviation score" from "calibrated probability".
+### Phase 3: Deep AI/ML Innovation & Learned Representations (✅ Completed)
+* [x] **Siamese CodeDNA Neural Embeddings:** Developed a contrastive Siamese metric projection network (`backend/ml_engine/siamese_model.py`) mapping 48-dimensional dense continuous AST/lexical vectors into a 24-dimensional normalized latent authorship space to calculate cosine similarity and Euclidean hypersphere distance.
+* [x] **Hybrid Forensic Scoring Engine:** Created an ensemble engine (`backend/ml_engine/hybrid_scorer.py`) combining deterministic AST heuristics (40%), Siamese latent embedding divergence (35%), and structural outlier concentration (25%) into a unified forensic composite score.
+* [x] **Statistical Calibration (Platt Scaling):** Implemented logistic sigmoid calibration (`backend/ml_engine/calibrator.py`) mapping raw deviations to empirical probabilities $P(\text{Discontinuity} \mid \text{DNA})$ with parametric 95% confidence intervals, separating raw deviation scores from calibrated probabilities.
+* [x] **ML Intelligence Frontend Workstation Integration:** Added dedicated `MLIntelligenceView.tsx` with calibrated probability gauges, 95% CI error bars, Siamese latent space meters, and top latent feature gradient attributions.
 
 ---
 

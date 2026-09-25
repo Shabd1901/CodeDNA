@@ -27,6 +27,7 @@ import { EvidenceCodeInspector } from "@/components/EvidenceCodeInspector";
 import { AIForensicPanel } from "@/components/AIForensicPanel";
 import { ForensicDossierView } from "@/components/ForensicDossierView";
 import { BaselineProfileView } from "@/components/BaselineProfileView";
+import { MLIntelligenceView } from "@/components/MLIntelligenceView";
 
 export default function Home() {
   const [appState, setAppState] = useState<"idle" | "analyzing" | "results">("idle");
@@ -803,6 +804,35 @@ export default function Home() {
                     </div>
                   )}
 
+                  {/* ML Probabilistic Calibration Banner */}
+                  {report.deterministic_data?.ml_intelligence?.statistical_calibration && (
+                    <div className="p-3.5 bg-indigo-50/70 border border-indigo-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm">
+                      <div className="flex items-center gap-2.5">
+                        <span className="px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold font-mono text-[10px] shrink-0 border border-indigo-200">
+                          ML CALIBRATED
+                        </span>
+                        <span className="text-indigo-950 font-medium">
+                          Empirical Substitution Probability: <strong className="font-mono text-indigo-900">{Math.round(report.deterministic_data.ml_intelligence.statistical_calibration.calibrated_probability * 100)}%</strong>
+                          {" "}
+                          <span className="text-indigo-600 font-mono text-[11px]">
+                            [95% CI: {Math.round(report.deterministic_data.ml_intelligence.statistical_calibration.confidence_interval_95.lower * 100)}% – {Math.round(report.deterministic_data.ml_intelligence.statistical_calibration.confidence_interval_95.upper * 100)}%]
+                          </span>
+                          {" • "}
+                          <span className="text-indigo-700 font-mono text-[11px]">
+                            {report.deterministic_data.ml_intelligence.statistical_calibration.risk_tier}
+                          </span>
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => setPipelineStage("ml")}
+                        className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-[11px] transition-colors shrink-0 shadow-xs flex items-center gap-1 self-start sm:self-auto"
+                      >
+                        <span>Siamese Latent Space</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+
                   {/* 8-Metric Grid Cards */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="clean-card p-4 bg-white border-zinc-200 shadow-sm flex flex-col justify-between">
@@ -967,6 +997,13 @@ export default function Home() {
                     <RadarDeviationChart metrics={getRadarMetrics()} />
                   </div>
                 </div>
+              )}
+
+              {/* STAGE: ML INTELLIGENCE & CALIBRATION */}
+              {pipelineStage === "ml" && (
+                <MLIntelligenceView
+                  mlIntelligence={report.deterministic_data?.ml_intelligence}
+                />
               )}
 
               {/* STAGE: EVIDENCE & CODE INSPECTOR */}

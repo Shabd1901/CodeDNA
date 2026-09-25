@@ -727,14 +727,24 @@ def compare_codedna(baseline_dna: Dict[str, Any], submission_dna: Dict[str, Any]
     submission_dna.update(deviations)
     submission_dna["codedna_similarity_score"] = deviations["overall_behavioral_stylistic_deviation_score"]
     
-    baseline_dna.pop("file_metrics", None)
-    submission_dna.pop("file_metrics", None)
+    # --- PHASE 3: ML Intelligence (Siamese Embeddings & Statistical Calibration) ---
+    ml_intel = None
+    try:
+        from .ml_engine import run_hybrid_forensic_analysis
+        ml_intel = run_hybrid_forensic_analysis(baseline_dna, submission_dna, deviations)
+    except Exception:
+        try:
+            from ml_engine import run_hybrid_forensic_analysis
+            ml_intel = run_hybrid_forensic_analysis(baseline_dna, submission_dna, deviations)
+        except Exception as e:
+            ml_intel = {"status": "fallback", "error": str(e)}
 
     return {
         "baseline_metrics": baseline_dna,
         "submission_metrics": submission_dna,
         "forensics": deviations,
-        "authorship_intelligence": phase4
+        "authorship_intelligence": phase4,
+        "ml_intelligence": ml_intel
     }
 
 

@@ -5,12 +5,13 @@ import {
   LayoutDashboard, 
   GitBranch, 
   GitCompare, 
+  BrainCircuit,
   FileSearch, 
   Sparkles, 
   ClipboardCheck 
 } from "lucide-react";
 
-export type PipelineStage = "overview" | "baseline" | "comparison" | "evidence" | "ai" | "dossier";
+export type PipelineStage = "overview" | "baseline" | "comparison" | "ml" | "evidence" | "ai" | "dossier";
 
 interface PipelineNavProps {
   currentStage: PipelineStage;
@@ -30,10 +31,18 @@ export function PipelineNav({
     { id: "baseline", label: "Baseline DNA", icon: GitBranch, hotkey: "2" },
     { id: "comparison", label: "Comparison", icon: GitCompare, hotkey: "3" },
     { 
+      id: "ml", 
+      label: "ML & Calibration", 
+      icon: BrainCircuit, 
+      hotkey: "4", 
+      badge: "Siamese", 
+      badgeColor: "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30" 
+    },
+    { 
       id: "evidence", 
       label: "Traceable Evidence", 
       icon: FileSearch, 
-      hotkey: "4", 
+      hotkey: "5", 
       badge: suspiciousCount > 0 ? suspiciousCount : undefined, 
       badgeColor: "bg-amber-500/20 text-amber-400 border border-amber-500/30" 
     },
@@ -41,11 +50,11 @@ export function PipelineNav({
       id: "ai", 
       label: "AI Reasoning", 
       icon: Sparkles, 
-      hotkey: "5", 
+      hotkey: "6", 
       badge: hasAiReport ? "Ready" : undefined, 
       badgeColor: "bg-blue-500/20 text-blue-400 border border-blue-500/30" 
     },
-    { id: "dossier", label: "Dossier & VivaGuard", icon: ClipboardCheck, hotkey: "6" },
+    { id: "dossier", label: "Dossier & VivaGuard", icon: ClipboardCheck, hotkey: "7" },
   ];
 
   // Keyboard navigation listener (1-6 keys)
