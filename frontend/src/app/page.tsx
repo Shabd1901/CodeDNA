@@ -29,6 +29,8 @@ export default function Home() {
   const [aiMode, setAiMode] = useState<"openai" | "gemini" | null>(null);
   const [resetKey, setResetKey] = useState(0);
   const [errorNotice, setErrorNotice] = useState<{ title: string; detail: string; isRateLimit?: boolean } | null>(null);
+  // Alternative baseline comparison for dashboard metrics when both baselines are available
+  const [alternativeReport, setAlternativeReport] = useState<any>(null);
 
   // Progress tracking
   const [analysisStep, setAnalysisStep] = useState(0);
@@ -62,19 +64,19 @@ export default function Home() {
   const startAnalysis = async () => {
     if (!submissionFile) return;
 
-    // Validate baseline data based on selected tab
-    let hasBaseline = false;
-    if (selectedBaselineTab === 0) {
-      hasBaseline = !!githubLink || (repoFiles && repoFiles.length > 0);
-    } else if (selectedBaselineTab === 1) {
-      hasBaseline = !!cohortFile;
-    } else if (selectedBaselineTab === 2) {
-      hasBaseline = !!cohortOrganization && !!cohortAssignmentPrefix;
-    }
-    if (!hasBaseline) return;
+    // Validate that we have at least one type of baseline data
+    const hasPersonalData = !!githubLink || (repoFiles && repoFiles.length > 0);
+    const hasCohortData = (selectedBaselineTab === 1 && !!cohortFile) ||
+                         (selectedBaselineTab === 2 && !!cohortOrganization && !!cohortAssignmentPrefix);
+
+    // For cohort tabs, validate the specific data is present
+    if (selectedBaselineTab === 1 && !hasCohortData) return; // LMS ZIP tab needs cohortFile
+    if (selectedBaselineTab === 2 && !hasCohortData) return; // GitHub Classroom tab needs org and prefix
+    if (selectedBaselineTab === 0 && !hasPersonalData) return; // Personal tab needs githubLink or repoFiles
 
     setAppState("analyzing");
     setReport(null);
+    setAlternativeReport(null);
     setAiMode(null);
     setErrorNotice(null);
     setAnalysisStep(0);
@@ -91,16 +93,12 @@ export default function Home() {
       if (!sessionId) throw new Error("No session_id returned");
       setSessionId(sessionId);
 
-      // Determine baseline type based on selected tab
-      const baselineTypeValue = selectedBaselineTab === 0 ? "personal" : "cohort";
-      setBaselineType(baselineTypeValue);
-
-      // Step 1 — Upload Baseline Data
+      // Step 1 — Upload Baseline Data (based on selected tab)
       setAnalysisStep(1);
       const formData = new FormData();
       formData.append("session_id", sessionId);
 
-      if (baselineTypeValue === "personal") {
+      if (selectedBaselineTab === 0) {
         // Personal baseline: GitHub link and/or repoFiles
         let targetUsername = githubLink.trim();
         if (targetUsername.includes('github.com/')) {
@@ -142,39 +140,36 @@ export default function Home() {
             }
           }
         }
-      } else {
-        // Cohort baseline: either LMS ZIP or GitHub Classroom
-        if (selectedBaselineTab === 1) {
-          // LMS ZIP
-          if (!cohortFile) throw { title: "Missing Cohort File", detail: "Please select a cohort ZIP file." };
-          const cohortData = new FormData();
-          cohortData.append("session_id", sessionId);
-          cohortData.append("file", cohortFile);
-          const cohortRes = await fetch("http://localhost:8000/api/repositories/cohort-zip", {
-            method: "POST",
-            body: cohortData
-          });
-          if (!cohortRes.ok) {
-            const errData = await cohortRes.json().catch(() => ({ detail: "Cohort ZIP processing failed." }));
-            throw { title: "Cohort Upload Error", detail: errData.detail || "Failed to process cohort ZIP." };
-          }
-        } else if (selectedBaselineTab === 2) {
-          // GitHub Classroom
-          if (!cohortOrganization || !cohortAssignmentPrefix) {
-            throw { title: "Missing GitHub Classroom Info", detail: "Please provide organization and assignment prefix." };
-          }
-          const classroomData = new FormData();
-          classroomData.append("session_id", sessionId);
-          classroomData.append("organization", cohortOrganization);
-          classroomData.append("assignment_prefix", cohortAssignmentPrefix);
-          const classroomRes = await fetch("http://localhost:8000/api/repositories/github-classroom", {
-            method: "POST",
-            body: classroomData
-          });
-          if (!classroomRes.ok) {
-            const errData = await classroomRes.json().catch(() => ({ detail: "GitHub Classroom fetch failed." }));
-            throw { title: "GitHub Classroom Error", detail: errData.detail || "Failed to fetch repositories from GitHub Classroom." };
-          }
+      } else if (selectedBaselineTab === 1) {
+        // LMS ZIP cohort baseline
+        if (!cohortFile) throw { title: "Missing Cohort File", detail: "Please select a cohort ZIP file." };
+        const cohortData = new FormData();
+        cohortData.append("session_id", sessionId);
+        cohortData.append("file", cohortFile);
+        const cohortRes = await fetch("http://localhost:8000/api/repositories/cohort-zip", {
+          method: "POST",
+          body: cohortData
+        });
+        if (!cohortRes.ok) {
+          const errData = await cohortRes.json().catch(() => ({ detail: "Cohort ZIP processing failed." }));
+          throw { title: "Cohort Upload Error", detail: errData.detail || "Failed to process cohort ZIP." };
+        }
+      } else if (selectedBaselineTab === 2) {
+        // GitHub Classroom cohort baseline
+        if (!cohortOrganization || !cohortAssignmentPrefix) {
+          throw { title: "Missing GitHub Classroom Info", detail: "Please provide organization and assignment prefix." };
+        }
+        const classroomData = new FormData();
+        classroomData.append("session_id", sessionId);
+        classroomData.append("organization", cohortOrganization);
+        classroomData.append("assignment_prefix", cohortAssignmentPrefix);
+        const classroomRes = await fetch("http://localhost:8000/api/repositories/github-classroom", {
+          method: "POST",
+          body: classroomData
+        });
+        if (!classroomRes.ok) {
+          const errData = await classroomRes.json().catch(() => ({ detail: "GitHub Classroom fetch failed." }));
+          throw { title: "GitHub Classroom Error", detail: errData.detail || "Failed to fetch repositories from GitHub Classroom." };
         }
       }
 
@@ -207,28 +202,69 @@ export default function Home() {
           throw { title: "Template Upload Error", detail: errData.detail || "Failed to upload template ZIP." };
         }
       } else {
-        // If no template, we still need to wait a bit to show the step? We'll just skip the delay.
+        // If no template, we still need to wait a bit to show the step
         await new Promise(r => setTimeout(r, 100)); // Short delay to show the step
       }
 
-      // Step 4 — Running comparison
+      // Step 4 — Running comparison(s)
       setAnalysisStep(4);
       await new Promise(r => setTimeout(r, 200)); // let UI render the step
 
-      const compareData = new FormData();
-      compareData.append("session_id", sessionId);
-      compareData.append("baseline_type", baselineTypeValue);
-      const res = await fetch("http://localhost:8000/api/analyze/compare", {
-        method: "POST",
-        body: compareData
-      });
+      // Determine which baseline type(s) to compare against
+      const comparisonsToRun = [];
 
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({ detail: "Compare failed." }));
-        throw { title: "CodeDNA Comparison Error", detail: errData.detail || "Static metric comparison failed." };
+      // Always run comparison against selected baseline type
+      if (selectedBaselineTab === 0) {
+        comparisonsToRun.push({ type: "personal", label: "Personal" });
+      } else {
+        comparisonsToRun.push({ type: "cohort", label: "Cohort" });
       }
-      const data = await res.json();
-      setReport(data);
+
+      // If we have both personal and cohort data available, also run the alternative comparison
+      if (hasPersonalData && hasCohortData) {
+        const alternativeType = selectedBaselineTab === 0 ? "cohort" : "personal";
+        comparisonsToRun.push({ type: alternativeType, label: alternativeType === "personal" ? "Personal" : "Cohort", isAlternative: true });
+      }
+
+      // Run the primary comparison first (for AI report and detailed view)
+      const primaryComparison = comparisonsToRun.find(comp => !comp.isAlternative);
+      if (primaryComparison) {
+        const compareData = new FormData();
+        compareData.append("session_id", sessionId);
+        compareData.append("baseline_type", primaryComparison.type);
+        const res = await fetch("http://localhost:8000/api/analyze/compare", {
+          method: "POST",
+          body: compareData
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({ detail: "Compare failed." }));
+          throw { title: "CodeDNA Comparison Error", detail: errData.detail || "Static metric comparison failed." };
+        }
+        const data = await res.json();
+        setReport(data);
+      }
+
+      // Run the alternative comparison (for dashboard metrics only) if needed
+      const alternativeComparison = comparisonsToRun.find(comp => comp.isAlternative);
+      if (alternativeComparison) {
+        const compareData = new FormData();
+        compareData.append("session_id", sessionId);
+        compareData.append("baseline_type", alternativeComparison.type);
+        const res = await fetch("http://localhost:8000/api/analyze/compare", {
+          method: "POST",
+          body: compareData
+        });
+
+        if (!res.ok) {
+          // Log error but don't fail the entire analysis - alternative comparison is just for dashboard
+          console.warn(`Failed to run alternative comparison (${alternativeComparison.type}):`, await res.json().catch(() => ({ detail: "Unknown error" })));
+        } else {
+          const data = await res.json();
+          setAlternativeReport(data);
+        }
+      }
+
       setAppState("results");
 
     } catch (error: any) {
@@ -236,6 +272,7 @@ export default function Home() {
       setAppState("idle");
       setSessionId(null);
       setAnalysisStep(0);
+      setAlternativeReport(null);
       if (error && error.title && error.detail) {
         setErrorNotice({ title: error.title, detail: error.detail, isRateLimit: error.isRateLimit });
       } else {
@@ -295,7 +332,7 @@ export default function Home() {
               : "bg-red-50 border-red-300 text-red-900 shadow-sm"
           }`}
         >
-          <div className={`p-2 rounded-lg shrink-0 ${errorNotice.isRateLimit ? "bg-amber-100 text-amber-800" : "bg-red-100 text-red-800`}`}>
+          <div className={`p-2 rounded-lg shrink-0 ${errorNotice.isRateLimit ? "bg-amber-100 text-amber-800" : "bg-red-100 text-red-800"}`}>
             <ShieldAlert className="w-6 h-6" />
           </div>
           <div className="flex-1">
