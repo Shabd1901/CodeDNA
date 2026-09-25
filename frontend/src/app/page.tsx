@@ -28,6 +28,7 @@ import { AIForensicPanel } from "@/components/AIForensicPanel";
 import { ForensicDossierView } from "@/components/ForensicDossierView";
 import { BaselineProfileView } from "@/components/BaselineProfileView";
 import { MLIntelligenceView } from "@/components/MLIntelligenceView";
+import { TemporalEvolutionView } from "@/components/TemporalEvolutionView";
 
 export default function Home() {
   const [appState, setAppState] = useState<"idle" | "analyzing" | "results">("idle");
@@ -833,6 +834,35 @@ export default function Home() {
                     </div>
                   )}
 
+                  {/* Temporal Evolution Trajectory Banner */}
+                  {report.deterministic_data?.temporal_intelligence && (
+                    <div className={`p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm ${
+                      report.deterministic_data.temporal_intelligence.temporal_severity === "High"
+                        ? "bg-red-50/70 border-red-200 text-red-950"
+                        : report.deterministic_data.temporal_intelligence.temporal_severity === "Moderate"
+                        ? "bg-amber-50/70 border-amber-200 text-amber-950"
+                        : "bg-emerald-50/70 border-emerald-200 text-emerald-950"
+                    }`}>
+                      <div className="flex items-center gap-2.5">
+                        <span className="px-2 py-0.5 rounded bg-white font-bold font-mono text-[10px] shrink-0 border border-zinc-200 text-zinc-800">
+                          TEMPORAL CUSUM
+                        </span>
+                        <span className="font-medium">
+                          Evolution Trajectory: <strong className="font-bold">{report.deterministic_data.temporal_intelligence.trajectory_diagnosis}</strong>
+                          {" • "}
+                          <span className="opacity-90">{report.deterministic_data.temporal_intelligence.evaluator_temporal_narrative}</span>
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => setPipelineStage("timeline")}
+                        className="px-3 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-[11px] transition-colors shrink-0 shadow-xs flex items-center gap-1 self-start sm:self-auto"
+                      >
+                        <span>Milestone Timeline</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+
                   {/* 8-Metric Grid Cards */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="clean-card p-4 bg-white border-zinc-200 shadow-sm flex flex-col justify-between">
@@ -1003,6 +1033,13 @@ export default function Home() {
               {pipelineStage === "ml" && (
                 <MLIntelligenceView
                   mlIntelligence={report.deterministic_data?.ml_intelligence}
+                />
+              )}
+
+              {/* STAGE: TIMELINE & TEMPORAL EVOLUTION */}
+              {pipelineStage === "timeline" && (
+                <TemporalEvolutionView
+                  temporalIntelligence={report.deterministic_data?.temporal_intelligence}
                 />
               )}
 

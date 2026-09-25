@@ -389,8 +389,8 @@ async def analyze_and_compare(session_id: str = Form(...), baseline_type: str = 
     if baseline_dna.get("repo_count_usable_files_languages", {}).get("usable_files", 0) == 0:
         raise HTTPException(status_code=400, detail="Baseline contains no usable source code files.")
 
-    # 4. Compare (Deterministic)
-    comparison_results = compare_codedna(baseline_dna, submission_dna)
+    # 4. Compare (Deterministic + ML + Temporal)
+    comparison_results = compare_codedna(baseline_dna, submission_dna, repos_dir=repos_dir, sub_dir=sub_dir)
 
     # Save for the AI step
     with open(os.path.join(session_path, "deterministic_results.json"), "w") as f:

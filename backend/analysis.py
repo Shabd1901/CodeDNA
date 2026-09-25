@@ -538,7 +538,7 @@ def build_repository_codedna(repo_dir: str) -> Dict[str, Any]:
 
     return dna
 
-def compare_codedna(baseline_dna: Dict[str, Any], submission_dna: Dict[str, Any]) -> Dict[str, Any]:
+def compare_codedna(baseline_dna: Dict[str, Any], submission_dna: Dict[str, Any], repos_dir: str = "", sub_dir: str = "") -> Dict[str, Any]:
     def calc_dev(b_val, s_val):
         """Non-linear deviation: small natural drifts score low, only extreme outliers score high."""
         if b_val == 0 and s_val == 0: return 0.0
@@ -739,12 +739,25 @@ def compare_codedna(baseline_dna: Dict[str, Any], submission_dna: Dict[str, Any]
         except Exception as e:
             ml_intel = {"status": "fallback", "error": str(e)}
 
+    # --- PHASE 4: Temporal Evolution & Change-Point Analysis ---
+    temporal_intel = None
+    try:
+        from .ml_engine import analyze_temporal_evolution
+        temporal_intel = analyze_temporal_evolution(repos_dir, sub_dir, baseline_dna, submission_dna)
+    except Exception:
+        try:
+            from ml_engine import analyze_temporal_evolution
+            temporal_intel = analyze_temporal_evolution(repos_dir, sub_dir, baseline_dna, submission_dna)
+        except Exception as e:
+            temporal_intel = {"status": "fallback", "error": str(e)}
+
     return {
         "baseline_metrics": baseline_dna,
         "submission_metrics": submission_dna,
         "forensics": deviations,
         "authorship_intelligence": phase4,
-        "ml_intelligence": ml_intel
+        "ml_intelligence": ml_intel,
+        "temporal_intelligence": temporal_intel
     }
 
 

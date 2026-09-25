@@ -70,9 +70,15 @@ $$\text{Adjusted Anomaly Score} = \text{Personal Deviation} \times (1 - \text{Co
 ---
 
 ## Current Status:
-Phase 0, Phase 1, Phase 2, and Phase 3 (Deep AI/ML Innovation & Learned Representations) Complete! Ready for Phase 4 (Temporal Authorship Modeling & Change-Point Detection).
+Phase 0, Phase 1, Phase 2, Phase 3, and Phase 4 (Temporal Authorship Modeling & Change-Point Detection) Complete! Ready for Phase 5 (Cross-Language AST Parity & AST Normalization).
 
 ## Completed Changes:
+- (2026-09-25 22:45) **Phase 4 Temporal Authorship Modeling & Change-Point Detection Implemented:** Extended CodeDNA beyond static baselines to model chronological author developmental trajectories:
+  - Created `backend/ml_engine/temporal_analyzer.py` extracting discrete historical project milestones ($t_1, t_2, \ldots, t_k$) and comparing them with the investigated submission ($t_{\mathrm{sub}}$).
+  - Implemented two-sided Cumulative Sum (CUSUM) change-point detection across cyclomatic complexity (P90), code length (LOC), lexical naming conventions (snake_case ratio), and type-hint coverage.
+  - Built trajectory diagnosis engine distinguishing **Legitimate Skill Progression** (smooth incremental growth within historical variance bounds) from **Abrupt Step-Changes / Anomalies** (sudden multi-vector discontinuities).
+  - Wired `analyze_temporal_evolution` into `backend/analysis.py` and `backend/main.py` passing session repository paths.
+  - Built `frontend/src/components/TemporalEvolutionView.tsx` with interactive chronological SVG trendlines, metric selectors, CUSUM status alerts, and milestone snapshot progression tables; added to `PipelineNav.tsx` and `page.tsx`.
 - (2026-09-25 22:40) **Phase 3 Deep AI/ML Innovation & Learned Representations Implemented:** Transitioned CodeDNA from pure heuristics to a hybrid deterministic/ML forensic intelligence architecture:
   - Created `backend/ml_engine/feature_extractor.py` extracting standardized 48-dimensional continuous feature vectors across lexical naming, indentation geometry, complexity distributions, AST structural frequencies, OOP abstraction, error handling, and dependency entropy.
   - Implemented `backend/ml_engine/siamese_model.py` providing a contrastive Siamese neural metric projection head ($48 \to 32 \to 24$ L2-normalized hypersphere) computing cosine similarity, Euclidean embedding distance, and gradient feature attributions.
