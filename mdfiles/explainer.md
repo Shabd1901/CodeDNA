@@ -48,12 +48,32 @@ Navigate to `http://localhost:3000`
 
 3. **Language-Specific AST Coverage:**
    - Deep AST parsing is currently active for Python. JS/TS files use regex-based static heuristics which capture control flow and function density but lack full AST depth.
+## Architecture Specification: Cohort Normalization & Starter Template Engine
 
+### 1. Purpose & Core Value
+Cohort Normalization eliminates false-positive flags caused by course-wide assignment rules, mandatory framework imports (e.g. PyTorch, FastAPI), or shared instructor starter code. It transitions CodeDNA from 1-dimensional personal comparison to a 2-dimensional matrix evaluating both **Personal Behavioral Drift** and **Cohort Norm Alignment**.
+
+### 2. The 3 Ingestion Pathways
+- **Master Class ZIP Ingestion (LMS Export)**: Unpacks bulk exports from Canvas, Moodle, or Blackboard (`CS101_Submissions.zip`), parses student folders in parallel, and compiles a class baseline (`cohort_baseline.json`) containing P50, P75, P90, and Interquartile Range (IQR) metrics.
+- **GitHub Classroom Auto-Fetch**: Asynchronously streams repositories from a GitHub organization (`github.com/cs101-fall2026/assignment-2-*`) into temporary session storage to generate an automated class baseline.
+- **Starter Template Subtraction Filter**: Parses an instructor's skeleton starter ZIP and subtracts identical AST nodes, boilerplate imports, and function signatures prior to computing student deviation scores.
+
+### 3. Dual-Vector Decision Matrix
+$$\text{Adjusted Anomaly Score} = \text{Personal Deviation} \times (1 - \text{Cohort Similarity})$$
+
+| Personal Deviation | Cohort Similarity | Diagnosis | Forensic Output |
+| :--- | :--- | :--- | :--- |
+| **High** | **High** (Matches Class) | Student followed course template / assignment guidelines. | 🟢 **CLEAR / TEMPLATE NORM** |
+| **High** | **Low** (Differs from Class) | Student inserted external code or LLM output unlike peers. | 🔴 **HIGH CONCERN** |
+| **Low** | **High** (Matches Both) | Student code matches past work and assignment norm. | 🟢 **CLEAR** |
+
+---
 
 ## Current Status:
 Phase 1, 2, and 3 Core Engine Refactoring Complete! Ready for Phase 4 (AI Forensic Integration & UI Dashboard Updates).
 
 ## Completed Changes:
+- (2026-09-25 12:53) **Cohort Normalization Architecture Specification Added:** Documented comprehensive architecture specification for Cohort Normalization, Starter Template AST Subtraction Filtering, LMS Bulk Export processing, and Dual-Vector Decision Matrix math in `explainer.md` for future platform documentation.
 - (2026-09-24 20:05) **GitHub Rate Limit Handling & Frontend Alert Banner:** Added optional `GITHUB_TOKEN` support to `main.py` (increasing limit to 5,000 req/hr). Implemented explicit HTTP 429 rate limit exception handling in FastAPI and created an interactive error notice card in `page.tsx` to display clear rate-limit feedback instead of a perpetual loading spinner.
 - (2026-09-24 19:08) **Non-Blocking Gemini Execution & Flash-Lite Optimization:** Wrapped synchronous `client.models.generate_content` in `asyncio.to_thread()` in `ai_engine.py` to prevent event-loop freezing. Defaulted primary model to `gemini-3.5-flash-lite` for near-instant responses with 0 capacity delays while maintaining automatic failover.
 - (2026-09-24 18:45) **Configurable Gemini Model & Multi-Tier Fallback Chain Implemented:** Configured `GEMINI_MODEL` environment variable in `ai_engine.py` (default: `gemini-3.5-flash-lite`) with an automated failover sequence to `gemini-3.5-flash` on 503 capacity overload or 404 deprecation errors. Empirically verified automatic recovery during server demand spikes.

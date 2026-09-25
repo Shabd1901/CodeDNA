@@ -7,11 +7,20 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
 
 export default function Home() {
   const [appState, setAppState] = useState<"idle" | "analyzing" | "results">("idle");
-  
+
   // Form State
   const [githubLink, setGithubLink] = useState("");
   const [repoFiles, setRepoFiles] = useState<FileList | null>(null);
   const [submissionFile, setSubmissionFile] = useState<File | null>(null);
+  // New fields for template and cohort data
+  const [templateFile, setTemplateFile] = useState<File | null>(null);
+  const [cohortFile, setCohortFile] = useState<File | null>(null);
+  const [cohortOrganization, setCohortOrganization] = useState("");
+  const [cohortAssignmentPrefix, setCohortAssignmentPrefix] = useState("");
+  // Baseline type selection
+  const [baselineType, setBaselineType] = useState<"personal" | "cohort">("personal");
+  // Selected baseline tab for UI
+  const [selectedBaselineTab, setSelectedBaselineTab] = useState<number>(0); // 0: Single Student, 1: Master Class, 2: Course Starter Template
 
   // Results State
   const [report, setReport] = useState<any>(null);
@@ -25,9 +34,9 @@ export default function Home() {
   const [analysisStep, setAnalysisStep] = useState(0);
   const STEPS = [
     { label: "Starting session",        detail: "Initialising secure forensic session on server…" },
-    { label: "Uploading baseline",      detail: "Transferring historical repositories to analysis engine…" },
+    { label: "Uploading baseline",      detail: "Transferring baseline repositories to analysis engine…" },
     { label: "Uploading submission",    detail: "Uploading new submission ZIP for comparison…" },
-    { label: "Extracting CodeDNA",      detail: "Parsing AST, computing complexity distribution, naming fingerprints…" },
+    { label: "Uploading template",      detail: "Processing starter code for template subtraction…" },
     { label: "Running comparison",      detail: "Calculating 10-vector deviation scores against baseline…" },
   ];
 
@@ -52,13 +61,24 @@ export default function Home() {
 
   const startAnalysis = async () => {
     if (!submissionFile) return;
-    
+
+    // Validate baseline data based on selected tab
+    let hasBaseline = false;
+    if (selectedBaselineTab === 0) {
+      hasBaseline = !!githubLink || (repoFiles && repoFiles.length > 0);
+    } else if (selectedBaselineTab === 1) {
+      hasBaseline = !!cohortFile;
+    } else if (selectedBaselineTab === 2) {
+      hasBaseline = !!cohortOrganization && !!cohortAssignmentPrefix;
+    }
+    if (!hasBaseline) return;
+
     setAppState("analyzing");
     setReport(null);
     setAiMode(null);
     setErrorNotice(null);
     setAnalysisStep(0);
-    
+
     try {
       // Step 0 — Start Session
       setAnalysisStep(0);
@@ -70,39 +90,45 @@ export default function Home() {
       const sessionId = sessionData.session_id as string;
       if (!sessionId) throw new Error("No session_id returned");
       setSessionId(sessionId);
-      
-      // Step 1 — Upload Baseline Repositories
+
+      // Determine baseline type based on selected tab
+      const baselineTypeValue = selectedBaselineTab === 0 ? "personal" : "cohort";
+      setBaselineType(baselineTypeValue);
+
+      // Step 1 — Upload Baseline Data
       setAnalysisStep(1);
       const formData = new FormData();
       formData.append("session_id", sessionId);
-      
-      let targetUsername = githubLink.trim();
-      if (targetUsername.includes('github.com/')) {
+
+      if (baselineTypeValue === "personal") {
+        // Personal baseline: GitHub link and/or repoFiles
+        let targetUsername = githubLink.trim();
+        if (targetUsername.includes('github.com/')) {
           const parts = targetUsername.split('github.com/')[1].split('/');
           if (parts.length > 0) {
-              targetUsername = parts[0];
+            targetUsername = parts[0];
           }
-      }
-      
-      if (targetUsername) {
-        formData.append("username", targetUsername);
-        const ghRes = await fetch("http://localhost:8000/api/repositories/github", {
-          method: "POST",
-          body: formData
-        });
-        if (!ghRes.ok) {
-          const errData = await ghRes.json().catch(() => ({ detail: "Failed to fetch GitHub repositories." }));
-          const isRateLimit = ghRes.status === 429 || (errData.detail && errData.detail.toLowerCase().includes("rate limit"));
-          throw {
-            title: isRateLimit ? "GitHub API Rate Limit Reached" : "GitHub Fetch Failed",
-            detail: errData.detail || "Unable to download repositories from GitHub.",
-            isRateLimit
-          };
         }
-      }
-      
-      if (repoFiles && repoFiles.length > 0) {
-        for (let i = 0; i < repoFiles.length; i++) {
+
+        if (targetUsername) {
+          formData.append("username", targetUsername);
+          const ghRes = await fetch("http://localhost:8000/api/repositories/github", {
+            method: "POST",
+            body: formData
+          });
+          if (!ghRes.ok) {
+            const errData = await ghRes.json().catch(() => ({ detail: "Failed to fetch GitHub repositories." }));
+            const isRateLimit = ghRes.status === 429 || (errData.detail && errData.detail.toLowerCase().includes("rate limit"));
+            throw {
+              title: isRateLimit ? "GitHub API Rate Limit Reached" : "GitHub Fetch Failed",
+              detail: errData.detail || "Unable to download repositories from GitHub.",
+              isRateLimit
+            };
+          }
+        }
+
+        if (repoFiles && repoFiles.length > 0) {
+          for (let i = 0; i < repoFiles.length; i++) {
             const repoData = new FormData();
             repoData.append("session_id", sessionId);
             repoData.append("file", repoFiles[i]);
@@ -114,6 +140,41 @@ export default function Home() {
               const errData = await upRes.json().catch(() => ({ detail: "Upload repository failed." }));
               throw { title: "Baseline Upload Error", detail: errData.detail || `Failed to upload ZIP ${repoFiles[i].name}.` };
             }
+          }
+        }
+      } else {
+        // Cohort baseline: either LMS ZIP or GitHub Classroom
+        if (selectedBaselineTab === 1) {
+          // LMS ZIP
+          if (!cohortFile) throw { title: "Missing Cohort File", detail: "Please select a cohort ZIP file." };
+          const cohortData = new FormData();
+          cohortData.append("session_id", sessionId);
+          cohortData.append("file", cohortFile);
+          const cohortRes = await fetch("http://localhost:8000/api/repositories/cohort-zip", {
+            method: "POST",
+            body: cohortData
+          });
+          if (!cohortRes.ok) {
+            const errData = await cohortRes.json().catch(() => ({ detail: "Cohort ZIP processing failed." }));
+            throw { title: "Cohort Upload Error", detail: errData.detail || "Failed to process cohort ZIP." };
+          }
+        } else if (selectedBaselineTab === 2) {
+          // GitHub Classroom
+          if (!cohortOrganization || !cohortAssignmentPrefix) {
+            throw { title: "Missing GitHub Classroom Info", detail: "Please provide organization and assignment prefix." };
+          }
+          const classroomData = new FormData();
+          classroomData.append("session_id", sessionId);
+          classroomData.append("organization", cohortOrganization);
+          classroomData.append("assignment_prefix", cohortAssignmentPrefix);
+          const classroomRes = await fetch("http://localhost:8000/api/repositories/github-classroom", {
+            method: "POST",
+            body: classroomData
+          });
+          if (!classroomRes.ok) {
+            const errData = await classroomRes.json().catch(() => ({ detail: "GitHub Classroom fetch failed." }));
+            throw { title: "GitHub Classroom Error", detail: errData.detail || "Failed to fetch repositories from GitHub Classroom." };
+          }
         }
       }
 
@@ -131,19 +192,37 @@ export default function Home() {
         throw { title: "Submission Upload Error", detail: errData.detail || "Failed to upload submission archive." };
       }
 
-      // Step 3 — Extracting CodeDNA (just before the heaviest call)
+      // Step 3 — Upload Template (if provided)
       setAnalysisStep(3);
-      await new Promise(r => setTimeout(r, 200)); // let UI render the step
+      if (templateFile) {
+        const templateData = new FormData();
+        templateData.append("session_id", sessionId);
+        templateData.append("file", templateFile);
+        const templateRes = await fetch("http://localhost:8000/api/repositories/template", {
+          method: "POST",
+          body: templateData
+        });
+        if (!templateRes.ok) {
+          const errData = await templateRes.json().catch(() => ({ detail: "Template upload failed." }));
+          throw { title: "Template Upload Error", detail: errData.detail || "Failed to upload template ZIP." };
+        }
+      } else {
+        // If no template, we still need to wait a bit to show the step? We'll just skip the delay.
+        await new Promise(r => setTimeout(r, 100)); // Short delay to show the step
+      }
 
       // Step 4 — Running comparison
       setAnalysisStep(4);
+      await new Promise(r => setTimeout(r, 200)); // let UI render the step
+
       const compareData = new FormData();
       compareData.append("session_id", sessionId);
+      compareData.append("baseline_type", baselineTypeValue);
       const res = await fetch("http://localhost:8000/api/analyze/compare", {
         method: "POST",
         body: compareData
       });
-      
+
       if (!res.ok) {
         const errData = await res.json().catch(() => ({ detail: "Compare failed." }));
         throw { title: "CodeDNA Comparison Error", detail: errData.detail || "Static metric comparison failed." };
@@ -151,7 +230,7 @@ export default function Home() {
       const data = await res.json();
       setReport(data);
       setAppState("results");
-      
+
     } catch (error: any) {
       console.error("Analysis execution error:", error);
       setAppState("idle");
@@ -207,16 +286,16 @@ export default function Home() {
       </header>
 
       {errorNotice && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           className={`mb-8 p-5 rounded-xl border flex items-start gap-4 ${
-            errorNotice.isRateLimit 
+            errorNotice.isRateLimit
               ? "bg-amber-50 border-amber-300 text-amber-900 shadow-sm"
               : "bg-red-50 border-red-300 text-red-900 shadow-sm"
           }`}
         >
-          <div className={`p-2 rounded-lg shrink-0 ${errorNotice.isRateLimit ? "bg-amber-100 text-amber-800" : "bg-red-100 text-red-800"}`}>
+          <div className={`p-2 rounded-lg shrink-0 ${errorNotice.isRateLimit ? "bg-amber-100 text-amber-800" : "bg-red-100 text-red-800`}`}>
             <ShieldAlert className="w-6 h-6" />
           </div>
           <div className="flex-1">
@@ -232,7 +311,7 @@ export default function Home() {
               {errorNotice.detail}
             </p>
           </div>
-          <button 
+          <button
             onClick={() => setErrorNotice(null)}
             className="text-xs font-semibold px-3 py-1.5 rounded-md bg-white/80 hover:bg-white border text-zinc-700 transition-colors shrink-0 shadow-sm"
           >
@@ -243,7 +322,7 @@ export default function Home() {
 
       <AnimatePresence mode="wait">
         {appState === "idle" && (
-          <motion.div 
+          <motion.div
             key="idle"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -257,49 +336,126 @@ export default function Home() {
                   <span className="bg-zinc-100 p-2 rounded-md border border-zinc-200"><Search className="w-4 h-4 text-zinc-600"/></span>
                   Historical Baseline (CodeDNA)
                 </h2>
-                
+
                 <div className="space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-zinc-700">GitHub Project Link <span className="text-xs font-normal text-zinc-500">(Optional - Scans user's public repos)</span></label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
-                      <input 
-                        type="text" 
-                        value={githubLink}
-                        onChange={(e) => setGithubLink(e.target.value)}
-                        placeholder="e.g. https://github.com/torvalds/linux"
-                        className="w-full bg-white border border-zinc-300 rounded-lg py-2.5 pl-10 pr-4 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-800 focus:ring-1 focus:ring-zinc-800 transition-all shadow-sm"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t border-zinc-200" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-white px-3 text-zinc-400 font-semibold">And / Or</span>
-                    </div>
+                  {/* Tabs */}
+                  <div className="flex space-x-4 mb-4">
+                    <button
+                      onClick={() => setSelectedBaselineTab(0)}
+                      className={`px-4 py-2 bg-white border-b-2 border-zinc-300 text-zinc-700 ${selectedBaselineTab === 0 ? 'border-zinc-900' : ''}`}
+                    >
+                      Single Student Baseline
+                    </button>
+                    <button
+                      onClick={() => setSelectedBaselineTab(1)}
+                      className={`px-4 py-2 bg-white border-b-2 border-zinc-300 text-zinc-700 ${selectedBaselineTab === 1 ? 'border-zinc-900' : ''}`}
+                    >
+                      Master Class / LMS ZIP
+                    </button>
+                    <button
+                      onClick={() => setSelectedBaselineTab(2)}
+                      className={`px-4 py-2 bg-white border-b-2 border-zinc-300 text-zinc-700 ${selectedBaselineTab === 2 ? 'border-zinc-900' : ''}`}
+                    >
+                      Course Starter Template
+                    </button>
                   </div>
 
-                  <div className="border-2 border-dashed border-zinc-200 rounded-xl p-8 text-center bg-zinc-50 hover:bg-zinc-100 transition-all group cursor-pointer relative">
-                    <FileArchive className="w-8 h-8 text-zinc-400 mx-auto mb-3 group-hover:text-zinc-600 transition-colors" />
-                    <p className="text-sm text-zinc-700 font-medium">Drop Reference Project ZIPs</p>
-                    <p className="text-xs text-zinc-500 mt-1">Upload multiple historical repos for the baseline</p>
-                    <input 
-                      key={`repo-${resetKey}`}
-                      type="file" 
-                      multiple 
-                      accept=".zip"
-                      onChange={(e) => setRepoFiles(e.target.files)}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                    {repoFiles && repoFiles.length > 0 && (
-                      <div className="mt-4 inline-block bg-white border border-zinc-200 px-3 py-1 rounded-md text-xs font-medium text-zinc-700 shadow-sm">
-                        {repoFiles.length} file(s) selected
+                  {/* Tab Panels */}
+                  {selectedBaselineTab === 0 && (
+                    <>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-zinc-700">GitHub Project Link <span className="text-xs font-normal text-zinc-500">(Optional - Scans user's public repos)</span></label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
+                          <input
+                            type="text"
+                            value={githubLink}
+                            onChange={(e) => setGithubLink(e.target.value)}
+                            placeholder="e.g. https://github.com/torvalds/linux"
+                            className="w-full bg-white border border-zinc-300 rounded-lg py-2.5 pl-10 pr-4 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-800 focus:ring-1 focus:ring-zinc-800 transition-all shadow-sm"
+                          />
+                        </div>
                       </div>
-                    )}
-                  </div>
+
+                      <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                          <span className="w-full border-t border-zinc-200" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                          <span className="bg-white px-3 text-zinc-400 font-semibold">And / Or</span>
+                        </div>
+                      </div>
+
+                      <div className="border-2 border-dashed border-zinc-200 rounded-xl p-8 text-center bg-zinc-50 hover:bg-zinc-100 transition-all group cursor-pointer relative">
+                        <FileArchive className="w-8 h-8 text-zinc-400 mx-auto mb-3 group-hover:text-zinc-600 transition-colors" />
+                        <p className="text-sm text-zinc-700 font-medium">Drop Reference Project ZIPs</p>
+                        <p className="text-xs text-zinc-500 mt-1">Upload multiple historical repos for the baseline</p>
+                        <input
+                          key={`repo-${resetKey}`}
+                          type="file"
+                          multiple
+                          accept=".zip"
+                          onChange={(e) => setRepoFiles(e.target.files)}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                        {repoFiles && repoFiles.length > 0 && (
+                          <div className="mt-4 inline-block bg-white border border-zinc-200 px-3 py-1 rounded-md text-xs font-medium text-zinc-700 shadow-sm">
+                            {repoFiles.length} file(s) selected
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+
+                  {selectedBaselineTab === 1 && (
+                    <>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-zinc-700">Master Class / LMS ZIP</label>
+                        <div className="border-2 border-dashed border-zinc-200 rounded-xl p-8 text-center bg-zinc-50 hover:bg-zinc-100 transition-all group cursor-pointer relative">
+                          <FileArchive className="w-8 h-8 text-zinc-400 mx_auto mb-3 group-hover:text-zinc-600 transition-colors" />
+                          <p className="text-sm text-zinc-700 font-medium">Drop Master Class ZIP</p>
+                          <p className="text-xs text-zinc-500 mt-1">Upload a ZIP containing student submissions (each student in a subfolder or ZIP)</p>
+                          <input
+                            key={`cohort-${resetKey}`}
+                            type="file"
+                            accept=".zip"
+                            onChange={(e) => setCohortFile(e.target.files?.[0] || null)}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          />
+                          {cohortFile && (
+                            <div className="mt-4 inline-block bg-white border border-zinc-200 px-3 py-1 rounded-md text-xs font-medium text-zinc-700 shadow-sm">
+                              {cohortFile.name}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {selectedBaselineTab === 2 && (
+                    <>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-zinc-700">Course Starter Template</label>
+                        <div className="border-2 border-dashed border-zinc-200 rounded-xl p-8 text-center bg-zinc-50 hover:bg-zinc-100 transition-all group cursor-pointer relative">
+                          <FileArchive className="w-8 h-8 text-zinc-400 mx_auto mb-3 group-hover:text-zinc-600 transition-colors" />
+                          <p className="text-sm text-zinc-700 font-medium">Drop Starter Code ZIP</p>
+                          <p className="text-xs text-zinc-500 mt-1">Upload the starter code/template ZIP for subtraction</p>
+                          <input
+                            key={`template-${resetKey}`}
+                            type="file"
+                            accept=".zip"
+                            onChange={(e) => setTemplateFile(e.target.files?.[0] || null)}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          />
+                          {templateFile && (
+                            <div className="mt-4 inline-block bg-white border border-zinc-200 px-3 py-1 rounded-md text-xs font-medium text-zinc-700 shadow-sm">
+                              {templateFile.name}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -312,9 +468,9 @@ export default function Home() {
                   <Upload className="w-8 h-8 text-zinc-400 mx-auto mb-3 group-hover:text-zinc-600 transition-colors" />
                   <p className="text-sm text-zinc-700 font-medium">Drop Submission ZIP</p>
                   <p className="text-xs text-zinc-500 mt-1">The student code to investigate</p>
-                  <input 
+                  <input
                     key={`sub-${resetKey}`}
-                    type="file" 
+                    type="file"
                     accept=".zip"
                     onChange={(e) => setSubmissionFile(e.target.files?.[0] || null)}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -337,7 +493,7 @@ export default function Home() {
               <p className="text-zinc-500 mb-8 max-w-md leading-relaxed">
                 CodeDNA will parse the AST of the historical baseline, establish a unique semantic signature, and run a deterministic comparison against the submission.
               </p>
-              <button 
+              <button
                 onClick={startAnalysis}
                 disabled={!submissionFile || (!githubLink && (!repoFiles || repoFiles.length === 0))}
                 className="group flex items-center gap-2 px-8 py-3.5 bg-zinc-900 text-white font-medium rounded-lg hover:bg-zinc-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
@@ -350,7 +506,7 @@ export default function Home() {
         )}
 
         {appState === "analyzing" && (
-          <motion.div 
+          <motion.div
             key="analyzing"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -409,7 +565,7 @@ export default function Home() {
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${
                       isDone    ? "bg-emerald-500 text-white" :
                       isCurrent ? "bg-zinc-900 text-white" :
-                                  "bg-zinc-200 text-zinc-400"
+                                  "bg-zinc-200 text-zinc-400`
                     }`}>
                       {isDone ? (
                         <CheckCircle className="w-3.5 h-3.5" />
@@ -422,7 +578,7 @@ export default function Home() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-semibold ${isDone ? "text-emerald-700" : isCurrent ? "text-zinc-900" : "text-zinc-400"}`}>
+                      <p className={`text-sm font-semibold ${isDone ? "text-emerald-700" : isCurrent ? "text-zinc-900" : "text-zinc-400`}">
                         {step.label}
                       </p>
                     </div>
@@ -446,7 +602,7 @@ export default function Home() {
         )}
 
         {appState === "results" && report && (
-          <motion.div 
+          <motion.div
             key="results"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -489,17 +645,17 @@ export default function Home() {
                 <p className="text-2xl font-black text-zinc-900">{Math.round(((report.deterministic_data?.forensics?.formatting_deviation || 0) + (report.deterministic_data?.forensics?.naming_deviation || 0)) / 2)}<span className="text-sm font-medium text-zinc-400">/100</span></p>
                 <p className="text-[10px] text-zinc-500 mt-2 leading-tight">{report.deterministic_data?.forensics?.deviation_reasons?.naming}</p>
               </div>
-              <div className="clean-card p-4 bg-zinc-50 border-zinc-200 shadow-sm flex flex-col justify-center">
+              <div className="clean-card p-4 bg-zinc-50 border-zinc-200 shadow-sm flex-floating justify-center">
                 <p className="text-[10px] font-bold text-zinc-500 mb-1 tracking-wider">COMPLEXITY DEVIATION</p>
                 <p className="text-2xl font-black text-zinc-900">{Math.round(report.deterministic_data?.forensics?.complexity_deviation || 0)}<span className="text-sm font-medium text-zinc-400">/100</span></p>
                 <p className="text-[10px] text-zinc-500 mt-2 leading-tight">{report.deterministic_data?.forensics?.deviation_reasons?.complexity}</p>
               </div>
-              <div className="clean-card p-4 bg-zinc-50 border-zinc-200 shadow-sm flex flex-col justify-center">
+              <div className="clean-card p-4 bg-zinc-50 border-zinc-200 shadow-sm flex-col justify-center">
                 <p className="text-[10px] font-bold text-zinc-500 mb-1 tracking-wider">SIMILARITY EVIDENCE</p>
                 <p className="text-2xl font-black text-zinc-900">{Math.round(report.deterministic_data?.authorship_intelligence?.token_ast_similarity || 0)}<span className="text-sm font-medium text-zinc-400">/100</span></p>
                 <p className="text-[10px] text-zinc-500 mt-2 leading-tight">{report.deterministic_data?.forensics?.deviation_reasons?.similarity}</p>
               </div>
-              
+
               <div className={`clean-card p-4 shadow-sm flex flex-col justify-center border-l-4 ${report.deterministic_data?.authorship_intelligence?.categorical_signals?.ai_associated_signals === 'High' ? 'bg-red-50 border-red-500' : 'bg-emerald-50 border-emerald-500'}`}>
                 <p className="text-[10px] font-bold text-zinc-500 mb-1 tracking-wider">AI-ASSOCIATED SIGNALS</p>
                 <p className={`text-xl font-black ${report.deterministic_data?.authorship_intelligence?.categorical_signals?.ai_associated_signals === 'High' ? 'text-red-700' : 'text-emerald-700'}`}>
@@ -546,7 +702,7 @@ export default function Home() {
             {/* Local anomalies (always available, no API cost) */}
             <div className="clean-card p-8">
               <h3 className="text-lg font-bold mb-4 text-zinc-900 border-b border-zinc-100 pb-2">Deterministic Anomalies (Instant & Free)</h3>
-              
+
               {/* Unseen Patterns */}
               {report.deterministic_data?.forensics?.new_unseen_patterns?.length > 0 && (
                 <div className="mb-6">
@@ -610,7 +766,7 @@ export default function Home() {
                   <p className="text-sm font-medium">Generating forensic reasoning…</p>
                 </div>
               )}
-              
+
               {!aiLoading && !report.forensic_report && (
                 <div className="py-6 border-t border-zinc-100 mt-4">
                    <p className="text-[15px] leading-relaxed text-zinc-600">
@@ -623,7 +779,7 @@ export default function Home() {
                 <div className="mt-8 space-y-8 border-t border-zinc-100 pt-8">
                   {/* Executive Summary */}
                   <div>
-                    <h4 className="text-xs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Executive Summary</h4>
+                    <h4 className="text-xs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Executive Summary</p>
                     <p className="text-[15px] leading-relaxed text-zinc-800 font-medium bg-zinc-50 p-4 rounded-lg border border-zinc-200">
                       {report.forensic_report.executive_forensic_summary}
                     </p>
@@ -638,14 +794,14 @@ export default function Home() {
                           <div className="flex items-start justify-between mb-4">
                             <h5 className="font-bold text-zinc-900 text-lg">{finding.finding}</h5>
                             <span className={`px-2.5 py-1 text-xs font-bold uppercase rounded-md tracking-wide border ${
-                              finding.severity === 'high' ? 'bg-red-50 text-red-700 border-red-200' : 
-                              finding.severity === 'medium' ? 'bg-orange-50 text-orange-700 border-orange-200' : 
+                              finding.severity === 'high' ? 'bg-red-50 text-red-700 border-red-200' :
+                              finding.severity === 'medium' ? 'bg-orange-50 text-orange-700 border-orange-200' :
                               'bg-blue-50 text-blue-700 border-blue-200'
                             }`}>
                               {finding.severity} Risk
                             </span>
                           </div>
-                          
+
                           <div className="grid md:grid-cols-2 gap-6 mb-6">
                             <div>
                               <p className="text-xs font-bold text-zinc-400 uppercase mb-1">Evidence</p>
@@ -656,15 +812,15 @@ export default function Home() {
                                <p className="text-sm text-zinc-700">{finding.why_deviation_matters}</p>
                             </div>
                           </div>
-                          
+
                           <div className="grid md:grid-cols-2 gap-6 mb-6 bg-zinc-50 p-4 rounded-lg border border-zinc-200">
                              <div>
                               <p className="text-xs font-bold text-zinc-500 uppercase mb-1">False Positives</p>
-                              <p className="text-sm text-zinc-600">{finding.false_positive_considerations}</p>
+                              {finding.false_positive_considerations}
                             </div>
                             <div>
                                <p className="text-xs font-bold text-zinc-500 uppercase mb-1">Contradictory Evidence</p>
-                               <p className="text-sm text-zinc-600">{finding.contradictory_evidence}</p>
+                              {finding.contradictory_evidence}
                             </div>
                           </div>
 
@@ -677,13 +833,13 @@ export default function Home() {
                                 ))}
                               </div>
                             </div>
-                          )}
+                          )
 
                           <div className="border-t border-zinc-100 pt-4 mt-2">
                              <p className="text-sm text-blue-700 font-medium flex items-center gap-2"><CheckCircle className="w-4 h-4"/> {finding.recommended_evaluator_action}</p>
                           </div>
                         </div>
-                      ))}
+                      )}
                      </div>
                   </div>
 
@@ -703,7 +859,7 @@ export default function Home() {
                       </ul>
                     </div>
                   )}
-                  
+
                 </div>
               )}
             </div>

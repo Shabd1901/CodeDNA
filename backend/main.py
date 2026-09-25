@@ -12,6 +12,7 @@ import os
 import shutil
 import zipfile
 import json
+import copy
 from analysis import build_repository_codedna, compare_codedna
 from ai_engine import generate_forensic_report
 
@@ -125,6 +126,173 @@ async def fetch_github_repos(session_id: str = Form(...), username: str = Form(.
                     
     return {"status": "success", "fetched": downloaded}
 
+@app.post("/api/repositories/template")
+async def upload_template(session_id: str = Form(...), file: UploadFile = File(...)):
+    """Upload a ZIP file of the starter code/template"""
+    if not file.filename.endswith('.zip'):
+        raise HTTPException(status_code=400, detail="Only .zip files are allowed")
+
+    session_path = os.path.join(SESSION_DIR, session_id)
+    if not os.path.exists(session_path):
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Create template directory
+    template_path = os.path.join(session_path, "template")
+    os.makedirs(template_path, exist_ok=True)
+
+    # Save the zip
+    template_zip_path = os.path.join(template_path, file.filename)
+
+    with open(template_zip_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    # Extract the zip
+    extract_path = os.path.join(template_path, file.filename[:-4])
+    try:
+        with zipfile.ZipFile(template_zip_path, 'r') as zip_ref:
+            zip_ref.extractall(extract_path)
+    except zipfile.BadZipFile:
+        raise HTTPException(status_code=400, detail="Invalid zip file")
+
+    return {"status": "success", "template": file.filename[:-4]}
+@app.post("/api/repositories/cohort-zip")
+async def upload_cohort_zip(session_id: str = Form(...), file: UploadFile = File(...)):
+    """Upload a master LMS ZIP containing student submissions"""
+    if not file.filename.endswith('.zip'):
+        raise HTTPException(status_code=400, detail="Only .zip files are allowed")
+
+    session_path = os.path.join(SESSION_DIR, session_id)
+    if not os.path.exists(session_path):
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Create cohort directory
+    cohort_path = os.path.join(session_path, "cohort")
+    os.makedirs(cohort_path, exist_ok=True)
+
+    # Save the zip
+    cohort_zip_path = os.path.join(cohort_path, file.filename)
+
+    with open(cohort_zip_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    # Extract the master zip
+    extract_path = os.path.join(cohort_path, "master")
+    try:
+        with zipfile.ZipFile(cohort_zip_path, 'r') as zip_ref:
+            zip_ref.extractall(extract_path)
+    except zipfile.BadZipFile:
+        raise HTTPException(status_code=400, detail="Invalid zip file")
+
+    # Process each student submission (subfolders or zips)
+    student_dirs = []
+    for item in os.listdir(extract_path):
+        item_path = os.path.join(extract_path, item)
+        if os.path.isdir(item_path):
+            student_dirs.append(item_path)
+        elif item_path.endswith('.zip'):
+            # Extract the student zip
+            student_extract_path = os.path.join(cohort_path, f"student_{item[:-4]}")
+            os.makedirs(student_extract_path, exist_ok=True)
+            try:
+                with zipfile.ZipFile(item_path, 'r') as zip_ref:
+                    zip_ref.extractall(student_extract_path)
+                student_dirs.append(student_extract_path)
+            except zipfile.BadZipFile:
+                pass
+
+    if not student_dirs:
+        raise HTTPException(status_code=400, detail="No valid student submissions found")
+
+    # Build cohort DNA
+    cohort_dna = build_cohort_codedna(student_dirs)
+
+    # Store cohort DNA as JSON for later use
+    cohort_json_path = os.path.join(cohort_path, "cohort_dna.json")
+    with open(cohort_json_path, 'w') as f:
+        json.dump(cohort_dna, f)
+
+    return {"status": "success", "cohort": "processed"}
+@app.post("/api/repositories/github-classroom")
+async def fetch_github_classroom(
+    session_id: str = Form(...),
+    organization: str = Form(...),
+    assignment_prefix: str = Form(...)
+):
+    """Fetch student repositories from a GitHub Organization for an assignment"""
+    session_path = os.path.join(SESSION_DIR, session_id)
+    if not os.path.exists(session_path):
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Create cohort directory
+    cohort_path = os.path.join(session_path, "cohort")
+    os.makedirs(cohort_path, exist_ok=True)
+
+    github_token = (os.getenv("GITHUB_TOKEN") or "").strip()
+    headers = {"User-Agent": "CodeDNA-Forensic-App"}
+    if github_token:
+        headers["Authorization"] = f"Bearer {github_token}"
+
+    async with httpx.AsyncClient(headers=headers, timeout=15.0) as client:
+        # Fetch organization repositories
+        url = f"https://api.github.com/orgs/{organization}/repos?per_page=100"
+        try:
+            response = await client.get(url)
+        except httpx.RequestError as exc:
+            raise HTTPException(status_code=502, detail=f"Network error connecting to GitHub: {str(exc)}")
+
+        if response.status_code == 404:
+            raise HTTPException(status_code=404, detail=f"GitHub organization '{organization}' not found.")
+        elif response.status_code != 200:
+            raise HTTPException(status_code=400, detail=f"Failed to fetch repositories for organization '{organization}' (HTTP {response.status_code}).")
+
+        repos = response.json()
+        if not isinstance(repos, list) or len(repos) == 0:
+            raise HTTPException(status_code=404, detail=f"No repositories found for GitHub organization '{organization}'.")
+
+        # Filter by assignment prefix
+        matched_repos = [repo for repo in repos if repo["name"].startswith(assignment_prefix)]
+        if not matched_repos:
+            raise HTTPException(status_code=404, detail=f"No repositories found with prefix '{assignment_prefix}' in organization '{organization}'.")
+
+        # Process each matched repository
+        student_dirs = []
+        for repo in matched_repos:
+            repo_name = repo["name"]
+            branch = repo.get("default_branch", "main")
+            zip_url = f"https://github.com/{organization}/{repo_name}/archive/refs/heads/{branch}.zip"
+
+            try:
+                zip_response = await client.get(zip_url, follow_redirects=True)
+                if zip_response.status_code == 200:
+                    zip_path = os.path.join(cohort_path, f"{repo_name}.zip")
+                    with open(zip_path, "wb") as f:
+                        f.write(zip_response.content)
+
+                    extract_path = os.path.join(cohort_path, repo_name)
+                    os.makedirs(extract_path, exist_ok=True)
+                    try:
+                        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                            zip_ref.extractall(extract_path)
+                        student_dirs.append(extract_path)
+                    except zipfile.BadZipFile:
+                        pass
+            except httpx.RequestError:
+                pass
+
+        if not student_dirs:
+            raise HTTPException(status_code=400, detail="No valid student repositories processed")
+
+        # Build cohort DNA
+        cohort_dna = build_cohort_codedna(student_dirs)
+
+        # Store cohort DNA as JSON for later use
+        cohort_json_path = os.path.join(cohort_path, "cohort_dna.json")
+        with open(cohort_json_path, 'w') as f:
+            json.dump(cohort_dna, f)
+
+        return {"status": "success", "fetched": len(student_dirs)}
+
+
 @app.post("/api/analyze/submission")
 async def upload_submission(session_id: str = Form(...), file: UploadFile = File(...)):
     """Upload the final submission for analysis"""
@@ -151,28 +319,52 @@ async def upload_submission(session_id: str = Form(...), file: UploadFile = File
     return {"status": "success", "message": "Submission uploaded successfully"}
 
 @app.post("/api/analyze/compare")
-async def analyze_and_compare(session_id: str = Form(...)):
+async def analyze_and_compare(session_id: str = Form(...), baseline_type: str = Form("personal")):
     """Run CodeDNA baseline extraction, compare against the submission, and generate AI report."""
     session_path = os.path.join(SESSION_DIR, session_id)
     if not os.path.exists(session_path):
         raise HTTPException(status_code=404, detail="Session not found")
-        
+
     repos_dir = os.path.join(session_path, "repositories")
     sub_dir = os.path.join(session_path, "submission", "extracted")
-    
-    # 1. Build Baseline DNA
-    baseline_dna = build_repository_codedna(repos_dir)
-    
-    # 2. Build Submission DNA
+    template_dir = os.path.join(session_path, "template")
+    cohort_dir = os.path.join(session_path, "cohort")
+
+    # 1. Build Baseline DNA based on baseline_type
+    if baseline_type == "cohort" and os.path.exists(cohort_dir):
+        # Check for cohort DNA JSON (pre-built from cohort-zip or github-classroom endpoint)
+        cohort_json_path = os.path.join(cohort_dir, "cohort_dna.json")
+        if os.path.exists(cohort_json_path):
+            with open(cohort_json_path, "r") as f:
+                baseline_dna = json.load(f)
+        else:
+            # Build cohort DNA from cohort directory (should have been built by the endpoint)
+            baseline_dna = build_cohort_codedna([cohort_dir])
+    else:
+        # Personal baseline (default)
+        baseline_dna = build_repository_codedna(repos_dir)
+
+    # 2. Check for template DNA and subtract if exists
+    template_dna = None
+    if os.path.exists(template_dir):
+        template_dna = build_repository_codedna(template_dir)
+        # Subtract template DNA from baseline
+        baseline_dna = subtract_template_dna(baseline_dna, template_dna)
+
+    # 3. Build Submission DNA
     submission_dna = build_repository_codedna(sub_dir)
-    
-    # 3. Compare (Deterministic)
+
+    # Subtract template DNA from submission if template exists
+    if template_dna is not None:
+        submission_dna = subtract_template_dna(submission_dna, template_dna)
+
+    # 4. Compare (Deterministic)
     comparison_results = compare_codedna(baseline_dna, submission_dna)
-    
+
     # Save for the AI step
     with open(os.path.join(session_path, "deterministic_results.json"), "w") as f:
         json.dump(comparison_results, f)
-    
+
     return {
         "status": "success",
         "deterministic_data": comparison_results
