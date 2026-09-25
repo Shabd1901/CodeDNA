@@ -3,6 +3,7 @@ import ast
 import re
 import math
 import copy
+import logging
 from pathlib import Path
 from typing import Dict, List, Any, Set, Tuple
 
@@ -190,7 +191,7 @@ class PythonVisitor(ast.NodeVisitor):
             if isinstance(node.test, ast.Compare) and isinstance(node.test.left, ast.Name) and node.test.left.id == '__name__':
                 self.idioms['name_main'] += 1
         except Exception:
-            pass
+            pass  # Safe to ignore - idiom detection is non-critical
         self.generic_visit(node)
         
     def visit_Compare(self, node):
@@ -523,8 +524,8 @@ def build_repository_codedna(repo_dir: str) -> Dict[str, Any]:
 
     files_count = dna["repo_count_usable_files_languages"]["usable_files"]
     reliability = 40 if files_count > 50 else (20 if files_count > 10 else 0)
-    if dna["repo_count_usable_files_languages"]["total_repos"] > 2: reliability += 30
-    if total_loc > 0 and dna["loc_distribution"]["mean"] > 50: reliability += 30
+    if dna["repo_count_usable_files_languages"]["total_repos"] >= 3: reliability += 30
+    if total_loc >= 500: reliability += 40
     dna["baseline_reliability_score"] = min(100, reliability)
     
     names = dna["naming_convention_distribution"]

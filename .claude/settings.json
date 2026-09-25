@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      {
+        "tool": "mcp@ssh",
+        "description": "Allow github-ssh MCP server"
+      }
+    ]
+  }
+}
