@@ -221,7 +221,7 @@ export default function Home() {
 
       // If we have both personal and cohort data available, also run the alternative comparison
       if (hasPersonalData && hasCohortData) {
-        const alternativeType = selectedBaselineTab === 0 ? "cohort" : "personal";
+        const alternativeType = (selectedBaselineTab as number) === 0 ? "cohort" : "personal";
         comparisonsToRun.push({ type: alternativeType, label: alternativeType === "personal" ? "Personal" : "Cohort", isAlternative: true });
       }
 
@@ -649,8 +649,8 @@ export default function Home() {
                 <h2 className="text-2xl font-bold text-zinc-900">Investigation Report</h2>
                 <div className="flex items-center gap-3 mt-2">
                   <span className="text-zinc-500 text-sm">Baseline Reliability:</span>
-                  <span className={`px-2.5 py-1 text-xs font-semibold rounded-md border ${report.deterministic_data?.reliability === 'Reliable' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
-                    {report.deterministic_data?.reliability || "Unknown"}
+                  <span className={`px-2.5 py-1 text-xs font-semibold rounded-md border ${report.deterministic_data?.authorship_intelligence?.categorical_signals?.baseline_reliability === 'High' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                    {report.deterministic_data?.authorship_intelligence?.categorical_signals?.baseline_reliability || "Unknown"}
                   </span>
                 </div>
               </div>
@@ -751,6 +751,23 @@ export default function Home() {
                 </div>
               )}
 
+              {/* File-Level Anomalies */}
+              {report.deterministic_data?.forensics?.per_file_anomaly_scores?.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="text-sm font-bold text-amber-700 uppercase tracking-wide mb-2 flex items-center gap-2"><FileCode2 className="w-4 h-4"/> File-Level Anomaly Scores</h4>
+                  <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {report.deterministic_data.forensics.per_file_anomaly_scores.map((fileAnomaly: any, i: number) => (
+                      <li key={i} className="border border-amber-200 rounded-lg p-3 bg-amber-50/60 flex items-center justify-between">
+                        <span className="text-xs font-mono font-medium text-zinc-800 truncate mr-2">{fileAnomaly.file}</span>
+                        <span className="text-xs font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900 shrink-0">
+                          Score: {fileAnomaly.anomaly_score}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {/* Function Anomalies */}
               {report.deterministic_data?.forensics?.per_function_anomaly_scores?.length > 0 ? (
                 <div>
@@ -765,7 +782,9 @@ export default function Home() {
                   </ul>
                 </div>
               ) : (
-                <p className="text-sm text-zinc-500">No strict mathematical anomalies detected against the baseline.</p>
+                (!report.deterministic_data?.forensics?.per_file_anomaly_scores?.length && !report.deterministic_data?.forensics?.new_unseen_patterns?.length) && (
+                  <p className="text-sm text-zinc-500">No strict mathematical anomalies detected against the baseline.</p>
+                )
               )}
             </div>
 
