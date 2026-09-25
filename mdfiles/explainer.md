@@ -73,6 +73,7 @@ $$\text{Adjusted Anomaly Score} = \text{Personal Deviation} \times (1 - \text{Co
 Phase 1, 2, and 3 Core Engine Refactoring Complete! Ready for Phase 4 (AI Forensic Integration & UI Dashboard Updates).
 
 ## Completed Changes:
+- (2026-09-25 13:31) **GitHub Classroom Endpoint Rate-Limit Hardening:** Updated `/api/repositories/github-classroom` in `main.py` to add explicit HTTP 429 rate limit exception handling, aligning org repository fetching with standard GitHub user fetching.
 - (2026-09-25 12:53) **Cohort Normalization Architecture Specification Added:** Documented comprehensive architecture specification for Cohort Normalization, Starter Template AST Subtraction Filtering, LMS Bulk Export processing, and Dual-Vector Decision Matrix math in `explainer.md` for future platform documentation.
 - (2026-09-24 20:05) **GitHub Rate Limit Handling & Frontend Alert Banner:** Added optional `GITHUB_TOKEN` support to `main.py` (increasing limit to 5,000 req/hr). Implemented explicit HTTP 429 rate limit exception handling in FastAPI and created an interactive error notice card in `page.tsx` to display clear rate-limit feedback instead of a perpetual loading spinner.
 - (2026-09-24 19:08) **Non-Blocking Gemini Execution & Flash-Lite Optimization:** Wrapped synchronous `client.models.generate_content` in `asyncio.to_thread()` in `ai_engine.py` to prevent event-loop freezing. Defaulted primary model to `gemini-3.5-flash-lite` for near-instant responses with 0 capacity delays while maintaining automatic failover.

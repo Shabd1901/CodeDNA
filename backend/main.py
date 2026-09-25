@@ -240,7 +240,12 @@ async def fetch_github_classroom(
         except httpx.RequestError as exc:
             raise HTTPException(status_code=502, detail=f"Network error connecting to GitHub: {str(exc)}")
 
-        if response.status_code == 404:
+        if response.status_code in (403, 429) or "rate limit" in response.text.lower():
+            raise HTTPException(
+                status_code=429,
+                detail="GitHub API rate limit exceeded (60 requests/hr limit for unauthenticated users). Add a GITHUB_TOKEN to backend/.env to increase limit to 5,000 requests/hr, or upload reference ZIPs manually."
+            )
+        elif response.status_code == 404:
             raise HTTPException(status_code=404, detail=f"GitHub organization '{organization}' not found.")
         elif response.status_code != 200:
             raise HTTPException(status_code=400, detail=f"Failed to fetch repositories for organization '{organization}' (HTTP {response.status_code}).")
