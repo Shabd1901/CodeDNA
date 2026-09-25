@@ -602,7 +602,7 @@ export default function Home() {
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${
                       isDone    ? "bg-emerald-500 text-white" :
                       isCurrent ? "bg-zinc-900 text-white" :
-                                  "bg-zinc-200 text-zinc-400`
+                                  "bg-zinc-200 text-zinc-400"
                     }`}>
                       {isDone ? (
                         <CheckCircle className="w-3.5 h-3.5" />
@@ -615,7 +615,7 @@ export default function Home() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-semibold ${isDone ? "text-emerald-700" : isCurrent ? "text-zinc-900" : "text-zinc-400`}">
+                      <p className={`text-sm font-semibold ${isDone ? "text-emerald-700" : isCurrent ? "text-zinc-900" : "text-zinc-400"}`}>
                         {step.label}
                       </p>
                     </div>
@@ -816,7 +816,7 @@ export default function Home() {
                 <div className="mt-8 space-y-8 border-t border-zinc-100 pt-8">
                   {/* Executive Summary */}
                   <div>
-                    <h4 className="text-xs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Executive Summary</p>
+                    <h4 className="text-xs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Executive Summary</h4>
                     <p className="text-[15px] leading-relaxed text-zinc-800 font-medium bg-zinc-50 p-4 rounded-lg border border-zinc-200">
                       {report.forensic_report.executive_forensic_summary}
                     </p>
@@ -870,13 +870,13 @@ export default function Home() {
                                 ))}
                               </div>
                             </div>
-                          )
+                          )}
 
                           <div className="border-t border-zinc-100 pt-4 mt-2">
                              <p className="text-sm text-blue-700 font-medium flex items-center gap-2"><CheckCircle className="w-4 h-4"/> {finding.recommended_evaluator_action}</p>
                           </div>
                         </div>
-                      )}
+                      ))}
                      </div>
                   </div>
 
