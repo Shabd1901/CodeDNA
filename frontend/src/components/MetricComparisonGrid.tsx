@@ -3,6 +3,8 @@
 import React from "react";
 import { GitCompare, Box, Layers, Cpu, ArrowUpRight, Check, AlertCircle } from "lucide-react";
 
+import { InfoHelper } from "@/components/InfoTooltipModal";
+
 interface MetricComparisonGridProps {
   baselineMetrics: any;
   submissionMetrics: any;
@@ -217,6 +219,7 @@ export function MetricComparisonGrid({
             <h4 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
               <Layers className="w-4 h-4 text-emerald-600" />
               <span>Dependency Discontinuity</span>
+              <InfoHelper termKey="dependency_discontinuity" />
             </h4>
             <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-zinc-100 text-zinc-700">
               Dev: {Math.round(forensics?.dependency_deviation || 0)}%

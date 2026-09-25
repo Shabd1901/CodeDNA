@@ -16,7 +16,9 @@ import {
   ArrowRight,
   Sliders,
   AlertTriangle,
-  FolderGit2
+  FolderGit2,
+  Trash2,
+  X
 } from "lucide-react";
 
 import { PipelineNav, PipelineStage } from "@/components/PipelineNav";
@@ -30,6 +32,7 @@ import { BaselineProfileView } from "@/components/BaselineProfileView";
 import { MLIntelligenceView } from "@/components/MLIntelligenceView";
 import { TemporalEvolutionView } from "@/components/TemporalEvolutionView";
 import { BenchmarkSuiteView } from "@/components/BenchmarkSuiteView";
+import { InfoHelper } from "@/components/InfoTooltipModal";
 
 export default function Home() {
   const [appState, setAppState] = useState<"idle" | "analyzing" | "results">("idle");
@@ -38,10 +41,29 @@ export default function Home() {
   // Form State
   const [githubLink, setGithubLink] = useState("");
   const [repoFiles, setRepoFiles] = useState<FileList | null>(null);
+  const [stagedBaselineList, setStagedBaselineList] = useState<File[]>([]);
   const [submissionFile, setSubmissionFile] = useState<File | null>(null);
-  // Fields for template and cohort data
   const [templateFile, setTemplateFile] = useState<File | null>(null);
   const [cohortFile, setCohortFile] = useState<File | null>(null);
+
+  const handleAddBaselineFiles = (newFiles: FileList | null) => {
+    if (!newFiles || newFiles.length === 0) return;
+    const added = Array.from(newFiles);
+    setStagedBaselineList((prev) => {
+      const existingNames = new Set(prev.map((f) => f.name));
+      const filteredNew = added.filter((f) => !existingNames.has(f.name));
+      return [...prev, ...filteredNew];
+    });
+  };
+
+  const handleRemoveBaselineFile = (index: number) => {
+    setStagedBaselineList((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleClearAllBaselineFiles = () => {
+    setStagedBaselineList([]);
+    setRepoFiles(null);
+  };
   const [cohortOrganization, setCohortOrganization] = useState("");
   const [cohortAssignmentPrefix, setCohortAssignmentPrefix] = useState("");
   // Selected baseline tab for UI
@@ -94,8 +116,8 @@ export default function Home() {
   const startAnalysis = async () => {
     if (!submissionFile) return;
 
-    // Validate that we have at least one type of baseline data
-    const hasPersonalData = !!githubLink || (repoFiles && repoFiles.length > 0);
+    const baselineUploadList = stagedBaselineList.length > 0 ? stagedBaselineList : (repoFiles ? Array.from(repoFiles) : []);
+    const hasPersonalData = !!githubLink || baselineUploadList.length > 0;
     const hasCohortData = (selectedBaselineTab === 1 && !!cohortFile) ||
                          (selectedBaselineTab === 2 && !!cohortOrganization && !!cohortAssignmentPrefix);
 
@@ -153,18 +175,18 @@ export default function Home() {
           }
         }
 
-        if (repoFiles && repoFiles.length > 0) {
-          for (let i = 0; i < repoFiles.length; i++) {
+        if (baselineUploadList.length > 0) {
+          for (let i = 0; i < baselineUploadList.length; i++) {
             const repoData = new FormData();
             repoData.append("session_id", newSessionId);
-            repoData.append("file", repoFiles[i]);
+            repoData.append("file", baselineUploadList[i]);
             const upRes = await fetch("http://localhost:8000/api/repositories/upload", {
               method: "POST",
               body: repoData
             });
             if (!upRes.ok) {
               const errData = await upRes.json().catch(() => ({ detail: "Upload repository failed." }));
-              throw { title: "Baseline Upload Error", detail: errData.detail || `Failed to upload ZIP ${repoFiles[i].name}.` };
+              throw { title: "Baseline Upload Error", detail: errData.detail || `Failed to upload ZIP ${baselineUploadList[i].name}.` };
             }
           }
         }
@@ -318,8 +340,11 @@ export default function Home() {
       setAiMode(data.ai_mode?.startsWith("gemini") ? "gemini" : "openai");
       setReport((prev: any) => ({ ...prev, forensic_report: data.forensic_report }));
     } catch (error: any) {
-      console.error(error);
-      alert(`AI analysis failed: ${error.message}`);
+      console.error("AI Analysis Execution Error:", error);
+      setErrorNotice({
+        title: "AI Forensic Reasoning Error",
+        detail: error?.message || "Failed to generate AI forensic reasoning. Check console for full details."
+      });
     } finally {
       setAiLoading(false);
     }
@@ -495,24 +520,65 @@ export default function Home() {
                         </span>
                       </div>
 
-                      <div className="border-2 border-dashed border-zinc-200 hover:border-indigo-400 rounded-xl p-5 text-center bg-zinc-50/70 hover:bg-indigo-50/30 transition-all cursor-pointer relative">
-                        <FileArchive className="w-6 h-6 text-zinc-400 mx-auto mb-1.5" />
+                      <div className="border-2 border-dashed border-zinc-200 hover:border-indigo-400 rounded-xl p-4 text-center bg-zinc-50/70 hover:bg-indigo-50/30 transition-all cursor-pointer relative">
+                        <FileArchive className="w-6 h-6 text-zinc-400 mx-auto mb-1" />
                         <p className="text-xs font-semibold text-zinc-800">Drop Historical Project ZIPs</p>
-                        <p className="text-[11px] text-zinc-500">Upload one or multiple past student submissions</p>
+                        <p className="text-[11px] text-zinc-500">Select one or multiple past student ZIP archives</p>
                         <input
                           key={`repo-${resetKey}`}
                           type="file"
                           multiple
                           accept=".zip"
-                          onChange={(e) => setRepoFiles(e.target.files)}
+                          onChange={(e) => handleAddBaselineFiles(e.target.files)}
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         />
-                        {repoFiles && repoFiles.length > 0 && (
-                          <div className="mt-2 inline-block bg-white border border-emerald-300 text-emerald-800 px-2.5 py-0.5 rounded text-[11px] font-mono font-semibold shadow-xs">
-                            ✓ {repoFiles.length} baseline archive(s) staged
-                          </div>
-                        )}
                       </div>
+
+                      {/* Staged Baseline Files Manager */}
+                      {stagedBaselineList.length > 0 && (
+                        <div className="space-y-2 pt-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-mono font-semibold text-zinc-600">
+                              Staged Baseline Projects ({stagedBaselineList.length})
+                            </span>
+                            <button
+                              type="button"
+                              onClick={handleClearAllBaselineFiles}
+                              className="text-[10px] font-semibold text-rose-600 hover:text-rose-700 hover:underline flex items-center gap-1 cursor-pointer"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                              <span>Clear All</span>
+                            </button>
+                          </div>
+
+                          <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                            {stagedBaselineList.map((file, idx) => (
+                              <div
+                                key={idx}
+                                className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-zinc-50 border border-zinc-200 text-xs shadow-2xs"
+                              >
+                                <div className="flex items-center gap-2 truncate">
+                                  <FileArchive className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                                  <span className="font-mono text-[11px] font-semibold text-zinc-800 truncate">
+                                    {file.name}
+                                  </span>
+                                  <span className="text-[10px] text-zinc-400 font-mono shrink-0">
+                                    ({(file.size / (1024 * 1024)).toFixed(2)} MB)
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveBaselineFile(idx)}
+                                  title="Remove this project"
+                                  className="p-1 rounded text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0 cursor-pointer"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -659,24 +725,24 @@ export default function Home() {
             </div>
 
             {/* Launch Action Bar (Full Width directly below dropzones) */}
-            <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border border-slate-700/80 rounded-xl p-6 shadow-md">
+            <div className="bg-white border border-zinc-200 rounded-xl p-6 shadow-xs text-zinc-900">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[11px] font-mono uppercase tracking-wider text-indigo-300 font-semibold">
-                      Forensic Audit Protocol Ready
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold">
+                      Forensic Audit Protocol
                     </span>
-                    {!submissionFile || (!githubLink && (!repoFiles || repoFiles.length === 0) && !cohortFile && !cohortOrganization) ? (
-                      <span className="px-2 py-0.5 rounded bg-amber-950/80 border border-amber-700 text-amber-300 text-[10px] font-mono font-semibold">
+                    {!submissionFile || (!githubLink && (stagedBaselineList.length === 0) && (!repoFiles || repoFiles.length === 0) && !cohortFile && !cohortOrganization) ? (
+                      <span className="px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-mono font-semibold">
                         Awaiting Inputs
                       </span>
                     ) : (
-                      <span className="px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-700 text-emerald-300 text-[10px] font-mono font-semibold">
+                      <span className="px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-mono font-semibold">
                         Ready to Execute
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-slate-300">
+                  <p className="text-xs text-zinc-600">
                     Executes deterministic 8-dimensional CodeDNA AST comparison, Siamese latent space scoring, and temporal change-point analysis.
                   </p>
                 </div>
@@ -684,8 +750,8 @@ export default function Home() {
                 <div className="shrink-0">
                   <button
                     onClick={startAnalysis}
-                    disabled={!submissionFile || (!githubLink && (!repoFiles || repoFiles.length === 0) && !cohortFile && !cohortOrganization)}
-                    className="w-full sm:w-auto flex items-center justify-center gap-2 py-3 px-8 bg-white hover:bg-indigo-50 text-slate-950 font-bold rounded-xl text-xs shadow-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed group cursor-pointer"
+                    disabled={!submissionFile || (!githubLink && (stagedBaselineList.length === 0) && (!repoFiles || repoFiles.length === 0) && !cohortFile && !cohortOrganization)}
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 py-3 px-8 bg-zinc-900 hover:bg-zinc-800 text-white font-bold rounded-xl text-xs shadow-xs transition-all disabled:bg-zinc-100 disabled:text-zinc-400 disabled:border disabled:border-zinc-200 disabled:shadow-none disabled:cursor-not-allowed group cursor-pointer"
                   >
                     <span>Initiate Forensic Investigation</span>
                     <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

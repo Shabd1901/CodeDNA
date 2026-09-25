@@ -306,11 +306,11 @@ export function TemporalEvolutionView({ temporalIntelligence }: TemporalEvolutio
               {milestones.map((m, idx) => {
                 const isSub = m.type === "submission";
                 return (
-                  <tr key={idx} className={isSub ? "bg-amber-50/50 font-bold" : "hover:bg-zinc-50"}>
+                  <tr key={idx} className={isSub ? "bg-indigo-50/60 font-bold border-l-4 border-indigo-500" : "hover:bg-zinc-50"}>
                     <td className="py-2.5 px-3 text-zinc-900 font-sans">
                       <span className="flex items-center gap-1.5">
-                        <GitCommit className={`w-3.5 h-3.5 ${isSub ? "text-amber-600" : "text-zinc-400"}`} />
-                        <span>{m.label}</span>
+                        <GitCommit className={`w-3.5 h-3.5 ${isSub ? "text-indigo-600 font-bold" : "text-zinc-400"}`} />
+                        <span className={isSub ? "font-bold text-indigo-950" : "font-medium text-zinc-800"}>{m.label}</span>
                       </span>
                     </td>
                     <td className="py-2.5 px-3 text-zinc-600">{m.usable_files}</td>

@@ -98,19 +98,14 @@ export function AIForensicPanel({
       )}
 
       {!aiLoading && !forensicReport && (
-        <div className="bg-zinc-50 border-2 border-dashed border-zinc-200 rounded-xl p-12 text-center">
-          <Sparkles className="w-10 h-10 text-zinc-400 mx-auto mb-3" />
-          <h4 className="text-sm font-bold text-zinc-700">Deep AI Forensic Analysis Has Not Been Run Yet</h4>
+        <div className="bg-zinc-50 border-2 border-dashed border-zinc-200 rounded-xl p-10 text-center">
+          <Sparkles className="w-9 h-9 text-zinc-400 mx-auto mb-2.5" />
+          <h4 className="text-sm font-bold text-zinc-800 flex items-center justify-center gap-1.5">
+            <span>AI Forensic Reasoning Engine</span>
+          </h4>
           <p className="text-xs text-zinc-500 mt-1 max-w-md mx-auto">
-            Deterministic deviation analysis is already complete. Click &quot;Generate Forensic Reasoning&quot; to synthesize an authoritative investigative brief.
+            Deterministic deviation analysis is already complete. Click &quot;Run AI Analysis&quot; in the top context header to generate Gemini Flash forensic reasoning.
           </p>
-          <button
-            onClick={onRunAi}
-            disabled={!sessionId}
-            className="mt-4 px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold rounded-lg shadow-sm"
-          >
-            Run Gemini Flash Investigation
-          </button>
         </div>
       )}
 

@@ -176,9 +176,20 @@ def analyze_temporal_evolution(
     s_snake = round((s_naming.get("snake_case", 0) / total_s_naming) * 100, 1)
     s_type = round(submission_dna.get("abstraction_level", {}).get("type_hint_ratio", 0.0) * 100, 1)
 
+    sub_label = "Target Submission"
+    try:
+        if submission_dna.get("file_metrics"):
+            first_path = submission_dna["file_metrics"][0].get("filepath", "")
+            if "/" in first_path or "\\" in first_path:
+                root_part = first_path.replace("\\", "/").split("/")[0]
+                if root_part and root_part != ".":
+                    sub_label = f"Target Submission ({root_part})"
+    except Exception:
+        pass
+
     milestones.append({
         "id": "milestone_submission",
-        "label": "New Submission (Investigated)",
+        "label": sub_label,
         "type": "submission",
         "complexity_mean": round(s_comp.get("mean", 3.0), 1),
         "complexity_p90": round(s_comp.get("p90", 5.0), 1),

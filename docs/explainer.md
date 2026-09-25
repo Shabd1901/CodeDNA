@@ -73,6 +73,15 @@ $$\text{Adjusted Anomaly Score} = \text{Personal Deviation} \times (1 - \text{Co
 Phase 0, Phase 1, Phase 2, Phase 3, and Phase 4 (Temporal Authorship Modeling & Change-Point Detection) Complete! Ready for Phase 5 (Cross-Language AST Parity & AST Normalization).
 
 ## Completed Changes:
+- (2026-09-26 01:08) **Launch Action Bar Light Theme Redesign:**
+  - Redesigned the Launch Action Bar card in [`page.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/app/page.tsx) from dark navy styling (`bg-slate-900`) to a clean white card format (`bg-white border-zinc-200 shadow-xs text-zinc-900`).
+  - Refined status badges (`Awaiting Inputs` in soft amber `bg-amber-50`, `Ready to Execute` in soft emerald `bg-emerald-50`) and button disabled states (`bg-zinc-100 text-zinc-400 border-zinc-200`).
+- (2026-09-26 01:07) **UI UX User Evaluation & Technical Help Enhancements:**
+  - **Multi-Project Baseline Manager:** Refactored baseline ZIP selection in [`page.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/app/page.tsx) to render individual project chips with file size, individual `X` remove buttons, and a **"Clear All"** button.
+  - **Technical Definition Modals (`<InfoHelper />`):** Built [`InfoTooltipModal.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/components/InfoTooltipModal.tsx) rendering an `<Info />` mini icon next to key technical terms across the dashboard (CodeDNA, Platt Calibration, Siamese Latent Space, CUSUM Change-Point, Dependency Discontinuity). Clicking displays a simplistic 1–2 sentence definition modal.
+  - **Milestone Snapshot Actual Project Name:** Updated [`temporal_analyzer.py`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/backend/ml_engine/temporal_analyzer.py) and [`TemporalEvolutionView.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/components/TemporalEvolutionView.tsx) to display the actual target project name (e.g. `Target Submission (project_name)`) highlighted with a distinct badge instead of generic fallback text.
+  - **In-App Toast Error Notifications:** Replaced native browser `alert()` popups during AI analysis failures with custom in-app error notice toasts (`setErrorNotice`), keeping full technical tracebacks logged in the browser console.
+  - **Button Consolidation:** Removed duplicate `"Run Gemini Flash Investigation"` button from [`AIForensicPanel.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/components/AIForensicPanel.tsx).
 - (2026-09-26 00:58) **Persistent Investigation Bar Theme Redesign:**
   - Redesigned [`PersistentInvestigationContext.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/components/PersistentInvestigationContext.tsx) from dark navy styling (`bg-slate-900`) to a clean light card format (`bg-white border-zinc-200 shadow-xs text-zinc-900`) matching the rest of the application dashboard.
   - Refined Reliability and Concern badges using soft high-contrast light alert tokens (`bg-emerald-50`, `bg-amber-50`, `bg-rose-50`).
@@ -193,12 +202,7 @@ Created comprehensive test suite with `scripts/generate_test_zips.py` for 8 dist
 - Cohort normalization: compare a student's CodeDNA against a class/course baseline, not just their own history.
 
 ## Known Issues / Need To make these updates:
-
-- 1. . Historical Reference Baseline -> made this card too cluttered while resizing 
-- selecting mutliple projects for historical reference baseline should show each project individually with a cross button to remove if needed and a clear all button that wou;d clear all project uploaded on either of them 
-- for every cards and terms possible  in the sections, i need a info type mini logo next to it clicking on it would open a temporary modal that would explain the technical meaning of that thing in  very very short and simplistic meaning in the next line in short 
-- in milestones snapshot section, highlight the main project but dont write its name as New submission investigated. type the actual name
-- for if the AI analysis fails and a browser notification is shown, i need it to have own notification and not the browser one (it should be visible in console but i am talking about the frontend). remove this button "Run Gemini Flash Investigation" since we have "Generate Forensic Reasoning"
+- *None currently open.*
 
 
 ## Architecture Vulnerabilities, Gotchas & Known Risk Matrix:

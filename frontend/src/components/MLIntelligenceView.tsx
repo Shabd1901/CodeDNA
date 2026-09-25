@@ -3,6 +3,8 @@
 import React from "react";
 import { BrainCircuit, Cpu, Target, Scale, HelpCircle, CheckCircle, AlertTriangle, ArrowRight } from "lucide-react";
 
+import { InfoHelper } from "@/components/InfoTooltipModal";
+
 interface MLIntelligenceViewProps {
   mlIntelligence: any;
 }
@@ -65,6 +67,7 @@ export function MLIntelligenceView({ mlIntelligence }: MLIntelligenceViewProps) 
               <h4 className="text-xs font-bold text-zinc-900 uppercase tracking-wider">
                 Calibrated Discontinuity Probability
               </h4>
+              <InfoHelper termKey="platt_calibration" />
             </div>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-100 text-zinc-600 font-semibold">
               Platt Sigmoid
