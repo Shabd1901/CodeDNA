@@ -73,6 +73,7 @@ $$\text{Adjusted Anomaly Score} = \text{Personal Deviation} \times (1 - \text{Co
 Phase 0, Phase 1, Phase 2, Phase 3, and Phase 4 (Temporal Authorship Modeling & Change-Point Detection) Complete! Ready for Phase 5 (Cross-Language AST Parity & AST Normalization).
 
 ## Completed Changes:
+- (2026-09-26 00:35) **Forensic Case ID Badge Removal:** Removed the redundant session Case ID button/badge from [`PersistentInvestigationContext.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/components/PersistentInvestigationContext.tsx) to streamline the investigation header.
 - (2026-09-26 00:33) **UI UX User Evaluation Polish & Enhancements:**
   - **Persistent Investigation Header Bar:** Removed `sticky top-4` positioning so header bar stays at its fixed place on the page instead of following scroll. Updated background from dark blackish `bg-zinc-900` to a refined dark slate gradient (`bg-gradient-to-r from-slate-900 via-slate-800 to-zinc-900 border-slate-700/80`).
   - **Overview Dashboard:** Removed `CROSS-LANGUAGE AST` banner from the Overview stage for a cleaner primary overview metrics flow.

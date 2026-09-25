@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { ShieldAlert, ShieldCheck, Activity, Copy, Check, Printer, Sparkles, RefreshCw, FolderSearch } from "lucide-react";
+import React from "react";
+import { ShieldAlert, ShieldCheck, Activity, Printer, Sparkles, RefreshCw, FolderSearch } from "lucide-react";
 
 interface PersistentInvestigationContextProps {
   sessionId: string | null;
@@ -22,21 +22,12 @@ export function PersistentInvestigationContext({
   onNewInvestigation,
   onExportDossier,
 }: PersistentInvestigationContextProps) {
-  const [copied, setCopied] = useState(false);
-
   const authIntel = report?.deterministic_data?.authorship_intelligence;
   const categorical = authIntel?.categorical_signals;
   const reliability = categorical?.baseline_reliability || "Unknown";
   const overallConcern = categorical?.overall_investigation_concern || "Unknown";
   const aiProfile = authIntel?.ai_author_profile || "Standard Analysis";
   const confidenceScore = Math.round(authIntel?.evidence_confidence_score || 0);
-
-  const copySessionId = () => {
-    if (!sessionId) return;
-    navigator.clipboard.writeText(sessionId);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   const isHighConcern = overallConcern.toLowerCase() === "high";
   const isModerateConcern = overallConcern.toLowerCase() === "moderate";
@@ -51,19 +42,9 @@ export function PersistentInvestigationContext({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">
-                Forensic Case
+              <span className="text-[11px] font-mono uppercase tracking-wider text-indigo-300 font-semibold">
+                Forensic Case Audit
               </span>
-              {sessionId && (
-                <button
-                  onClick={copySessionId}
-                  title="Click to copy Session Case ID"
-                  className="flex items-center gap-1 font-mono text-xs px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 transition-colors"
-                >
-                  <span>{sessionId.slice(0, 8)}…</span>
-                  {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-zinc-400" />}
-                </button>
-              )}
             </div>
             <p className="text-sm font-bold text-white flex items-center gap-2 mt-0.5">
               <span>Student Authorship Investigation</span>
