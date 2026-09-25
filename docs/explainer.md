@@ -73,6 +73,9 @@ $$\text{Adjusted Anomaly Score} = \text{Personal Deviation} \times (1 - \text{Co
 Phase 0, Phase 1, Phase 2, Phase 3, and Phase 4 (Temporal Authorship Modeling & Change-Point Detection) Complete! Ready for Phase 5 (Cross-Language AST Parity & AST Normalization).
 
 ## Completed Changes:
+- (2026-09-26 00:58) **Persistent Investigation Bar Theme Redesign:**
+  - Redesigned [`PersistentInvestigationContext.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/components/PersistentInvestigationContext.tsx) from dark navy styling (`bg-slate-900`) to a clean light card format (`bg-white border-zinc-200 shadow-xs text-zinc-900`) matching the rest of the application dashboard.
+  - Refined Reliability and Concern badges using soft high-contrast light alert tokens (`bg-emerald-50`, `bg-amber-50`, `bg-rose-50`).
 - (2026-09-26 00:47) **Intake Page UI UX Layout Redesign:**
   - Restructured setup page into a balanced side-by-side 2-column input grid (`Historical Baseline` on left, `Investigated Submission` on right) with compact starter template input.
   - Brought **"Initiate Forensic Investigation"** launch action card directly below the dropzones across full width, eliminating vertical scrolling to find the action button.
@@ -190,7 +193,13 @@ Created comprehensive test suite with `scripts/generate_test_zips.py` for 8 dist
 - Cohort normalization: compare a student's CodeDNA against a class/course baseline, not just their own history.
 
 ## Known Issues / Need To make these updates:
-- *None currently open.*
+
+- 1. . Historical Reference Baseline -> made this card too cluttered while resizing 
+- selecting mutliple projects for historical reference baseline should show each project individually with a cross button to remove if needed and a clear all button that wou;d clear all project uploaded on either of them 
+- for every cards and terms possible  in the sections, i need a info type mini logo next to it clicking on it would open a temporary modal that would explain the technical meaning of that thing in  very very short and simplistic meaning in the next line in short 
+- in milestones snapshot section, highlight the main project but dont write its name as New submission investigated. type the actual name
+- for if the AI analysis fails and a browser notification is shown, i need it to have own notification and not the browser one (it should be visible in console but i am talking about the frontend). remove this button "Run Gemini Flash Investigation" since we have "Generate Forensic Reasoning"
+
 
 ## Architecture Vulnerabilities, Gotchas & Known Risk Matrix:
 
