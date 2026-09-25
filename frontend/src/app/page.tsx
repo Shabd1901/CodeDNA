@@ -446,9 +446,9 @@ export default function Home() {
             {/* Top 2-Column Grid: Baseline Inputs (Left) + Submission Dropzone (Right) */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
               {/* Card 1: Historical Reference Baseline */}
-              <div className="clean-card p-6 bg-white shadow-sm border border-zinc-200 flex flex-col justify-between rounded-xl">
+              <div className="clean-card p-6 bg-white shadow-sm border border-zinc-200 flex flex-col justify-between rounded-xl h-[460px] min-h-[460px] max-h-[460px] overflow-hidden">
                 <div>
-                  <div className="flex items-center justify-between mb-4 border-b border-zinc-100 pb-3">
+                  <div className="flex items-center justify-between mb-3 border-b border-zinc-100 pb-2.5">
                     <div className="flex items-center gap-2">
                       <span className="p-1.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100">
                         <FolderGit2 className="w-4 h-4" />
@@ -460,13 +460,13 @@ export default function Home() {
                     <span className="text-[11px] text-zinc-400 font-mono">AST Signature Matrix</span>
                   </div>
 
-                  {/* Tabs */}
-                  <div className="flex gap-1.5 p-1 bg-zinc-100 rounded-lg mb-4 text-xs font-semibold">
+                  {/* Tab Selector */}
+                  <div className="flex gap-1.5 p-1 bg-zinc-100 rounded-xl mb-3 text-xs font-semibold">
                     <button
                       onClick={() => setSelectedBaselineTab(0)}
-                      className={`flex-1 py-1.5 px-3 rounded-md transition-all cursor-pointer ${
+                      className={`flex-1 py-1.5 px-3 rounded-lg transition-all cursor-pointer ${
                         selectedBaselineTab === 0
-                          ? "bg-white text-zinc-900 shadow-sm border border-zinc-200"
+                          ? "bg-white text-zinc-900 shadow-xs border border-zinc-200/80"
                           : "text-zinc-600 hover:text-zinc-900"
                       }`}
                     >
@@ -474,9 +474,9 @@ export default function Home() {
                     </button>
                     <button
                       onClick={() => setSelectedBaselineTab(1)}
-                      className={`flex-1 py-1.5 px-3 rounded-md transition-all cursor-pointer ${
+                      className={`flex-1 py-1.5 px-3 rounded-lg transition-all cursor-pointer ${
                         selectedBaselineTab === 1
-                          ? "bg-white text-zinc-900 shadow-sm border border-zinc-200"
+                          ? "bg-white text-zinc-900 shadow-xs border border-zinc-200/80"
                           : "text-zinc-600 hover:text-zinc-900"
                       }`}
                     >
@@ -484,9 +484,9 @@ export default function Home() {
                     </button>
                     <button
                       onClick={() => setSelectedBaselineTab(2)}
-                      className={`flex-1 py-1.5 px-3 rounded-md transition-all cursor-pointer ${
+                      className={`flex-1 py-1.5 px-3 rounded-lg transition-all cursor-pointer ${
                         selectedBaselineTab === 2
-                          ? "bg-white text-zinc-900 shadow-sm border border-zinc-200"
+                          ? "bg-white text-zinc-900 shadow-xs border border-zinc-200/80"
                           : "text-zinc-600 hover:text-zinc-900"
                       }`}
                     >
@@ -494,156 +494,180 @@ export default function Home() {
                     </button>
                   </div>
 
-                  {/* Tab 0: Single Student */}
-                  {selectedBaselineTab === 0 && (
-                    <div className="space-y-3.5">
-                      <div>
-                        <label className="text-xs font-semibold text-zinc-700 block mb-1">
-                          GitHub Username / Repo URL <span className="text-zinc-400 font-normal">(Optional public scanner)</span>
-                        </label>
-                        <div className="relative">
-                          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                  {/* Strictly Fixed Tab Body Container (245px) */}
+                  <div className="h-[245px] min-h-[245px] max-h-[245px] flex flex-col justify-between overflow-hidden">
+                    {/* Tab 0: Single Student */}
+                    {selectedBaselineTab === 0 && (
+                      <div className="h-full flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="text-[11px] font-semibold text-zinc-800">
+                              GitHub Username / Repository URL
+                            </label>
+                            <span className="text-[10px] text-zinc-400">Optional scanner</span>
+                          </div>
+                          <div className="relative">
+                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
+                            <input
+                              type="text"
+                              value={githubLink}
+                              onChange={(e) => setGithubLink(e.target.value)}
+                              placeholder="e.g. https://github.com/student-handle"
+                              className="w-full bg-white border border-zinc-200 rounded-lg py-1.5 pl-8 pr-3 text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-800"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="border-2 border-dashed border-zinc-200 hover:border-indigo-400 rounded-xl p-2.5 text-center bg-zinc-50/70 hover:bg-indigo-50/30 transition-all cursor-pointer relative my-1">
+                          <FileArchive className="w-4 h-4 text-zinc-400 mx-auto mb-0.5" />
+                          <p className="text-xs font-semibold text-zinc-800">Drop Historical Baseline ZIPs</p>
                           <input
-                            type="text"
-                            value={githubLink}
-                            onChange={(e) => setGithubLink(e.target.value)}
-                            placeholder="e.g. https://github.com/student-handle"
-                            className="w-full bg-white border border-zinc-200 rounded-lg py-2 pl-9 pr-3 text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-800"
+                            key={`repo-${resetKey}`}
+                            type="file"
+                            multiple
+                            accept=".zip"
+                            onChange={(e) => handleAddBaselineFiles(e.target.files)}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                           />
                         </div>
-                      </div>
 
-                      <div className="relative flex items-center justify-center my-1">
-                        <div className="border-t border-zinc-200 w-full" />
-                        <span className="bg-white px-2 text-[10px] uppercase font-bold text-zinc-400 absolute">
-                          And / Or Baseline ZIPs
-                        </span>
-                      </div>
-
-                      <div className="border-2 border-dashed border-zinc-200 hover:border-indigo-400 rounded-xl p-4 text-center bg-zinc-50/70 hover:bg-indigo-50/30 transition-all cursor-pointer relative">
-                        <FileArchive className="w-6 h-6 text-zinc-400 mx-auto mb-1" />
-                        <p className="text-xs font-semibold text-zinc-800">Drop Historical Project ZIPs</p>
-                        <p className="text-[11px] text-zinc-500">Select one or multiple past student ZIP archives</p>
-                        <input
-                          key={`repo-${resetKey}`}
-                          type="file"
-                          multiple
-                          accept=".zip"
-                          onChange={(e) => handleAddBaselineFiles(e.target.files)}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        />
-                      </div>
-
-                      {/* Staged Baseline Files Manager */}
-                      {stagedBaselineList.length > 0 && (
-                        <div className="space-y-2 pt-1">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-mono font-semibold text-zinc-600">
-                              Staged Baseline Projects ({stagedBaselineList.length})
-                            </span>
-                            <button
-                              type="button"
-                              onClick={handleClearAllBaselineFiles}
-                              className="text-[10px] font-semibold text-rose-600 hover:text-rose-700 hover:underline flex items-center gap-1 cursor-pointer"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                              <span>Clear All</span>
-                            </button>
-                          </div>
-
-                          <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
-                            {stagedBaselineList.map((file, idx) => (
-                              <div
-                                key={idx}
-                                className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-zinc-50 border border-zinc-200 text-xs shadow-2xs"
-                              >
-                                <div className="flex items-center gap-2 truncate">
-                                  <FileArchive className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-                                  <span className="font-mono text-[11px] font-semibold text-zinc-800 truncate">
-                                    {file.name}
-                                  </span>
-                                  <span className="text-[10px] text-zinc-400 font-mono shrink-0">
-                                    ({(file.size / (1024 * 1024)).toFixed(2)} MB)
-                                  </span>
-                                </div>
+                        {/* Fixed 64px Staged Baseline Files Manager Slot */}
+                        <div className="h-16 min-h-16 max-h-16 shrink-0 bg-zinc-50/50 border border-zinc-100 rounded-lg p-1.5 overflow-hidden flex flex-col justify-between">
+                          {stagedBaselineList.length > 0 ? (
+                            <>
+                              <div className="flex items-center justify-between px-1">
+                                <span className="text-[10px] font-mono font-semibold text-zinc-600">
+                                  Staged Projects ({stagedBaselineList.length})
+                                </span>
                                 <button
                                   type="button"
-                                  onClick={() => handleRemoveBaselineFile(idx)}
-                                  title="Remove this project"
-                                  className="p-1 rounded text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0 cursor-pointer"
+                                  onClick={handleClearAllBaselineFiles}
+                                  className="text-[10px] font-semibold text-rose-600 hover:text-rose-700 hover:underline flex items-center gap-1 cursor-pointer"
                                 >
-                                  <X className="w-3.5 h-3.5" />
+                                  <Trash2 className="w-2.5 h-2.5" />
+                                  <span>Clear All</span>
                                 </button>
                               </div>
-                            ))}
+
+                              <div className="space-y-1 max-h-10 overflow-y-auto pr-1 scrollbar-thin">
+                                {stagedBaselineList.map((file, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="flex items-center justify-between gap-2 px-2 py-0.5 rounded bg-white border border-zinc-200 text-xs"
+                                  >
+                                    <div className="flex items-center gap-1.5 truncate">
+                                      <FileArchive className="w-3 h-3 text-indigo-600 shrink-0" />
+                                      <span className="font-mono text-[10px] font-semibold text-zinc-800 truncate">
+                                        {file.name}
+                                      </span>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveBaselineFile(idx)}
+                                      title="Remove this project"
+                                      className="p-0.5 rounded text-zinc-400 hover:text-rose-600 transition-colors shrink-0 cursor-pointer"
+                                    >
+                                      <X className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            </>
+                          ) : (
+                            <div className="h-full flex items-center justify-center">
+                              <p className="text-[10px] text-zinc-400 text-center font-mono">No baseline ZIPs staged yet</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tab 1: Master LMS ZIP */}
+                    {selectedBaselineTab === 1 && (
+                      <div className="h-full flex flex-col justify-between">
+                        <p className="text-xs text-zinc-500 leading-normal">
+                          Upload a master LMS export ZIP (Canvas, Blackboard, Moodle) containing student submissions for cohort norm calibration.
+                        </p>
+                        <div className="border-2 border-dashed border-zinc-200 hover:border-indigo-400 rounded-xl p-4 text-center bg-zinc-50/70 hover:bg-indigo-50/30 transition-all cursor-pointer relative my-1">
+                          <FileArchive className="w-6 h-6 text-zinc-400 mx-auto mb-1" />
+                          <p className="text-xs font-semibold text-zinc-800">Drop Master Class / Cohort ZIP</p>
+                          <p className="text-[10px] text-zinc-500 mt-0.5">Parses class-wide code distributions for benchmarking</p>
+                          <input
+                            key={`cohort-${resetKey}`}
+                            type="file"
+                            accept=".zip"
+                            onChange={(e) => setCohortFile(e.target.files?.[0] || null)}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          />
+                        </div>
+
+                        {/* Fixed 64px Cohort Status Slot (Matching Tab 0) */}
+                        <div className="h-16 min-h-16 max-h-16 shrink-0 bg-zinc-50/50 border border-zinc-100 rounded-lg p-2 flex items-center justify-center">
+                          {cohortFile ? (
+                            <div className="inline-block bg-white border border-emerald-300 text-emerald-800 px-3 py-1 rounded-lg text-[11px] font-mono font-semibold shadow-xs">
+                              ✓ {cohortFile.name}
+                            </div>
+                          ) : (
+                            <p className="text-[10px] text-zinc-400 text-center font-mono">No LMS cohort ZIP selected yet</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tab 2: GitHub Classroom */}
+                    {selectedBaselineTab === 2 && (
+                      <div className="h-full flex flex-col justify-between">
+                        <p className="text-xs text-zinc-500 leading-normal">
+                          Fetch student submissions directly from your GitHub Classroom organization.
+                        </p>
+                        <div className="grid grid-cols-2 gap-2.5 my-1">
+                          <div>
+                            <label className="text-[11px] font-semibold text-zinc-700 block mb-1">Organization Name</label>
+                            <input
+                              type="text"
+                              value={cohortOrganization}
+                              onChange={(e) => setCohortOrganization(e.target.value)}
+                              placeholder="e.g. cs101-fall2026"
+                              className="w-full bg-white border border-zinc-200 rounded-lg py-1.5 px-2.5 text-xs text-zinc-900 focus:outline-none focus:border-zinc-800"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[11px] font-semibold text-zinc-700 block mb-1">Assignment Prefix</label>
+                            <input
+                              type="text"
+                              value={cohortAssignmentPrefix}
+                              onChange={(e) => setCohortAssignmentPrefix(e.target.value)}
+                              placeholder="e.g. assignment-2"
+                              className="w-full bg-white border border-zinc-200 rounded-lg py-1.5 px-2.5 text-xs text-zinc-900 focus:outline-none focus:border-zinc-800"
+                            />
                           </div>
                         </div>
-                      )}
-                    </div>
-                  )}
 
-                  {/* Tab 1: Master LMS ZIP */}
-                  {selectedBaselineTab === 1 && (
-                    <div className="space-y-3">
-                      <p className="text-xs text-zinc-500">
-                        Upload an LMS cohort export (Canvas, Blackboard, Moodle) containing all student submissions for cohort norm normalization.
-                      </p>
-                      <div className="border-2 border-dashed border-zinc-200 hover:border-indigo-400 rounded-xl p-6 text-center bg-zinc-50/70 hover:bg-indigo-50/30 transition-all cursor-pointer relative">
-                        <FileArchive className="w-7 h-7 text-zinc-400 mx-auto mb-2" />
-                        <p className="text-xs font-semibold text-zinc-800">Drop Master Class / Cohort ZIP</p>
-                        <input
-                          key={`cohort-${resetKey}`}
-                          type="file"
-                          accept=".zip"
-                          onChange={(e) => setCohortFile(e.target.files?.[0] || null)}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        />
-                        {cohortFile && (
-                          <div className="mt-2 inline-block bg-white border border-emerald-300 text-emerald-800 px-2.5 py-0.5 rounded text-[11px] font-mono font-semibold shadow-xs">
-                            ✓ {cohortFile.name}
-                          </div>
-                        )}
+                        {/* Fixed 64px GitHub Classroom Status Slot (Matching Tab 0 & 1) */}
+                        <div className="h-16 min-h-16 max-h-16 shrink-0 bg-zinc-50/50 border border-zinc-100 rounded-lg p-2 flex items-center justify-center">
+                          {cohortOrganization ? (
+                            <div className="inline-block bg-white border border-indigo-300 text-indigo-800 px-3 py-1 rounded-lg text-[11px] font-mono font-semibold shadow-xs">
+                              Org: {cohortOrganization} {cohortAssignmentPrefix ? `(${cohortAssignmentPrefix})` : ""}
+                            </div>
+                          ) : (
+                            <p className="text-[10px] text-zinc-400 text-center font-mono">Awaiting GitHub Classroom credentials</p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
-
-                  {/* Tab 2: GitHub Classroom */}
-                  {selectedBaselineTab === 2 && (
-                    <div className="space-y-3">
-                      <div>
-                        <label className="text-xs font-semibold text-zinc-700 block mb-1">Organization Name</label>
-                        <input
-                          type="text"
-                          value={cohortOrganization}
-                          onChange={(e) => setCohortOrganization(e.target.value)}
-                          placeholder="e.g. cs101-fall2026"
-                          className="w-full bg-white border border-zinc-200 rounded-lg py-2 px-3 text-xs text-zinc-900 focus:outline-none focus:border-zinc-800"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-semibold text-zinc-700 block mb-1">Assignment Prefix</label>
-                        <input
-                          type="text"
-                          value={cohortAssignmentPrefix}
-                          onChange={(e) => setCohortAssignmentPrefix(e.target.value)}
-                          placeholder="e.g. assignment-2"
-                          className="w-full bg-white border border-zinc-200 rounded-lg py-2 px-3 text-xs text-zinc-900 focus:outline-none focus:border-zinc-800"
-                        />
-                      </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
 
-                {/* Optional Starter Template Subtraction */}
-                <div className="mt-4 pt-3.5 border-t border-zinc-100">
-                  <div className="flex items-center justify-between mb-1.5">
+                {/* Fixed Starter Template Subtraction Footer */}
+                <div className="pt-2 border-t border-zinc-100 shrink-0">
+                  <div className="flex items-center justify-between mb-1">
                     <label className="text-[11px] font-semibold text-zinc-700 flex items-center gap-1.5">
                       <Sliders className="w-3.5 h-3.5 text-zinc-500" />
                       <span>Instructor Starter Template (Optional)</span>
                     </label>
                     <span className="text-[10px] text-zinc-400">Subtracts boilerplate</span>
                   </div>
-                  <div className="border border-dashed border-zinc-200 hover:border-zinc-300 rounded-lg p-2.5 text-center bg-zinc-50/50 hover:bg-zinc-100/60 transition-all cursor-pointer relative">
+                  <div className="border border-dashed border-zinc-200 hover:border-zinc-300 rounded-lg p-2 text-center bg-zinc-50/50 hover:bg-zinc-100/60 transition-all cursor-pointer relative">
                     <input
                       key={`template-${resetKey}`}
                       type="file"
@@ -651,17 +675,17 @@ export default function Home() {
                       onChange={(e) => setTemplateFile(e.target.files?.[0] || null)}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
-                    <p className="text-[11px] text-zinc-600 font-medium">
-                      {templateFile ? `✓ Starter: ${templateFile.name}` : "+ Attach skeleton starter code ZIP to eliminate boilerplate false positives"}
+                    <p className="text-[11px] text-zinc-600 font-medium truncate px-2">
+                      {templateFile ? `✓ Starter: ${templateFile.name}` : "+ Attach skeleton starter code ZIP to eliminate false positives"}
                     </p>
                   </div>
                 </div>
               </div>
 
               {/* Card 2: Investigated Submission Dropzone */}
-              <div className="clean-card p-6 bg-white shadow-sm border border-zinc-200 flex flex-col justify-between rounded-xl">
+              <div className="clean-card p-6 bg-white shadow-sm border border-zinc-200 flex flex-col justify-between rounded-xl h-[460px] min-h-[460px] max-h-[460px] overflow-hidden">
                 <div>
-                  <div className="flex items-center justify-between mb-4 border-b border-zinc-100 pb-3">
+                  <div className="flex items-center justify-between mb-3 border-b border-zinc-100 pb-2.5">
                     <div className="flex items-center gap-2">
                       <span className="p-1.5 rounded-lg bg-rose-50 text-rose-700 border border-rose-100">
                         <FileCode2 className="w-4 h-4" />
@@ -673,8 +697,8 @@ export default function Home() {
                     <span className="text-[11px] text-rose-600 font-mono font-semibold">Target Archive</span>
                   </div>
 
-                  <div className="border-2 border-dashed border-rose-200/80 hover:border-rose-400 rounded-xl p-8 text-center bg-rose-50/20 hover:bg-rose-50/40 transition-all cursor-pointer relative mb-4">
-                    <Upload className="w-8 h-8 text-rose-400 mx-auto mb-2" />
+                  <div className="border-2 border-dashed border-rose-200/80 hover:border-rose-400 rounded-xl p-6 text-center bg-rose-50/20 hover:bg-rose-50/40 transition-all cursor-pointer relative my-2">
+                    <Upload className="w-7 h-7 text-rose-400 mx-auto mb-1.5" />
                     <p className="text-xs font-bold text-zinc-800">Drop Target Student Submission ZIP</p>
                     <p className="text-[11px] text-zinc-500 mt-1">The code archive under investigation to compare against baseline</p>
                     <input
@@ -685,20 +709,20 @@ export default function Home() {
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
                     {submissionFile ? (
-                      <div className="mt-3 inline-block bg-white border border-rose-300 text-rose-900 px-3 py-1 rounded-lg text-xs font-mono font-bold shadow-xs">
+                      <div className="mt-2.5 inline-block bg-white border border-rose-300 text-rose-900 px-3 py-1 rounded-lg text-xs font-mono font-bold shadow-xs">
                         ✓ {submissionFile.name}
                       </div>
                     ) : (
-                      <div className="mt-3 inline-block bg-white/80 border border-zinc-200 text-zinc-400 px-3 py-1 rounded text-[11px] font-mono">
+                      <div className="mt-2.5 inline-block bg-white/80 border border-zinc-200 text-zinc-400 px-3 py-1 rounded text-[11px] font-mono">
                         No ZIP selected yet
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* Audit Highlights */}
-                <div className="bg-zinc-50 border border-zinc-200/80 rounded-lg p-4 space-y-2 text-xs text-zinc-600">
-                  <div className="flex items-center gap-2 font-semibold text-zinc-800 text-[11px] uppercase tracking-wider mb-1">
+                {/* Audit Highlights (Aligned with Card 1 Footer) */}
+                <div className="bg-zinc-50 border border-zinc-200/80 rounded-lg p-3 space-y-2 text-xs text-zinc-600 shrink-0">
+                  <div className="flex items-center gap-2 font-semibold text-zinc-800 text-[11px] uppercase tracking-wider mb-0.5">
                     <ShieldAlert className="w-3.5 h-3.5 text-amber-500" />
                     <span>Forensic Engine Guarantees</span>
                   </div>

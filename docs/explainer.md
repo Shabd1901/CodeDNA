@@ -73,6 +73,20 @@ $$\text{Adjusted Anomaly Score} = \text{Personal Deviation} \times (1 - \text{Co
 Phase 0, Phase 1, Phase 2, Phase 3, and Phase 4 (Temporal Authorship Modeling & Change-Point Detection) Complete! Ready for Phase 5 (Cross-Language AST Parity & AST Normalization).
 
 ## Completed Changes:
+- (2026-09-26 01:19) **Strict Card Height & Tab Layout Slot Standardization:**
+  - Standardized Card 1 (`Historical Baseline`) and Card 2 (`Investigated Submission`) to identical, strict 460px container bounds (`h-[460px] min-h-[460px] max-h-[460px] overflow-hidden`) in [`page.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/app/page.tsx).
+  - Standardized the baseline tab body to a fixed 245px container (`h-[245px] min-h-[245px] max-h-[245px]`) with an identical bottom 64px status slot (`h-16 shrink-0`) across all 3 baseline tabs (`Single Student`, `Master LMS ZIP`, `GitHub Classroom`).
+  - Completely eliminated all card border shifts, vertical card height changes, and page layout movements when toggling tabs or staging baseline files.
+- (2026-09-26 01:17) **JSX Syntax Error Fix in Page Component:**
+  - Fixed JSX parser compilation error in [`page.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/app/page.tsx) by removing an accidental duplicate grid container opening tag (`<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">`) that was causing tag mismatch at line 768.
+- (2026-09-26 01:14) **Setup Intake Card Natural Layout Redesign:**
+  - Removed artificial fixed pixel min-heights (`min-h-[410px]`, `min-h-[235px]`) from Card 1 and Card 2 in [`page.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/app/page.tsx).
+  - Eliminated squished dividers and empty whitespace gaps. Tab 0 (Single Student) now features clean, distinct GitHub handle and historical project dropzone input sections.
+  - Retained full multi-file manager functionality (individual `X` remove buttons, `Clear All`, staged file counts).
+- (2026-09-26 01:11) **Standardized Setup Card Vertical Height & Tab Layout:**
+  - Locked Card 1 (`Historical Reference Baseline`) and Card 2 (`Investigated Submission`) to a standardized vertical min-height (`min-h-[410px] flex flex-col justify-between`) in [`page.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/app/page.tsx).
+  - Wrapped all 3 baseline tab bodies (`Single Student`, `Master LMS ZIP`, `GitHub Classroom`) in a fixed-height container (`min-h-[235px] flex flex-col justify-between`) so switching tabs no longer shifts or resizes cards on the page.
+  - Decluttered the Single Student tab with compact inputs and a scroll-capped staged files list (`max-h-24 overflow-y-auto`).
 - (2026-09-26 01:08) **Launch Action Bar Light Theme Redesign:**
   - Redesigned the Launch Action Bar card in [`page.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/app/page.tsx) from dark navy styling (`bg-slate-900`) to a clean white card format (`bg-white border-zinc-200 shadow-xs text-zinc-900`).
   - Refined status badges (`Awaiting Inputs` in soft amber `bg-amber-50`, `Ready to Execute` in soft emerald `bg-emerald-50`) and button disabled states (`bg-zinc-100 text-zinc-400 border-zinc-200`).
