@@ -356,41 +356,60 @@ async def analyze_and_compare(session_id: str = Form(...), baseline_type: str = 
     template_dir = os.path.join(session_path, "template")
     cohort_dir = os.path.join(session_path, "cohort")
 
-    # 1. Build Baseline DNA based on baseline_type
-    if baseline_type == "cohort" and os.path.exists(cohort_dir):
-        # Check for cohort DNA JSON (pre-built from cohort-zip or github-classroom endpoint)
-        cohort_json_path = os.path.join(cohort_dir, "cohort_dna.json")
-        if os.path.exists(cohort_json_path):
-            with open(cohort_json_path, "r") as f:
-                baseline_dna = json.load(f)
+    # All DNA-building is CPU-bound sync work — run in a thread to avoid blocking the event loop
+    def _run_analysis():
+        # 1. Build Baseline DNA based on baseline_type
+        if baseline_type == "cohort" and os.path.exists(cohort_dir):
+            cohort_json_path = os.path.join(cohort_dir, "cohort_dna.json")
+            if os.path.exists(cohort_json_path):
+                with open(cohort_json_path, "r") as f:
+                    baseline_dna = json.load(f)
+            else:
+                baseline_dna = build_cohort_codedna([cohort_dir])
         else:
-            # Build cohort DNA from cohort directory (should have been built by the endpoint)
-            baseline_dna = build_cohort_codedna([cohort_dir])
-    else:
-        # Personal baseline (default)
-        baseline_dna = build_repository_codedna(repos_dir)
+            baseline_dna = build_repository_codedna(repos_dir)
 
-    # 2. Check for template DNA and subtract if exists
-    template_dna = None
-    if os.path.exists(template_dir):
-        template_dna = build_repository_codedna(template_dir)
-        # Subtract template DNA from baseline
-        baseline_dna = subtract_template_dna(baseline_dna, template_dna)
+        # 2. Check for template DNA and subtract if exists
+        template_dna = None
+        if os.path.exists(template_dir):
+            template_dna = build_repository_codedna(template_dir)
+            baseline_dna = subtract_template_dna(baseline_dna, template_dna)
 
-    # 3. Build Submission DNA
-    submission_dna = build_repository_codedna(sub_dir)
+        # 3. Build Submission DNA
+        submission_dna = build_repository_codedna(sub_dir)
 
-    # Subtract template DNA from submission if template exists
-    if template_dna is not None:
-        submission_dna = subtract_template_dna(submission_dna, template_dna)
+        if template_dna is not None:
+            submission_dna = subtract_template_dna(submission_dna, template_dna)
+
+        return baseline_dna, submission_dna
+
+    try:
+        baseline_dna, submission_dna = await asyncio.wait_for(
+            asyncio.to_thread(_run_analysis),
+            timeout=60.0
+        )
+    except asyncio.TimeoutError:
+        raise HTTPException(
+            status_code=504,
+            detail="Analysis timed out (>60s). The repository may be too large. Try reducing the number of baseline repos or submission size."
+        )
 
     if submission_dna.get("repo_count_usable_files_languages", {}).get("usable_files", 0) == 0:
         raise HTTPException(status_code=400, detail="Submission contains no usable source code files.")
     if baseline_dna.get("repo_count_usable_files_languages", {}).get("usable_files", 0) == 0:
         raise HTTPException(status_code=400, detail="Baseline contains no usable source code files.")
 
-    # 4. Compare (Deterministic + ML + Temporal)
-    comparison_results = compare_codedna(baseline_dna, submission_dna, repos_dir=repos_dir, sub_dir=sub_dir)
+    # 4. Compare (Deterministic + ML + Temporal) — also CPU-bound
+    try:
+        comparison_results = await asyncio.wait_for(
+            asyncio.to_thread(compare_codedna, baseline_dna, submission_dna, repos_dir, sub_dir),
+            timeout=60.0
+        )
+    except asyncio.TimeoutError:
+        raise HTTPException(
+            status_code=504,
+            detail="CodeDNA comparison timed out (>60s). Please try again with a smaller submission."
+        )
 
     # Save for the AI step
     with open(os.path.join(session_path, "deterministic_results.json"), "w") as f:

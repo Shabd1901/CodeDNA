@@ -73,6 +73,10 @@ $$\text{Adjusted Anomaly Score} = \text{Personal Deviation} \times (1 - \text{Co
 Phase 0, Phase 1, Phase 2, Phase 3, and Phase 4 (Temporal Authorship Modeling & Change-Point Detection) Complete! Ready for Phase 5 (Cross-Language AST Parity & AST Normalization).
 
 ## Completed Changes:
+- (2026-09-25 23:54) **Analysis Pipeline Hang Fix:** Resolved indefinite "Executing Forensic Audit Pipeline" spinner caused by synchronous CPU-bound parsing blocking the FastAPI async event loop on large repos. Three fixes applied:
+  - `MAX_FILE_BYTES = 512KB` guard in `analyze_file` — skips minified/generated files before any parsing.
+  - `MAX_FILES_PER_REPO = 200` cap in `build_repository_codedna` — stops the file walk after 200 files.
+  - `asyncio.to_thread` + `asyncio.wait_for` wrapping both `build_repository_codedna` and `compare_codedna` calls in `main.py` with 60s hard timeouts. Analysis now fails fast with a clear `504` error instead of hanging forever.
 - (2026-09-25 23:03) **Phases 1, 3, and 4 Implementation Roadmap Fully Expanded:** Significantly expanded Phase 1 (FastAPI OpenAPI specifications, C4 Architecture models, session isolation) and Phase 3 (Dense 48-dim feature vectorization, Siamese hypersphere projection, Platt logistic calibration, 3-way hybrid scoring ensemble) in `docs/projecteval1.md` with granular mathematical definitions and sub-specifications.
 - (2026-09-25 22:53) **Phase 4 Implementation Roadmap Documentation Synchronized:** Formatted and expanded Phase 4 in `docs/projecteval1.md` with the 5-point detailed specification covering Milestone Extraction, CUSUM Change-Point Detection, Backend Pipeline Integration, Frontend Workstation Integration, and Verification.
 - (2026-09-25 22:45) **Phase 4 Temporal Authorship Modeling & Change-Point Detection Implemented:** Extended CodeDNA beyond static baselines to model chronological author developmental trajectories:

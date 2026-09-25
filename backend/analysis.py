@@ -51,6 +51,10 @@ CODE_EXTENSIONS = {
     '.sql': 'sql', '.sh': 'shell', '.json': 'json', '.yaml': 'yaml', '.md': 'markdown'
 }
 
+# Safety caps to prevent hangs on large/adversarial repos
+MAX_FILE_BYTES = 512_000   # Skip files larger than 512 KB
+MAX_FILES_PER_REPO = 200   # Stop walking after 200 usable files per session
+
 RE_SNAKE = re.compile(r'^[a-z_][a-z0-9_]*$')
 RE_CAMEL = re.compile(r'^[a-z][a-zA-Z0-9]*$')
 RE_PASCAL = re.compile(r'^[A-Z][a-zA-Z0-9]*$')
@@ -341,6 +345,10 @@ def analyze_file(filepath: str) -> Dict[str, Any]:
     
     if lang == 'unknown': return metrics
 
+    # Skip oversized files (minified bundles, generated code, etc.)
+    if os.path.getsize(filepath) > MAX_FILE_BYTES:
+        return metrics
+
     try:
         with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
             content = f.read()
@@ -444,7 +452,11 @@ def build_repository_codedna(repo_dir: str) -> Dict[str, Any]:
                 filepath = os.path.join(root, file)
                 if not is_usable_file(filepath): continue
                 if os.path.splitext(file)[1].lower() not in CODE_EXTENSIONS: continue
-                    
+
+                # Hard cap — prevent processing enormous repos
+                if dna["repo_count_usable_files_languages"]["usable_files"] >= MAX_FILES_PER_REPO:
+                    break
+
                 dna["repo_count_usable_files_languages"]["usable_files"] += 1
                 
                 m = analyze_file(filepath)
