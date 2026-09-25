@@ -2,6 +2,7 @@
 
 import React from "react";
 import { GitBranch, FileCode, CheckCircle2, ShieldAlert, Cpu, Box, Layers } from "lucide-react";
+import { InfoHelper } from "@/components/InfoTooltipModal";
 
 interface BaselineProfileViewProps {
   baselineMetrics: any;
@@ -59,9 +60,12 @@ export function BaselineProfileView({ baselineMetrics, authIntel }: BaselineProf
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Languages & Corpus Size */}
         <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-sm space-y-3">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-1.5">
-            <FileCode className="w-3.5 h-3.5 text-zinc-700" />
-            <span>Corpus Metrics</span>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500 flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <FileCode className="w-3.5 h-3.5 text-zinc-700" />
+              <span>Corpus Metrics</span>
+            </div>
+            <InfoHelper termKey="corpus_metrics" />
           </h4>
           <div className="space-y-2 text-xs">
             <div className="flex justify-between py-1 border-b border-zinc-100">
@@ -157,9 +161,12 @@ export function BaselineProfileView({ baselineMetrics, authIntel }: BaselineProf
       {/* AST Structural Node Distribution */}
       {Object.keys(astPatterns).length > 0 && (
         <div className="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-3 flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5 text-zinc-700" />
-            <span>AST Node Structural Fingerprint Frequencies</span>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-3 flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-zinc-700" />
+              <span>AST Node Structural Fingerprint Frequencies</span>
+            </div>
+            <InfoHelper termKey="ast_fingerprint" />
           </h4>
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
             {Object.entries(astPatterns).slice(0, 18).map(([node, count]: any) => (

@@ -113,12 +113,12 @@ export function AIForensicPanel({
         <div className="space-y-6">
           {/* Executive Forensic Summary */}
           {forensicReport.executive_forensic_summary && (
-            <div className="bg-zinc-950 text-white border border-zinc-800 rounded-xl p-6 shadow-md">
-              <div className="flex items-center gap-2 mb-2 text-indigo-400 text-xs font-mono font-semibold uppercase tracking-wider">
-                <Sparkles className="w-4 h-4" />
+            <div className="bg-gradient-to-r from-indigo-50/90 via-slate-50 to-sky-50/90 border border-indigo-200/90 rounded-xl p-6 shadow-xs text-zinc-900">
+              <div className="flex items-center gap-2 mb-2 text-indigo-800 text-xs font-mono font-bold uppercase tracking-wider">
+                <Sparkles className="w-4 h-4 text-indigo-600" />
                 <span>Executive Investigation Brief</span>
               </div>
-              <p className="text-sm leading-relaxed text-zinc-200 font-medium">
+              <p className="text-sm leading-relaxed text-zinc-800 font-medium">
                 {forensicReport.executive_forensic_summary}
               </p>
             </div>

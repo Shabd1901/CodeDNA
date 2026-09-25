@@ -79,6 +79,46 @@ export const TECHNICAL_TERMS: Record<string, TechnicalTermDef> = {
     term: "Sudden AI Introduction",
     simpleMeaning: "Baseline is clean, but submission suddenly introduces AI-associated syntax or leaps in sophistication.",
     category: "Author Profile"
+  },
+  corpus_metrics: {
+    term: "Corpus Metrics",
+    simpleMeaning: "Historical baseline statistics tracking total usable code files, language breakdown, AST node counts, and contamination risk.",
+    category: "Baseline Corpus"
+  },
+  ast_fingerprint: {
+    term: "AST Node Structural Fingerprint Frequencies",
+    simpleMeaning: "Statistical distribution of specific Abstract Syntax Tree constructs (loops, comprehensions, classes, try blocks) across reference code.",
+    category: "AST Topology"
+  },
+  siamese_metric: {
+    term: "Siamese Latent Metric Learning",
+    simpleMeaning: "Contrastive neural network projecting 48 style features onto a 24-dimensional L2-normalized unit sphere to measure deep structural identity.",
+    category: "Neural Embeddings"
+  },
+  latent_attribution: {
+    term: "Latent Dimension Attribution",
+    simpleMeaning: "Calculates the top gradient features driving structural divergence between historical baseline and current submission.",
+    category: "Explainable AI"
+  },
+  empirical_confusion_matrix: {
+    term: "Empirical Confusion Matrix",
+    simpleMeaning: "Evaluates True Positives, False Positives (0% target), True Negatives, and False Negatives across 12 controlled benchmark scenarios.",
+    category: "Validation Matrix"
+  },
+  adversarial_resilience: {
+    term: "Adversarial Evasion Resistance",
+    simpleMeaning: "Measures system robustness against active obfuscation, dead code injection, variable renaming, whitespace churn, and comment flooding.",
+    category: "Adversarial Defense"
+  },
+  roc_curve: {
+    term: "Receiver Operating Characteristic (ROC)",
+    simpleMeaning: "Plots True Positive Rate vs False Positive Rate across varying operating decision thresholds (AUC ~ 0.985).",
+    category: "Model Evaluation"
+  },
+  pr_curve: {
+    term: "Precision-Recall Curve (PR)",
+    simpleMeaning: "Visualizes Precision vs Recall tradeoffs to verify high-confidence forensic detection without false accusations.",
+    category: "Model Evaluation"
   }
 };
 

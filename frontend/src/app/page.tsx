@@ -876,7 +876,14 @@ export default function Home() {
               aiMode={aiMode}
               onRunAi={runAiAnalysis}
               onNewInvestigation={handleNewInvestigation}
-              onExportDossier={() => setPipelineStage("dossier")}
+              onExportDossier={(mode) => {
+                if (mode === "extended") {
+                  setPipelineStage("dossier");
+                  setTimeout(() => window.print(), 200);
+                } else {
+                  window.print();
+                }
+              }}
             />
 
             {/* 2. 6-Stage Investigation Pipeline Navigator */}

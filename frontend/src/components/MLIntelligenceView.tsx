@@ -144,6 +144,7 @@ export function MLIntelligenceView({ mlIntelligence }: MLIntelligenceViewProps) 
               <h4 className="text-xs font-bold text-zinc-900 uppercase tracking-wider">
                 Siamese Latent Metric Learning
               </h4>
+              <InfoHelper termKey="siamese_metric" />
             </div>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-100 text-zinc-600 font-semibold">
               24-Dim Hypersphere
@@ -192,6 +193,7 @@ export function MLIntelligenceView({ mlIntelligence }: MLIntelligenceViewProps) 
             <h4 className="text-xs font-bold text-zinc-900 uppercase tracking-wider flex items-center gap-1.5">
               <Scale className="w-3.5 h-3.5 text-zinc-700" />
               <span>Latent Dimension Attribution (Top Divergence Drivers)</span>
+              <InfoHelper termKey="latent_attribution" />
             </h4>
             <span className="text-[10px] font-mono text-zinc-400">Gradient Impact</span>
           </div>

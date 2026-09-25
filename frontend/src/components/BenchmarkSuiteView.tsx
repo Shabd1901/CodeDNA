@@ -15,6 +15,7 @@ import {
   Lock,
   Cpu
 } from "lucide-react";
+import { InfoHelper } from "@/components/InfoTooltipModal";
 
 interface BenchmarkSuiteViewProps {
   initialData?: any;
@@ -183,6 +184,7 @@ export function BenchmarkSuiteView({ initialData }: BenchmarkSuiteViewProps) {
                 <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-900 flex items-center gap-1.5">
                   <Target className="w-3.5 h-3.5 text-indigo-600" />
                   <span>Empirical Confusion Matrix</span>
+                  <InfoHelper termKey="empirical_confusion_matrix" />
                 </h4>
                 <p className="text-[11px] text-zinc-500">Evaluated on N=12 controlled test instances</p>
               </div>
@@ -241,6 +243,7 @@ export function BenchmarkSuiteView({ initialData }: BenchmarkSuiteViewProps) {
                 <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-900 flex items-center gap-1.5">
                   <Lock className="w-3.5 h-3.5 text-amber-600" />
                   <span>Adversarial Evasion Resistance</span>
+                  <InfoHelper termKey="adversarial_resilience" />
                 </h4>
                 <p className="text-[11px] text-zinc-500">Robustness against deliberate obfuscation techniques</p>
               </div>
@@ -297,6 +300,7 @@ export function BenchmarkSuiteView({ initialData }: BenchmarkSuiteViewProps) {
               <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-900 flex items-center gap-1.5">
                 <Activity className="w-3.5 h-3.5 text-indigo-600" />
                 <span>Receiver Operating Characteristic (ROC)</span>
+                <InfoHelper termKey="roc_curve" />
               </h4>
               <span className="text-xs font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
                 AUC ~ 0.985
@@ -344,6 +348,7 @@ export function BenchmarkSuiteView({ initialData }: BenchmarkSuiteViewProps) {
               <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-900 flex items-center gap-1.5">
                 <Crosshair className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Precision-Recall Curve (PR)</span>
+                <InfoHelper termKey="pr_curve" />
               </h4>
               <span className="text-xs font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
                 Avg Precision: 0.96

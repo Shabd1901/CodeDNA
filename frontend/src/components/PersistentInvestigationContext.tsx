@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { ShieldAlert, ShieldCheck, Activity, Printer, Sparkles, RefreshCw, FolderSearch } from "lucide-react";
+import React, { useState } from "react";
+import { ShieldAlert, ShieldCheck, Activity, Printer, Sparkles, RefreshCw, FolderSearch, ChevronDown, FileText, FileCheck } from "lucide-react";
 
 interface PersistentInvestigationContextProps {
   sessionId: string | null;
@@ -10,7 +10,7 @@ interface PersistentInvestigationContextProps {
   aiMode: "openai" | "gemini" | null;
   onRunAi: () => void;
   onNewInvestigation: () => void;
-  onExportDossier?: () => void;
+  onExportDossier?: (mode: "simple" | "extended") => void;
 }
 
 export function PersistentInvestigationContext({
@@ -22,6 +22,8 @@ export function PersistentInvestigationContext({
   onNewInvestigation,
   onExportDossier,
 }: PersistentInvestigationContextProps) {
+  const [showExportMenu, setShowExportMenu] = useState(false);
+
   const authIntel = report?.deterministic_data?.authorship_intelligence;
   const categorical = authIntel?.categorical_signals;
   const reliability = categorical?.baseline_reliability || "Unknown";
@@ -33,7 +35,7 @@ export function PersistentInvestigationContext({
   const isModerateConcern = overallConcern.toLowerCase() === "moderate";
 
   return (
-    <div className="w-full bg-white border border-zinc-200 rounded-xl p-4 text-zinc-900 shadow-xs">
+    <div className="w-full bg-white border border-zinc-200 rounded-xl p-4 text-zinc-900 shadow-xs relative">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         {/* Left: Case Title & Author Profile */}
         <div className="flex items-center gap-3">
@@ -89,14 +91,6 @@ export function PersistentInvestigationContext({
               {overallConcern} CONCERN
             </span>
           </div>
-
-          {/* AI Mode indicator */}
-          {aiMode && (
-            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-semibold">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-              <span>{aiMode === "gemini" ? "Gemini Flash" : "OpenAI GPT-4o"}</span>
-            </div>
-          )}
         </div>
 
         {/* Right: Quick Action Controls */}
@@ -114,15 +108,51 @@ export function PersistentInvestigationContext({
             <span>{report?.forensic_report ? "Re-run AI" : "Run AI Analysis"}</span>
           </button>
 
+          {/* Dual Option Export Button */}
           {onExportDossier && (
-            <button
-              onClick={onExportDossier}
-              title="Print or Export Forensic Dossier"
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-zinc-50 border border-zinc-200 text-zinc-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-            >
-              <Printer className="w-3.5 h-3.5 text-zinc-500" />
-              <span className="hidden sm:inline">Export</span>
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowExportMenu(!showExportMenu)}
+                title="Print or Export Forensic Dossier"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-zinc-50 border border-zinc-200 text-zinc-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+              >
+                <Printer className="w-3.5 h-3.5 text-zinc-500" />
+                <span>Export</span>
+                <ChevronDown className="w-3 h-3 text-zinc-400" />
+              </button>
+
+              {showExportMenu && (
+                <div className="absolute right-0 mt-2 w-56 bg-white border border-zinc-200 rounded-xl shadow-xl z-50 p-1 space-y-1 animate-in fade-in zoom-in-95 duration-100">
+                  <button
+                    onClick={() => {
+                      setShowExportMenu(false);
+                      onExportDossier("simple");
+                    }}
+                    className="w-full flex items-start gap-2.5 p-2 rounded-lg hover:bg-zinc-100 text-left transition-colors cursor-pointer"
+                  >
+                    <FileText className="w-4 h-4 text-zinc-600 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-xs font-bold text-zinc-900">Print Simple Summary</p>
+                      <p className="text-[10px] text-zinc-500 leading-tight">Prints the executive summary report</p>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setShowExportMenu(false);
+                      onExportDossier("extended");
+                    }}
+                    className="w-full flex items-start gap-2.5 p-2 rounded-lg hover:bg-indigo-50 text-left transition-colors cursor-pointer"
+                  >
+                    <FileCheck className="w-4 h-4 text-indigo-600 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-xs font-bold text-indigo-950">Print Extended Dossier</p>
+                      <p className="text-[10px] text-indigo-600 leading-tight">Includes all vector metrics &amp; VivaGuard script</p>
+                    </div>
+                  </button>
+                </div>
+              )}
+            </div>
           )}
 
           <button
