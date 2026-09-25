@@ -85,7 +85,16 @@ async def generate_forensic_report(comparison_data: dict) -> tuple[dict, str]:
         try:
             # Offload blocking SDK network request to thread pool
             response = await asyncio.to_thread(_call_api, model_name)
-            result = json.loads(response.text)
+            
+            raw_text = response.text.strip()
+            if raw_text.startswith("```json"):
+                raw_text = raw_text[7:]
+            elif raw_text.startswith("```"):
+                raw_text = raw_text[3:]
+            if raw_text.endswith("```"):
+                raw_text = raw_text[:-3]
+                
+            result = json.loads(raw_text.strip())
             return result, f"gemini ({model_name})"
         except Exception as e:
             last_error = e

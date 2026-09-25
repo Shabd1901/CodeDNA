@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, Search, ShieldAlert, CheckCircle, Activity, FileCode2, ChevronRight, FileArchive, User, Sparkles } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 
 export default function Home() {
   const [appState, setAppState] = useState<"idle" | "analyzing" | "results">("idle");
@@ -300,7 +299,7 @@ export default function Home() {
         throw new Error(errData.detail || `Server error ${res.status}`);
       }
       const data = await res.json();
-      setAiMode(data.ai_mode === "gemini" ? "gemini" : "openai");
+      setAiMode(data.ai_mode?.startsWith("gemini") ? "gemini" : "openai");
       setReport((prev: any) => ({ ...prev, forensic_report: data.forensic_report }));
     } catch (error: any) {
       console.error(error);
@@ -826,7 +825,7 @@ export default function Home() {
                   <div>
                      <h4 className="text-xs font-bold text-zinc-400 mb-4 uppercase tracking-wide">Forensic Findings</h4>
                      <div className="space-y-4">
-                      {report.forensic_report.findings?.map((finding: any, i: number) => (
+                      {Array.isArray(report.forensic_report.findings) && report.forensic_report.findings.map((finding: any, i: number) => (
                         <div key={i} className="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">
                           <div className="flex items-start justify-between mb-4">
                             <h5 className="font-bold text-zinc-900 text-lg">{finding.finding}</h5>

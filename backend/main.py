@@ -127,6 +127,9 @@ async def fetch_github_repos(session_id: str = Form(...), username: str = Form(.
             except httpx.RequestError:
                 pass
                     
+        if not downloaded:
+            raise HTTPException(status_code=400, detail=f"Failed to download or extract any valid repositories for '{username}'.")
+
     return {"status": "success", "fetched": downloaded}
 
 @app.post("/api/repositories/template")
@@ -365,6 +368,11 @@ async def analyze_and_compare(session_id: str = Form(...), baseline_type: str = 
     # Subtract template DNA from submission if template exists
     if template_dna is not None:
         submission_dna = subtract_template_dna(submission_dna, template_dna)
+
+    if submission_dna.get("repo_count_usable_files_languages", {}).get("usable_files", 0) == 0:
+        raise HTTPException(status_code=400, detail="Submission contains no usable source code files.")
+    if baseline_dna.get("repo_count_usable_files_languages", {}).get("usable_files", 0) == 0:
+        raise HTTPException(status_code=400, detail="Baseline contains no usable source code files.")
 
     # 4. Compare (Deterministic)
     comparison_results = compare_codedna(baseline_dna, submission_dna)

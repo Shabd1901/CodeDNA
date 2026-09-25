@@ -391,7 +391,8 @@ def analyze_file(filepath: str) -> Dict[str, Any]:
                     elif isinstance(metrics.get(k), list): metrics[k].extend(js_metrics[k])
                     else: metrics[k] += js_metrics[k]
                 
-    except Exception:
+    except Exception as e:
+        print(f"Error analyzing file {filepath}: {e}")
         pass
         
     return metrics
