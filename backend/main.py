@@ -16,7 +16,22 @@ import copy
 from analysis import build_repository_codedna, compare_codedna
 from ai_engine import generate_forensic_report
 
-app = FastAPI(title="CodeDNA API", version="1.0.0")
+app = FastAPI(
+    title="CodeDNA Forensic API", 
+    version="1.0.0",
+    description="""
+CodeDNA API provides endpoints to ingest student repositories, process structural AST footprints (CodeDNA), 
+and evaluate submission authenticity through deterministic deviation analysis combined with AI-driven forensic reasoning.
+
+## Core Workflows
+1. **Session Management**: Start and cleanup temporary investigation sessions.
+2. **Data Ingestion**: Upload manual ZIPs, template code, LMS cohort exports, or sync from GitHub.
+3. **Forensic Analysis**: Run deterministic comparisons and trigger LLM-based investigation reports.
+    """,
+    contact={
+        "name": "CodeDNA AI"
+    }
+)
 
 raw_origins = (os.getenv("ALLOWED_ORIGINS") or "").strip()
 allowed_origins = [o.strip() for o in raw_origins.split(",") if o.strip()] if raw_origins else ["http://localhost:3000", "http://127.0.0.1:3000"]
@@ -32,11 +47,11 @@ app.add_middleware(
 SESSION_DIR = os.path.join(os.path.dirname(__file__), "tmp_sessions")
 os.makedirs(SESSION_DIR, exist_ok=True)
 
-@app.get("/")
+@app.get("/", tags=["Health"])
 def read_root():
     return {"status": "ok", "message": "CodeDNA API is running"}
 
-@app.post("/api/session/start")
+@app.post("/api/session/start", tags=["Session"], summary="Start Investigation Session")
 def start_session():
     """Start a new investigation session"""
     session_id = str(uuid.uuid4())
@@ -44,7 +59,7 @@ def start_session():
     os.makedirs(os.path.join(SESSION_DIR, session_id, "submission"), exist_ok=True)
     return {"session_id": session_id}
 
-@app.post("/api/repositories/upload")
+@app.post("/api/repositories/upload", tags=["Ingestion"], summary="Upload Reference ZIP")
 async def upload_repository(session_id: str = Form(...), file: UploadFile = File(...)):
     """Upload a ZIP file of a historical repository"""
     if not file.filename.endswith('.zip'):
@@ -69,7 +84,7 @@ async def upload_repository(session_id: str = Form(...), file: UploadFile = File
         
     return {"status": "success", "repository": file.filename[:-4]}
 
-@app.post("/api/repositories/github")
+@app.post("/api/repositories/github", tags=["Ingestion"], summary="Fetch from GitHub")
 async def fetch_github_repos(session_id: str = Form(...), username: str = Form(...)):
     """Fetch public repositories for a GitHub user and extract them into the session."""
     session_path = os.path.join(SESSION_DIR, session_id)
@@ -132,7 +147,7 @@ async def fetch_github_repos(session_id: str = Form(...), username: str = Form(.
 
     return {"status": "success", "fetched": downloaded}
 
-@app.post("/api/repositories/template")
+@app.post("/api/repositories/template", tags=["Ingestion"], summary="Upload Starter Template")
 async def upload_template(session_id: str = Form(...), file: UploadFile = File(...)):
     """Upload a ZIP file of the starter code/template"""
     if not file.filename.endswith('.zip'):
@@ -161,7 +176,7 @@ async def upload_template(session_id: str = Form(...), file: UploadFile = File(.
         raise HTTPException(status_code=400, detail="Invalid zip file")
 
     return {"status": "success", "template": file.filename[:-4]}
-@app.post("/api/repositories/cohort-zip")
+@app.post("/api/repositories/cohort-zip", tags=["Ingestion"], summary="Upload LMS Cohort Export")
 async def upload_cohort_zip(session_id: str = Form(...), file: UploadFile = File(...)):
     """Upload a master LMS ZIP containing student submissions"""
     if not file.filename.endswith('.zip'):
@@ -218,7 +233,7 @@ async def upload_cohort_zip(session_id: str = Form(...), file: UploadFile = File
         json.dump(cohort_dna, f)
 
     return {"status": "success", "cohort": "processed"}
-@app.post("/api/repositories/github-classroom")
+@app.post("/api/repositories/github-classroom", tags=["Ingestion"], summary="Fetch GitHub Classroom Cohort")
 async def fetch_github_classroom(
     session_id: str = Form(...),
     organization: str = Form(...),
@@ -304,7 +319,7 @@ async def fetch_github_classroom(
         return {"status": "success", "fetched": len(student_dirs)}
 
 
-@app.post("/api/analyze/submission")
+@app.post("/api/analyze/submission", tags=["Analysis"], summary="Upload Submission ZIP")
 async def upload_submission(session_id: str = Form(...), file: UploadFile = File(...)):
     """Upload the final submission for analysis"""
     if not file.filename.endswith('.zip'):
@@ -329,7 +344,7 @@ async def upload_submission(session_id: str = Form(...), file: UploadFile = File
         
     return {"status": "success", "message": "Submission uploaded successfully"}
 
-@app.post("/api/analyze/compare")
+@app.post("/api/analyze/compare", tags=["Analysis"], summary="Run Deterministic Comparison")
 async def analyze_and_compare(session_id: str = Form(...), baseline_type: str = Form("personal")):
     """Run CodeDNA baseline extraction, compare against the submission, and generate AI report."""
     session_path = os.path.join(SESSION_DIR, session_id)
@@ -386,7 +401,7 @@ async def analyze_and_compare(session_id: str = Form(...), baseline_type: str = 
         "deterministic_data": comparison_results
     }
 
-@app.post("/api/analyze/ai-report")
+@app.post("/api/analyze/ai-report", tags=["Analysis"], summary="Generate AI Forensic Report")
 async def generate_ai_report(session_id: str = Form(...)):
     """Generate the AI forensic report using previously generated deterministic data."""
     session_path = os.path.join(SESSION_DIR, session_id)
@@ -409,7 +424,7 @@ async def generate_ai_report(session_id: str = Form(...)):
         "forensic_report": ai_report
     }
 
-@app.delete("/api/session/{session_id}")
+@app.delete("/api/session/{session_id}", tags=["Session"], summary="Cleanup Session")
 def cleanup_session(session_id: str):
     """Clean up a session manually"""
     session_path = os.path.join(SESSION_DIR, session_id)
