@@ -73,6 +73,10 @@ $$\text{Adjusted Anomaly Score} = \text{Personal Deviation} \times (1 - \text{Co
 Phase 0, Phase 1, Phase 2, Phase 3, and Phase 4 (Temporal Authorship Modeling & Change-Point Detection) Complete! Ready for Phase 5 (Cross-Language AST Parity & AST Normalization).
 
 ## Completed Changes:
+- (2026-09-26 00:47) **Intake Page UI UX Layout Redesign:**
+  - Restructured setup page into a balanced side-by-side 2-column input grid (`Historical Baseline` on left, `Investigated Submission` on right) with compact starter template input.
+  - Brought **"Initiate Forensic Investigation"** launch action card directly below the dropzones across full width, eliminating vertical scrolling to find the action button.
+  - Enhanced dropzones with distinct active selection badges, hover states, and clear input feedback.
 - (2026-09-26 00:35) **Forensic Case ID Badge Removal:** Removed the redundant session Case ID button/badge from [`PersistentInvestigationContext.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/components/PersistentInvestigationContext.tsx) to streamline the investigation header.
 - (2026-09-26 00:33) **UI UX User Evaluation Polish & Enhancements:**
   - **Persistent Investigation Header Bar:** Removed `sticky top-4` positioning so header bar stays at its fixed place on the page instead of following scroll. Updated background from dark blackish `bg-zinc-900` to a refined dark slate gradient (`bg-gradient-to-r from-slate-900 via-slate-800 to-zinc-900 border-slate-700/80`).
@@ -187,7 +191,6 @@ Created comprehensive test suite with `scripts/generate_test_zips.py` for 8 dist
 
 ## Known Issues / Need To make these updates:
 - *None currently open.*
-
 
 ## Architecture Vulnerabilities, Gotchas & Known Risk Matrix:
 

@@ -416,165 +416,168 @@ export default function Home() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
-            className="grid lg:grid-cols-12 gap-8"
+            className="space-y-6"
           >
-            {/* Input Intake Panel (Left 7 cols) */}
-            <div className="lg:col-span-7 space-y-6">
-              <div className="clean-card p-6 bg-white shadow-sm border border-zinc-200">
-                <div className="flex items-center justify-between mb-4 border-b border-zinc-100 pb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="p-1.5 rounded-lg bg-zinc-100 text-zinc-700 border border-zinc-200">
-                      <FolderGit2 className="w-4 h-4" />
-                    </span>
-                    <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wide">
-                      1. Historical Reference Baseline
-                    </h2>
+            {/* Top 2-Column Grid: Baseline Inputs (Left) + Submission Dropzone (Right) */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+              {/* Card 1: Historical Reference Baseline */}
+              <div className="clean-card p-6 bg-white shadow-sm border border-zinc-200 flex flex-col justify-between rounded-xl">
+                <div>
+                  <div className="flex items-center justify-between mb-4 border-b border-zinc-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="p-1.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100">
+                        <FolderGit2 className="w-4 h-4" />
+                      </span>
+                      <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wide">
+                        1. Historical Reference Baseline
+                      </h2>
+                    </div>
+                    <span className="text-[11px] text-zinc-400 font-mono">AST Signature Matrix</span>
                   </div>
-                  <span className="text-xs text-zinc-400 font-mono">AST Signature Matrix</span>
-                </div>
 
-                {/* Tabs */}
-                <div className="flex gap-2 p-1 bg-zinc-100 rounded-lg mb-5 text-xs font-semibold">
-                  <button
-                    onClick={() => setSelectedBaselineTab(0)}
-                    className={`flex-1 py-1.5 px-3 rounded-md transition-all ${
-                      selectedBaselineTab === 0
-                        ? "bg-white text-zinc-900 shadow-sm border border-zinc-200"
-                        : "text-zinc-600 hover:text-zinc-900"
-                    }`}
-                  >
-                    Single Student
-                  </button>
-                  <button
-                    onClick={() => setSelectedBaselineTab(1)}
-                    className={`flex-1 py-1.5 px-3 rounded-md transition-all ${
-                      selectedBaselineTab === 1
-                        ? "bg-white text-zinc-900 shadow-sm border border-zinc-200"
-                        : "text-zinc-600 hover:text-zinc-900"
-                    }`}
-                  >
-                    Master LMS ZIP
-                  </button>
-                  <button
-                    onClick={() => setSelectedBaselineTab(2)}
-                    className={`flex-1 py-1.5 px-3 rounded-md transition-all ${
-                      selectedBaselineTab === 2
-                        ? "bg-white text-zinc-900 shadow-sm border border-zinc-200"
-                        : "text-zinc-600 hover:text-zinc-900"
-                    }`}
-                  >
-                    GitHub Classroom
-                  </button>
-                </div>
+                  {/* Tabs */}
+                  <div className="flex gap-1.5 p-1 bg-zinc-100 rounded-lg mb-4 text-xs font-semibold">
+                    <button
+                      onClick={() => setSelectedBaselineTab(0)}
+                      className={`flex-1 py-1.5 px-3 rounded-md transition-all cursor-pointer ${
+                        selectedBaselineTab === 0
+                          ? "bg-white text-zinc-900 shadow-sm border border-zinc-200"
+                          : "text-zinc-600 hover:text-zinc-900"
+                      }`}
+                    >
+                      Single Student
+                    </button>
+                    <button
+                      onClick={() => setSelectedBaselineTab(1)}
+                      className={`flex-1 py-1.5 px-3 rounded-md transition-all cursor-pointer ${
+                        selectedBaselineTab === 1
+                          ? "bg-white text-zinc-900 shadow-sm border border-zinc-200"
+                          : "text-zinc-600 hover:text-zinc-900"
+                      }`}
+                    >
+                      Master LMS ZIP
+                    </button>
+                    <button
+                      onClick={() => setSelectedBaselineTab(2)}
+                      className={`flex-1 py-1.5 px-3 rounded-md transition-all cursor-pointer ${
+                        selectedBaselineTab === 2
+                          ? "bg-white text-zinc-900 shadow-sm border border-zinc-200"
+                          : "text-zinc-600 hover:text-zinc-900"
+                      }`}
+                    >
+                      GitHub Classroom
+                    </button>
+                  </div>
 
-                {/* Tab 0: Single Student */}
-                {selectedBaselineTab === 0 && (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-xs font-semibold text-zinc-700 block mb-1.5">
-                        GitHub Profile / Repo URL <span className="text-zinc-400 font-normal">(Optional public scanner)</span>
-                      </label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                  {/* Tab 0: Single Student */}
+                  {selectedBaselineTab === 0 && (
+                    <div className="space-y-3.5">
+                      <div>
+                        <label className="text-xs font-semibold text-zinc-700 block mb-1">
+                          GitHub Username / Repo URL <span className="text-zinc-400 font-normal">(Optional public scanner)</span>
+                        </label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                          <input
+                            type="text"
+                            value={githubLink}
+                            onChange={(e) => setGithubLink(e.target.value)}
+                            placeholder="e.g. https://github.com/student-handle"
+                            className="w-full bg-white border border-zinc-200 rounded-lg py-2 pl-9 pr-3 text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-800"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="relative flex items-center justify-center my-1">
+                        <div className="border-t border-zinc-200 w-full" />
+                        <span className="bg-white px-2 text-[10px] uppercase font-bold text-zinc-400 absolute">
+                          And / Or Baseline ZIPs
+                        </span>
+                      </div>
+
+                      <div className="border-2 border-dashed border-zinc-200 hover:border-indigo-400 rounded-xl p-5 text-center bg-zinc-50/70 hover:bg-indigo-50/30 transition-all cursor-pointer relative">
+                        <FileArchive className="w-6 h-6 text-zinc-400 mx-auto mb-1.5" />
+                        <p className="text-xs font-semibold text-zinc-800">Drop Historical Project ZIPs</p>
+                        <p className="text-[11px] text-zinc-500">Upload one or multiple past student submissions</p>
+                        <input
+                          key={`repo-${resetKey}`}
+                          type="file"
+                          multiple
+                          accept=".zip"
+                          onChange={(e) => setRepoFiles(e.target.files)}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                        {repoFiles && repoFiles.length > 0 && (
+                          <div className="mt-2 inline-block bg-white border border-emerald-300 text-emerald-800 px-2.5 py-0.5 rounded text-[11px] font-mono font-semibold shadow-xs">
+                            ✓ {repoFiles.length} baseline archive(s) staged
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Tab 1: Master LMS ZIP */}
+                  {selectedBaselineTab === 1 && (
+                    <div className="space-y-3">
+                      <p className="text-xs text-zinc-500">
+                        Upload an LMS cohort export (Canvas, Blackboard, Moodle) containing all student submissions for cohort norm normalization.
+                      </p>
+                      <div className="border-2 border-dashed border-zinc-200 hover:border-indigo-400 rounded-xl p-6 text-center bg-zinc-50/70 hover:bg-indigo-50/30 transition-all cursor-pointer relative">
+                        <FileArchive className="w-7 h-7 text-zinc-400 mx-auto mb-2" />
+                        <p className="text-xs font-semibold text-zinc-800">Drop Master Class / Cohort ZIP</p>
+                        <input
+                          key={`cohort-${resetKey}`}
+                          type="file"
+                          accept=".zip"
+                          onChange={(e) => setCohortFile(e.target.files?.[0] || null)}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                        {cohortFile && (
+                          <div className="mt-2 inline-block bg-white border border-emerald-300 text-emerald-800 px-2.5 py-0.5 rounded text-[11px] font-mono font-semibold shadow-xs">
+                            ✓ {cohortFile.name}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Tab 2: GitHub Classroom */}
+                  {selectedBaselineTab === 2 && (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs font-semibold text-zinc-700 block mb-1">Organization Name</label>
                         <input
                           type="text"
-                          value={githubLink}
-                          onChange={(e) => setGithubLink(e.target.value)}
-                          placeholder="e.g. https://github.com/student-handle"
-                          className="w-full bg-white border border-zinc-200 rounded-lg py-2 pl-9 pr-3 text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-800"
+                          value={cohortOrganization}
+                          onChange={(e) => setCohortOrganization(e.target.value)}
+                          placeholder="e.g. cs101-fall2026"
+                          className="w-full bg-white border border-zinc-200 rounded-lg py-2 px-3 text-xs text-zinc-900 focus:outline-none focus:border-zinc-800"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-zinc-700 block mb-1">Assignment Prefix</label>
+                        <input
+                          type="text"
+                          value={cohortAssignmentPrefix}
+                          onChange={(e) => setCohortAssignmentPrefix(e.target.value)}
+                          placeholder="e.g. assignment-2"
+                          className="w-full bg-white border border-zinc-200 rounded-lg py-2 px-3 text-xs text-zinc-900 focus:outline-none focus:border-zinc-800"
                         />
                       </div>
                     </div>
-
-                    <div className="relative flex items-center justify-center">
-                      <div className="border-t border-zinc-200 w-full" />
-                      <span className="bg-white px-2 text-[10px] uppercase font-bold text-zinc-400 absolute">
-                        And / Or Reference ZIPs
-                      </span>
-                    </div>
-
-                    <div className="border-2 border-dashed border-zinc-200 hover:border-zinc-400 rounded-xl p-6 text-center bg-zinc-50 hover:bg-zinc-100/70 transition-all cursor-pointer relative">
-                      <FileArchive className="w-7 h-7 text-zinc-400 mx-auto mb-2" />
-                      <p className="text-xs font-semibold text-zinc-800">Drop Historical Project ZIPs</p>
-                      <p className="text-[11px] text-zinc-500 mt-0.5">Upload one or multiple past student submissions</p>
-                      <input
-                        key={`repo-${resetKey}`}
-                        type="file"
-                        multiple
-                        accept=".zip"
-                        onChange={(e) => setRepoFiles(e.target.files)}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      />
-                      {repoFiles && repoFiles.length > 0 && (
-                        <div className="mt-2 inline-block bg-white border border-zinc-200 px-2.5 py-0.5 rounded text-[11px] font-mono text-zinc-800 shadow-sm">
-                          {repoFiles.length} baseline archive(s) staged
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Tab 1: Master LMS ZIP */}
-                {selectedBaselineTab === 1 && (
-                  <div className="space-y-4">
-                    <p className="text-xs text-zinc-500">
-                      Upload an LMS cohort export (Canvas, Blackboard, Moodle) containing all student submissions for cohort norm normalization.
-                    </p>
-                    <div className="border-2 border-dashed border-zinc-200 hover:border-zinc-400 rounded-xl p-6 text-center bg-zinc-50 hover:bg-zinc-100/70 transition-all cursor-pointer relative">
-                      <FileArchive className="w-7 h-7 text-zinc-400 mx-auto mb-2" />
-                      <p className="text-xs font-semibold text-zinc-800">Drop Master Class / Cohort ZIP</p>
-                      <input
-                        key={`cohort-${resetKey}`}
-                        type="file"
-                        accept=".zip"
-                        onChange={(e) => setCohortFile(e.target.files?.[0] || null)}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      />
-                      {cohortFile && (
-                        <div className="mt-2 inline-block bg-white border border-zinc-200 px-2.5 py-0.5 rounded text-[11px] font-mono text-zinc-800 shadow-sm">
-                          {cohortFile.name}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Tab 2: GitHub Classroom */}
-                {selectedBaselineTab === 2 && (
-                  <div className="space-y-3">
-                    <div>
-                      <label className="text-xs font-semibold text-zinc-700 block mb-1">Organization Name</label>
-                      <input
-                        type="text"
-                        value={cohortOrganization}
-                        onChange={(e) => setCohortOrganization(e.target.value)}
-                        placeholder="e.g. cs101-fall2026"
-                        className="w-full bg-white border border-zinc-200 rounded-lg py-2 px-3 text-xs text-zinc-900 focus:outline-none focus:border-zinc-800"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold text-zinc-700 block mb-1">Assignment Prefix</label>
-                      <input
-                        type="text"
-                        value={cohortAssignmentPrefix}
-                        onChange={(e) => setCohortAssignmentPrefix(e.target.value)}
-                        placeholder="e.g. assignment-2"
-                        className="w-full bg-white border border-zinc-200 rounded-lg py-2 px-3 text-xs text-zinc-900 focus:outline-none focus:border-zinc-800"
-                      />
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
 
                 {/* Optional Starter Template Subtraction */}
-                <div className="mt-5 pt-4 border-t border-zinc-100">
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-xs font-semibold text-zinc-700 flex items-center gap-1.5">
+                <div className="mt-4 pt-3.5 border-t border-zinc-100">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-[11px] font-semibold text-zinc-700 flex items-center gap-1.5">
                       <Sliders className="w-3.5 h-3.5 text-zinc-500" />
-                      <span>Instructor Starter Template Subtraction</span>
+                      <span>Instructor Starter Template (Optional)</span>
                     </label>
-                    <span className="text-[10px] text-zinc-400">Eliminates false positives</span>
+                    <span className="text-[10px] text-zinc-400">Subtracts boilerplate</span>
                   </div>
-                  <div className="border border-dashed border-zinc-200 rounded-lg p-3 text-center bg-zinc-50 hover:bg-zinc-100 transition-all cursor-pointer relative">
+                  <div className="border border-dashed border-zinc-200 hover:border-zinc-300 rounded-lg p-2.5 text-center bg-zinc-50/50 hover:bg-zinc-100/60 transition-all cursor-pointer relative">
                     <input
                       key={`template-${resetKey}`}
                       type="file"
@@ -582,91 +585,112 @@ export default function Home() {
                       onChange={(e) => setTemplateFile(e.target.files?.[0] || null)}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
-                    <p className="text-xs text-zinc-600 font-medium">
-                      {templateFile ? templateFile.name : "+ Attach instructor boilerplate / starter ZIP (optional)"}
+                    <p className="text-[11px] text-zinc-600 font-medium">
+                      {templateFile ? `✓ Starter: ${templateFile.name}` : "+ Attach skeleton starter code ZIP to eliminate boilerplate false positives"}
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Submission ZIP Dropzone */}
-              <div className="clean-card p-6 bg-white shadow-sm border border-zinc-200">
-                <div className="flex items-center gap-2 mb-3 border-b border-zinc-100 pb-3">
-                  <span className="p-1.5 rounded-lg bg-zinc-100 text-zinc-700 border border-zinc-200">
-                    <FileCode2 className="w-4 h-4" />
-                  </span>
-                  <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wide">
-                    2. Investigated Code Submission
-                  </h2>
+              {/* Card 2: Investigated Submission Dropzone */}
+              <div className="clean-card p-6 bg-white shadow-sm border border-zinc-200 flex flex-col justify-between rounded-xl">
+                <div>
+                  <div className="flex items-center justify-between mb-4 border-b border-zinc-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="p-1.5 rounded-lg bg-rose-50 text-rose-700 border border-rose-100">
+                        <FileCode2 className="w-4 h-4" />
+                      </span>
+                      <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wide">
+                        2. Investigated Submission
+                      </h2>
+                    </div>
+                    <span className="text-[11px] text-rose-600 font-mono font-semibold">Target Archive</span>
+                  </div>
+
+                  <div className="border-2 border-dashed border-rose-200/80 hover:border-rose-400 rounded-xl p-8 text-center bg-rose-50/20 hover:bg-rose-50/40 transition-all cursor-pointer relative mb-4">
+                    <Upload className="w-8 h-8 text-rose-400 mx-auto mb-2" />
+                    <p className="text-xs font-bold text-zinc-800">Drop Target Student Submission ZIP</p>
+                    <p className="text-[11px] text-zinc-500 mt-1">The code archive under investigation to compare against baseline</p>
+                    <input
+                      key={`sub-${resetKey}`}
+                      type="file"
+                      accept=".zip"
+                      onChange={(e) => setSubmissionFile(e.target.files?.[0] || null)}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                    {submissionFile ? (
+                      <div className="mt-3 inline-block bg-white border border-rose-300 text-rose-900 px-3 py-1 rounded-lg text-xs font-mono font-bold shadow-xs">
+                        ✓ {submissionFile.name}
+                      </div>
+                    ) : (
+                      <div className="mt-3 inline-block bg-white/80 border border-zinc-200 text-zinc-400 px-3 py-1 rounded text-[11px] font-mono">
+                        No ZIP selected yet
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="border-2 border-dashed border-zinc-200 hover:border-zinc-400 rounded-xl p-8 text-center bg-zinc-50 hover:bg-zinc-100/70 transition-all cursor-pointer relative">
-                  <Upload className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
-                  <p className="text-xs font-semibold text-zinc-800">Drop Submission ZIP Under Investigation</p>
-                  <p className="text-[11px] text-zinc-500 mt-0.5">The target student archive to benchmark against baseline</p>
-                  <input
-                    key={`sub-${resetKey}`}
-                    type="file"
-                    accept=".zip"
-                    onChange={(e) => setSubmissionFile(e.target.files?.[0] || null)}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
-                  {submissionFile && (
-                    <div className="mt-3 inline-block bg-white border border-zinc-200 px-3 py-1 rounded text-xs font-mono font-bold text-zinc-900 shadow-sm">
-                      {submissionFile.name}
+                {/* Audit Highlights */}
+                <div className="bg-zinc-50 border border-zinc-200/80 rounded-lg p-4 space-y-2 text-xs text-zinc-600">
+                  <div className="flex items-center gap-2 font-semibold text-zinc-800 text-[11px] uppercase tracking-wider mb-1">
+                    <ShieldAlert className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Forensic Engine Guarantees</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-[11px]">
+                    <div className="flex items-center gap-1.5">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>8-Vector Anomaly Math</span>
                     </div>
-                  )}
+                    <div className="flex items-center gap-1.5">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>Gemini Flash Forensic Reasoning</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>Exact Line Suspicious Pinpointing</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>100% Privacy-Preserving</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Launch & Audit Info Panel (Right 5 cols) */}
-            <div className="lg:col-span-5 flex flex-col justify-between clean-card p-8 bg-zinc-950 text-white shadow-xl border border-zinc-800 rounded-xl">
-              <div>
-                <div className="flex items-center gap-2 mb-6 text-zinc-400 text-xs font-mono">
-                  <ShieldAlert className="w-4 h-4 text-amber-400" />
-                  <span>FORENSIC PROTOCOL SPECIFICATION</span>
+            {/* Launch Action Bar (Full Width directly below dropzones) */}
+            <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border border-slate-700/80 rounded-xl p-6 shadow-md">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[11px] font-mono uppercase tracking-wider text-indigo-300 font-semibold">
+                      Forensic Audit Protocol Ready
+                    </span>
+                    {!submissionFile || (!githubLink && (!repoFiles || repoFiles.length === 0) && !cohortFile && !cohortOrganization) ? (
+                      <span className="px-2 py-0.5 rounded bg-amber-950/80 border border-amber-700 text-amber-300 text-[10px] font-mono font-semibold">
+                        Awaiting Inputs
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-700 text-emerald-300 text-[10px] font-mono font-semibold">
+                        Ready to Execute
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-300">
+                    Executes deterministic 8-dimensional CodeDNA AST comparison, Siamese latent space scoring, and temporal change-point analysis.
+                  </p>
                 </div>
 
-                <h3 className="text-xl font-black text-white leading-tight mb-3">
-                  Multi-Vector CodeDNA Authenticity Investigation
-                </h3>
-                <p className="text-xs text-zinc-400 leading-relaxed mb-6">
-                  CodeDNA constructs an AST-grounded behavioral signature from past repos, cross-referencing cyclomatic complexity, indentation fingerprints, lexical naming, and dependency imports.
-                </p>
-
-                <div className="space-y-3 border-t border-zinc-800 pt-6 text-xs text-zinc-300">
-                  <div className="flex items-center gap-2.5">
-                    <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>8-Vector Deterministic Anomaly Detection (Instant &amp; Free)</span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Baseline Contamination &amp; Consistent AI Author Diagnosis</span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Traceable Line &amp; Function Suspicious Region Pinpointing</span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Google Gemini Flash Forensic Synthesis &amp; VivaGuard Script</span>
-                  </div>
+                <div className="shrink-0">
+                  <button
+                    onClick={startAnalysis}
+                    disabled={!submissionFile || (!githubLink && (!repoFiles || repoFiles.length === 0) && !cohortFile && !cohortOrganization)}
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 py-3 px-8 bg-white hover:bg-indigo-50 text-slate-950 font-bold rounded-xl text-xs shadow-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed group cursor-pointer"
+                  >
+                    <span>Initiate Forensic Investigation</span>
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </button>
                 </div>
-              </div>
-
-              <div className="pt-8 border-t border-zinc-800 mt-8">
-                <button
-                  onClick={startAnalysis}
-                  disabled={!submissionFile || (!githubLink && (!repoFiles || repoFiles.length === 0) && !cohortFile && !cohortOrganization)}
-                  className="w-full flex items-center justify-center gap-2 py-3 px-6 bg-white hover:bg-zinc-100 text-zinc-950 font-bold rounded-lg text-xs shadow-md transition-all disabled:opacity-40 disabled:cursor-not-allowed group cursor-pointer"
-                >
-                  <span>Initiate Forensic Investigation</span>
-                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </button>
-                <p className="text-[10px] text-zinc-500 text-center mt-2.5 font-mono">
-                  Offline privacy-preserving AST parsing • No training on student code
-                </p>
               </div>
             </div>
           </motion.div>
