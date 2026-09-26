@@ -136,52 +136,38 @@ export function InfoHelper({ termKey, title, className = "" }: InfoHelperProps) 
   };
 
   return (
-    <>
+    <div className="relative inline-flex items-center group">
       <button
         type="button"
-        onClick={() => setIsOpen(true)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
+        onMouseEnter={() => setIsOpen(true)}
+        onMouseLeave={() => setIsOpen(false)}
         title={`Click for technical explanation of ${def.term}`}
-        className={`inline-flex items-center justify-center p-0.5 rounded-full text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors focus:outline-none ${className}`}
+        aria-label={`Technical explanation of ${def.term}`}
+        className={`inline-flex items-center justify-center p-0.5 rounded-full text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors focus:outline-none cursor-pointer ${className}`}
       >
         <Info className="w-3.5 h-3.5" />
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/40 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white border border-zinc-200 rounded-xl p-5 max-w-md w-full shadow-xl space-y-3 relative">
-            <div className="flex items-start justify-between gap-3 border-b border-zinc-100 pb-2.5">
-              <div className="flex items-center gap-2">
-                <span className="p-1 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100">
-                  <Info className="w-4 h-4" />
-                </span>
-                <div>
-                  <h4 className="text-xs font-bold text-zinc-900 uppercase tracking-wide">{def.term}</h4>
-                  {def.category && <p className="text-[10px] font-mono text-zinc-400">{def.category}</p>}
-                </div>
-              </div>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-1 text-zinc-400 hover:text-zinc-700 rounded-md hover:bg-zinc-100 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-lg text-xs text-zinc-700 leading-relaxed font-normal">
-              {def.simpleMeaning}
-            </div>
-
-            <div className="flex justify-end pt-1">
-              <button
-                onClick={() => setIsOpen(false)}
-                className="px-3 py-1 bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs rounded-md shadow-xs transition-colors"
-              >
-                Got it
-              </button>
-            </div>
+        <div 
+          onMouseEnter={() => setIsOpen(true)}
+          onMouseLeave={() => setIsOpen(false)}
+          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 w-72 p-3 bg-white border border-zinc-200/90 rounded-xl shadow-lg text-left text-zinc-800 animate-in fade-in zoom-in-95 duration-100 pointer-events-auto"
+        >
+          <div className="flex items-center justify-between border-b border-zinc-100 pb-1.5 mb-1.5">
+            <span className="text-[11px] font-bold text-zinc-900 tracking-wide uppercase">{def.term}</span>
+            {def.category && <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-500 font-semibold">{def.category}</span>}
           </div>
+          <p className="text-[11px] text-zinc-600 leading-relaxed font-normal">
+            {def.simpleMeaning}
+          </p>
+          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-zinc-200" />
         </div>
       )}
-    </>
+    </div>
   );
 }

@@ -371,7 +371,8 @@ async def analyze_and_compare(session_id: str = Form(...), baseline_type: str = 
         template_dna = None
         if os.path.exists(template_dir):
             template_dna = build_repository_codedna(template_dir)
-            baseline_dna = subtract_template_dna(baseline_dna, template_dna)
+            if baseline_type == "cohort":
+                baseline_dna = subtract_template_dna(baseline_dna, template_dna)
 
         # 3. Build Submission DNA
         submission_dna = build_repository_codedna(sub_dir)
@@ -392,10 +393,19 @@ async def analyze_and_compare(session_id: str = Form(...), baseline_type: str = 
             detail="Analysis timed out (>60s). The repository may be too large. Try reducing the number of baseline repos or submission size."
         )
 
-    if submission_dna.get("repo_count_usable_files_languages", {}).get("usable_files", 0) == 0:
-        raise HTTPException(status_code=400, detail="Submission contains no usable source code files.")
-    if baseline_dna.get("repo_count_usable_files_languages", {}).get("usable_files", 0) == 0:
-        raise HTTPException(status_code=400, detail="Baseline contains no usable source code files.")
+    sub_usable = submission_dna.get("repo_count_usable_files_languages", {}).get("usable_files", 0)
+    base_usable = baseline_dna.get("repo_count_usable_files_languages", {}).get("usable_files", 0)
+
+    if sub_usable == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Submission contains no usable source code files. Supported extensions are: Python (.py), JavaScript/TypeScript (.js, .jsx, .ts, .tsx), Java (.java), C/C++ (.c, .cpp), C# (.cs), Go (.go), Rust (.rs). Please ensure the submission ZIP archive contains supported code files."
+        )
+    if base_usable == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Baseline contains no usable source code files. Supported extensions are: Python (.py), JavaScript/TypeScript (.js, .jsx, .ts, .tsx), Java (.java), C/C++ (.c, .cpp), C# (.cs), Go (.go), Rust (.rs). Please verify your historical baseline repositories."
+        )
 
     # 4. Compare (Deterministic + ML + Temporal) — also CPU-bound
     try:

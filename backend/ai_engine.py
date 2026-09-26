@@ -56,8 +56,37 @@ Output MUST be valid JSON matching this schema exactly:
 }"""
 
 
+def _compact_comparison_data(data: dict) -> dict:
+    """Strip bulky raw file matrices and trim lists to prevent exceeding Gemini free-tier TPM quotas."""
+    import copy
+    compacted = copy.deepcopy(data)
+    
+    # Strip bulky file_metrics lists that can contain thousands of lines
+    if "baseline_dna" in compacted and isinstance(compacted["baseline_dna"], dict):
+        compacted["baseline_dna"].pop("file_metrics", None)
+    if "submission_dna" in compacted and isinstance(compacted["submission_dna"], dict):
+        compacted["submission_dna"].pop("file_metrics", None)
+        
+    # Trim deviation score lists to top 8 items
+    if "deviations" in compacted and isinstance(compacted["deviations"], dict):
+        devs = compacted["deviations"]
+        if "exact_suspicious_regions_lines" in devs and isinstance(devs["exact_suspicious_regions_lines"], list):
+            devs["exact_suspicious_regions_lines"] = devs["exact_suspicious_regions_lines"][:8]
+        if "per_function_anomaly_scores" in devs and isinstance(devs["per_function_anomaly_scores"], list):
+            devs["per_function_anomaly_scores"] = devs["per_function_anomaly_scores"][:8]
+        if "per_file_anomaly_scores" in devs and isinstance(devs["per_file_anomaly_scores"], list):
+            devs["per_file_anomaly_scores"] = devs["per_file_anomaly_scores"][:8]
+            
+    # Trim temporal snapshots if present
+    if "temporal_evolution" in compacted and isinstance(compacted["temporal_evolution"], dict):
+        te = compacted["temporal_evolution"]
+        if "milestones" in te and isinstance(te["milestones"], list):
+            te["milestones"] = te["milestones"][:5]
+
+    return compacted
+
 async def generate_forensic_report(comparison_data: dict) -> tuple[dict, str]:
-    """Analyze deterministic comparison data using Google Gemini Flash with automatic non-blocking failover."""
+    """Analyze deterministic comparison data using Google Gemini Flash with automatic non-blocking failover and strict token budgeting."""
     import asyncio
 
     primary_model = (os.getenv("GEMINI_MODEL") or "gemini-3.5-flash-lite").strip()
@@ -68,7 +97,13 @@ async def generate_forensic_report(comparison_data: dict) -> tuple[dict, str]:
             candidate_models.append(m)
 
     client = _get_client()
-    prompt = f"{SYSTEM_PROMPT}\n\nAnalyze this CodeDNA comparison data:\n\n{json.dumps(comparison_data, indent=2)}"
+    compact_data = _compact_comparison_data(comparison_data)
+    data_str = json.dumps(compact_data, indent=2)
+    # Hard safety cap: ensure prompt payload stays well under ~25k tokens (~80k chars)
+    if len(data_str) > 60000:
+        data_str = data_str[:60000] + "\n... [Remaining low-priority metrics truncated to protect token quota] }"
+        
+    prompt = f"{SYSTEM_PROMPT}\n\nAnalyze this CodeDNA comparison data:\n\n{data_str}"
 
     def _call_api(model_name: str):
         return client.models.generate_content(
@@ -102,6 +137,9 @@ async def generate_forensic_report(comparison_data: dict) -> tuple[dict, str]:
             print(f"Model {model_name} failed ({error_msg[:120]}). Immediately switching to fallback model…")
             continue
 
-    raise RuntimeError(f"All Gemini models in fallback chain failed. Last error: {str(last_error)}")
+    err_str = str(last_error)
+    if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+        raise RuntimeError("Gemini free-tier quota (250,000 tokens/min) temporarily exceeded. Please wait 45 seconds and retry.")
+    raise RuntimeError(f"All Gemini models in fallback chain failed. Last error: {err_str}")
 
 

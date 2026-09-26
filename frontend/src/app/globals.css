@@ -45,3 +45,35 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--muted-foreground);
 }
+
+/* Forensic Report Print Optimization */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 15mm 15mm 20mm 15mm;
+  }
+  
+  html, body {
+    background: #ffffff !important;
+    color: #09090b !important;
+    font-size: 11pt !important;
+    line-height: 1.4 !important;
+  }
+
+  /* Hide screen-only interactive elements */
+  header, nav, button, .print-hide {
+    display: none !important;
+  }
+
+  /* Prevent awkward page cuts */
+  .clean-card, tr, .print-break-inside-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Force signatures to fresh final page */
+  .print-break-before-page {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+}

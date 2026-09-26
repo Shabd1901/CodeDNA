@@ -20,12 +20,14 @@ interface EvidenceCodeInspectorProps {
   suspiciousRegions: SuspiciousRegion[];
   fileAnomalies: FileAnomaly[];
   unseenPatterns: string[];
+  consistencyScore?: number;
 }
 
 export function EvidenceCodeInspector({
   suspiciousRegions,
   fileAnomalies,
   unseenPatterns,
+  consistencyScore,
 }: EvidenceCodeInspectorProps) {
   const [selectedRegionIndex, setSelectedRegionIndex] = useState<number>(0);
   const [searchFilter, setSearchFilter] = useState("");
@@ -59,6 +61,22 @@ export function EvidenceCodeInspector({
 
   return (
     <div className="space-y-6">
+      {/* High Consistency Banner */}
+      {consistencyScore !== undefined && consistencyScore >= 95 && (
+        <div className="bg-emerald-50/80 border border-emerald-200 rounded-xl p-4 shadow-sm flex items-start gap-3">
+          <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+          <div className="text-xs">
+            <p className="font-bold text-emerald-950">
+              High CodeDNA Consistency Profile ({Math.round(consistencyScore)}/100)
+            </p>
+            <p className="text-emerald-800 mt-0.5 leading-relaxed">
+              Global stylistic and structural habits closely match historical baseline references. 
+              Any localized flags below represent benign statistical boundary checks rather than evidence of external code substitution.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Unseen Behavioral Patterns Alert Banner */}
       {unseenPatterns.length > 0 && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 shadow-sm">
@@ -152,20 +170,22 @@ export function EvidenceCodeInspector({
                 <AlertTriangle className="w-4 h-4 text-amber-600" />
                 <span>File-Level Composite Anomaly Scores</span>
               </h4>
-              <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-[260px] overflow-y-auto pr-1">
                 {fileAnomalies.map((f, i) => (
-                  <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-zinc-50 border border-zinc-100 text-xs">
-                    <span className="font-mono text-zinc-800 truncate mr-2 font-medium">{f.file}</span>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <div className="w-16 h-1.5 bg-zinc-200 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full ${f.anomaly_score > 60 ? "bg-red-500" : f.anomaly_score > 30 ? "bg-amber-500" : "bg-emerald-500"}`}
-                          style={{ width: `${Math.min(100, f.anomaly_score)}%` }}
-                        />
-                      </div>
-                      <span className="font-mono font-bold text-[11px] text-zinc-900 min-w-[28px] text-right">
-                        {f.anomaly_score}
+                  <div key={i} className="p-2.5 rounded-lg bg-zinc-50 border border-zinc-100 text-xs space-y-1.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="font-mono text-zinc-800 font-medium break-all text-[11px] leading-snug" title={f.file}>
+                        {f.file}
                       </span>
+                      <span className="font-mono font-bold text-[11px] text-zinc-900 shrink-0">
+                        {f.anomaly_score}/100
+                      </span>
+                    </div>
+                    <div className="w-full h-1.5 bg-zinc-200 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${f.anomaly_score > 60 ? "bg-red-500" : f.anomaly_score > 30 ? "bg-amber-500" : "bg-emerald-500"}`}
+                        style={{ width: `${Math.min(100, f.anomaly_score)}%` }}
+                      />
                     </div>
                   </div>
                 ))}

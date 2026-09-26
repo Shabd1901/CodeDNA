@@ -35,7 +35,7 @@ export function PersistentInvestigationContext({
   const isModerateConcern = overallConcern.toLowerCase() === "moderate";
 
   return (
-    <div className="w-full bg-white border border-zinc-200 rounded-xl p-4 text-zinc-900 shadow-xs relative">
+    <div className="w-full bg-white border border-zinc-200 rounded-xl p-4 text-zinc-900 shadow-xs relative print:hidden">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         {/* Left: Case Title & Author Profile */}
         <div className="flex items-center gap-3">

@@ -1,22 +1,38 @@
 "use client";
 
-import React from "react";
-import { Printer, ShieldAlert, CheckCircle, FileText, Activity } from "lucide-react";
+import React, { useState } from "react";
+import { Printer, ShieldAlert, CheckCircle, FileText, Activity, FileCheck, Layers, Terminal } from "lucide-react";
 
 interface ForensicDossierViewProps {
   sessionId: string | null;
   report: any;
+  submissionFileName?: string;
+  initialMode?: "simple" | "extended";
 }
 
-export function ForensicDossierView({ sessionId, report }: ForensicDossierViewProps) {
+export function ForensicDossierView({ 
+  sessionId, 
+  report, 
+  submissionFileName = "Target Submission Archive",
+  initialMode = "simple"
+}: ForensicDossierViewProps) {
+  const [mode, setMode] = useState<"simple" | "extended">(initialMode);
+  
   const dData = report?.deterministic_data;
   const authIntel = dData?.authorship_intelligence;
   const categorical = authIntel?.categorical_signals;
   const forensicReport = report?.forensic_report;
   const deviations = dData?.forensics || {};
+  const baselineMetrics = dData?.baseline_metrics;
+  const mlIntel = dData?.ml_intelligence;
 
-  const handlePrint = () => {
-    window.print();
+  const handlePrint = (printMode?: "simple" | "extended") => {
+    if (printMode && printMode !== mode) {
+      setMode(printMode);
+      setTimeout(() => window.print(), 100);
+    } else {
+      window.print();
+    }
   };
 
   const currentDate = new Date().toLocaleDateString("en-US", {
@@ -27,19 +43,52 @@ export function ForensicDossierView({ sessionId, report }: ForensicDossierViewPr
 
   return (
     <div className="space-y-6">
-      {/* Top action bar */}
-      <div className="flex items-center justify-between bg-white border border-zinc-200 rounded-xl p-4 shadow-sm print:hidden">
+      {/* Top Action & Mode Selector Bar (Hidden during print) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-zinc-200 rounded-xl p-4 shadow-sm print:hidden">
         <div>
           <h3 className="text-sm font-bold text-zinc-900">Official Forensic Case Dossier</h3>
-          <p className="text-xs text-zinc-500">Formally documented case summary ready for academic board review.</p>
+          <p className="text-xs text-zinc-500">
+            {mode === "simple" 
+              ? "Compact Executive Brief designed for initial board review." 
+              : "Full Extended Investigation Report containing all vector metrics, AST traces & AI findings."}
+          </p>
         </div>
-        <button
-          onClick={handlePrint}
-          className="flex items-center gap-2 px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors"
-        >
-          <Printer className="w-4 h-4" />
-          <span>Print / Export PDF</span>
-        </button>
+
+        <div className="flex items-center gap-2.5">
+          {/* Mode Switcher */}
+          <div className="flex p-0.5 bg-zinc-100 rounded-lg text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => setMode("simple")}
+              className={`px-3 py-1.5 rounded-md transition-all cursor-pointer ${
+                mode === "simple"
+                  ? "bg-white text-zinc-900 shadow-xs border border-zinc-200/80 font-bold"
+                  : "text-zinc-600 hover:text-zinc-900"
+              }`}
+            >
+              Simple Summary
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("extended")}
+              className={`px-3 py-1.5 rounded-md transition-all cursor-pointer ${
+                mode === "extended"
+                  ? "bg-white text-zinc-900 shadow-xs border border-zinc-200/80 font-bold"
+                  : "text-zinc-600 hover:text-zinc-900"
+              }`}
+            >
+              Extended Dossier
+            </button>
+          </div>
+
+          <button
+            onClick={() => handlePrint()}
+            className="flex items-center gap-2 px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors cursor-pointer"
+          >
+            <Printer className="w-4 h-4" />
+            <span>Print / Export PDF</span>
+          </button>
+        </div>
       </div>
 
       {/* Printable Case Dossier Container */}
@@ -49,15 +98,18 @@ export function ForensicDossierView({ sessionId, report }: ForensicDossierViewPr
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-xs font-mono font-bold uppercase tracking-widest text-zinc-500">
-                CodeDNA Forensic Investigation Dossier
+                CodeDNA Forensic Investigation Dossier • {mode === "simple" ? "Executive Summary" : "Full Extended Audit"}
               </span>
             </div>
             <h1 className="text-2xl font-black text-zinc-950">Student Code Authorship Audit Report</h1>
-            <p className="text-xs text-zinc-500 mt-1 font-mono">Case ID: {sessionId || "N/A"}</p>
+            <div className="mt-2 space-y-0.5 text-xs text-zinc-600 font-mono">
+              <p><strong>Evaluated Archive:</strong> <span className="text-zinc-900 font-bold">{submissionFileName}</span></p>
+              <p><strong>Case ID:</strong> {sessionId || "N/A"}</p>
+            </div>
           </div>
           <div className="sm:text-right font-mono text-xs text-zinc-600">
             <p><strong>Generated:</strong> {currentDate}</p>
-            <p><strong>Engine:</strong> CodeDNA (Hybrid Forensic)</p>
+            <p><strong>Engine:</strong> CodeDNA v2.4 (AST Hybrid)</p>
             <p className="mt-1">
               <strong>Status:</strong>{" "}
               <span className="uppercase font-bold text-zinc-900">
@@ -67,7 +119,7 @@ export function ForensicDossierView({ sessionId, report }: ForensicDossierViewPr
           </div>
         </div>
 
-        {/* Executive Forensic Summary */}
+        {/* 1. Executive Forensic Synthesis */}
         <div>
           <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">1. Executive Forensic Synthesis</h2>
           <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-4 text-xs leading-relaxed text-zinc-800 font-medium">
@@ -78,7 +130,7 @@ export function ForensicDossierView({ sessionId, report }: ForensicDossierViewPr
           </div>
         </div>
 
-        {/* Core Case Metrics Matrix */}
+        {/* 2. Core Case Metrics Matrix */}
         <div>
           <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">2. Authorship Intelligence Matrix</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
@@ -116,9 +168,40 @@ export function ForensicDossierView({ sessionId, report }: ForensicDossierViewPr
           </div>
         </div>
 
+        {/* EXTENDED SECTION: Baseline Corpus Profile */}
+        {mode === "extended" && baselineMetrics && (
+          <div className="print-break-inside-avoid">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">3. Historical Baseline Corpus Profile</h2>
+            <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+              <div>
+                <span className="text-[10px] text-zinc-500 uppercase font-mono block">Usable Files Analyzed</span>
+                <span className="text-base font-bold text-zinc-900">{baselineMetrics.usable_files_count || "N/A"}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-zinc-500 uppercase font-mono block">Total Reference LOC</span>
+                <span className="text-base font-bold text-zinc-900">{baselineMetrics.total_loc || "N/A"}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-zinc-500 uppercase font-mono block">Dominant Architecture</span>
+                <span className="text-xs font-semibold text-zinc-900">
+                  {baselineMetrics.architecture_fingerprint?.join(", ") || "Standard Monolith"}
+                </span>
+              </div>
+              <div>
+                <span className="text-[10px] text-zinc-500 uppercase font-mono block">Naming Convention</span>
+                <span className="text-xs font-semibold text-zinc-900">
+                  {baselineMetrics.dominant_naming || "Consistent style"}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* 10-Vector Mathematical Deviation Ranking */}
-        <div>
-          <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">3. Deviation Vector Breakdown</h2>
+        <div className="print-break-inside-avoid">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">
+            {mode === "extended" ? "4. Deviation Vector Breakdown" : "3. Deviation Vector Summary"}
+          </h2>
           <table className="w-full text-left text-xs border border-zinc-200 rounded-lg overflow-hidden">
             <thead className="bg-zinc-100 text-zinc-700 font-semibold border-b border-zinc-200">
               <tr>
@@ -134,7 +217,7 @@ export function ForensicDossierView({ sessionId, report }: ForensicDossierViewPr
                 <td className="py-2 px-3 text-zinc-600">{deviations.deviation_reasons?.structural || "AST pattern divergence"}</td>
               </tr>
               <tr>
-                <td className="py-2 px-3 font-medium text-zinc-900">Stylistic & Naming</td>
+                <td className="py-2 px-3 font-medium text-zinc-900">Stylistic &amp; Naming</td>
                 <td className="py-2 px-3 font-mono font-bold text-zinc-800">{Math.round(deviations.naming_deviation || 0)}%</td>
                 <td className="py-2 px-3 text-zinc-600">{deviations.deviation_reasons?.naming || "Identifier convention drift"}</td>
               </tr>
@@ -157,12 +240,31 @@ export function ForensicDossierView({ sessionId, report }: ForensicDossierViewPr
           </table>
         </div>
 
+        {/* EXTENDED SECTION: File-Level Anomaly Scores */}
+        {mode === "extended" && deviations.per_file_anomaly_scores && deviations.per_file_anomaly_scores.length > 0 && (
+          <div className="print-break-inside-avoid">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">5. File-Level Composite Anomaly Scores</h2>
+            <div className="border border-zinc-200 rounded-lg overflow-hidden text-xs">
+              <div className="divide-y divide-zinc-200 bg-zinc-50/50">
+                {deviations.per_file_anomaly_scores.slice(0, 10).map((item: any, idx: number) => (
+                  <div key={idx} className="p-2.5 flex items-center justify-between">
+                    <span className="font-mono text-zinc-800 font-medium break-all">{item.file}</span>
+                    <span className="font-mono font-bold text-zinc-900 ml-4 shrink-0">Anomaly Score: {item.anomaly_score}/100</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Flagged Suspicious Regions */}
         {deviations.exact_suspicious_regions_lines && deviations.exact_suspicious_regions_lines.length > 0 && (
-          <div>
-            <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">4. Specific Suspicious Code Regions</h2>
+          <div className="print-break-inside-avoid">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">
+              {mode === "extended" ? "6. Specific Suspicious Code Regions" : "4. Specific Suspicious Code Regions"}
+            </h2>
             <div className="space-y-2 text-xs">
-              {deviations.exact_suspicious_regions_lines.map((reg: any, i: number) => (
+              {deviations.exact_suspicious_regions_lines.slice(0, mode === "simple" ? 3 : 8).map((reg: any, i: number) => (
                 <div key={i} className="p-3 bg-zinc-50 border border-zinc-200 rounded-lg flex items-start justify-between">
                   <div>
                     <span className="font-mono font-bold text-zinc-900">{reg.file}</span>
@@ -178,10 +280,40 @@ export function ForensicDossierView({ sessionId, report }: ForensicDossierViewPr
           </div>
         )}
 
+        {/* EXTENDED SECTION: AI Forensic Reasoning & Findings (if generated) */}
+        {mode === "extended" && forensicReport && forensicReport.findings && (
+          <div className="print-break-inside-avoid">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">7. AI Forensic Reasoning Findings</h2>
+            <div className="space-y-3 text-xs">
+              {forensicReport.findings.map((f: any, idx: number) => (
+                <div key={idx} className="p-3.5 bg-zinc-50 border border-zinc-200 rounded-lg space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-zinc-900">{f.finding}</span>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold uppercase ${
+                      f.severity === "high" ? "bg-red-100 text-red-800" : "bg-amber-100 text-amber-800"
+                    }`}>
+                      {f.severity} severity
+                    </span>
+                  </div>
+                  <p className="text-zinc-700"><strong>Evidence:</strong> {f.evidence}</p>
+                  {f.contradictory_evidence && (
+                    <p className="text-zinc-600"><strong>Contradictory Evidence:</strong> {f.contradictory_evidence}</p>
+                  )}
+                  {f.false_positive_considerations && (
+                    <p className="text-zinc-500 italic"><strong>False-Positive Checks:</strong> {f.false_positive_considerations}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* VivaGuard Recommended Inquiries */}
         {forensicReport?.optional_vivaguard_questions && forensicReport.optional_vivaguard_questions.length > 0 && (
-          <div>
-            <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">5. VivaGuard Oral Examination Script</h2>
+          <div className="print-break-inside-avoid">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">
+              {mode === "extended" ? "8. VivaGuard Oral Examination Script" : "5. VivaGuard Oral Examination Script"}
+            </h2>
             <div className="p-4 bg-zinc-50 border border-zinc-200 rounded-lg space-y-2 text-xs">
               {forensicReport.optional_vivaguard_questions.map((q: string, i: number) => (
                 <div key={i} className="flex items-start gap-2 text-zinc-800">
@@ -193,12 +325,25 @@ export function ForensicDossierView({ sessionId, report }: ForensicDossierViewPr
           </div>
         )}
 
-        {/* Sign-off footer */}
-        <div className="pt-8 border-t border-zinc-200 flex flex-col sm:flex-row justify-between items-center text-xs text-zinc-400 font-mono gap-4">
-          <p>Confidential Academic Integrity Dossier</p>
-          <div className="flex gap-8">
-            <span className="border-t border-zinc-300 pt-1">Evaluator Signature</span>
-            <span className="border-t border-zinc-300 pt-1">Date Reviewed</span>
+        {/* Sign-off footer (Forced onto clean final page right above footer) */}
+        <div className="print-break-before-page pt-12 border-t-2 border-zinc-800 flex flex-col sm:flex-row justify-between items-start sm:items-center text-xs text-zinc-600 font-mono gap-6">
+          <div>
+            <p className="font-bold text-zinc-900">CONFIDENTIAL ACADEMIC INTEGRITY AUDIT DOSSIER</p>
+            <p className="text-[10px] text-zinc-400 mt-0.5">CodeDNA Cryptographic Integrity Verification Protocol</p>
+          </div>
+          <div className="flex gap-12 sm:text-right">
+            <div>
+              <div className="w-40 border-b border-zinc-400 pb-1 mb-1 text-center font-serif italic text-zinc-800">
+                Evaluator Sign-Off
+              </div>
+              <span className="text-[10px] text-zinc-400 block text-center">Evaluator Signature</span>
+            </div>
+            <div>
+              <div className="w-32 border-b border-zinc-400 pb-1 mb-1 text-center font-mono text-zinc-800">
+                {currentDate}
+              </div>
+              <span className="text-[10px] text-zinc-400 block text-center">Date Reviewed</span>
+            </div>
           </div>
         </div>
       </div>

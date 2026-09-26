@@ -804,10 +804,16 @@ def subtract_template_dna(submission_dna: Dict[str, Any], template_dna: Dict[str
     """
     Recursively subtract template DNA from submission DNA.
     Returns a new DNA dictionary with template contributions removed.
+    Preserves repo_count_usable_files_languages so usable file validation remains accurate.
     """
     result = {}
     all_keys = set(submission_dna.keys()) | set(template_dna.keys())
     for key in all_keys:
+        # Never subtract the metadata or file count registry
+        if key in ("repo_count_usable_files_languages", "historical_variance_confidence", "architecture_fingerprint"):
+            result[key] = copy.deepcopy(submission_dna.get(key, {}))
+            continue
+
         sub_val = submission_dna.get(key)
         tmpl_val = template_dna.get(key)
         # If key only in submission, keep as is
@@ -823,7 +829,6 @@ def subtract_template_dna(submission_dna: Dict[str, Any], template_dna: Dict[str
             elif isinstance(tmpl_val, list):
                 result[key] = []
             else:
-                # Try to create an empty instance of the same type
                 try:
                     result[key] = type(tmpl_val)()
                 except Exception:
@@ -831,7 +836,7 @@ def subtract_template_dna(submission_dna: Dict[str, Any], template_dna: Dict[str
             continue
         # Both present
         if isinstance(sub_val, (int, float)) and isinstance(tmpl_val, (int, float)):
-            result[key] = sub_val - tmpl_val
+            result[key] = max(0, sub_val - tmpl_val)
         elif isinstance(sub_val, dict) and isinstance(tmpl_val, dict):
             result[key] = subtract_template_dna(sub_val, tmpl_val)
         elif isinstance(sub_val, list) and isinstance(tmpl_val, list):
@@ -841,15 +846,12 @@ def subtract_template_dna(submission_dna: Dict[str, Any], template_dna: Dict[str
             # Handle list of numbers: element-wise subtraction (if same length)
             elif all(isinstance(x, (int, float)) for x in sub_val) and all(isinstance(x, (int, float)) for x in tmpl_val):
                 if len(sub_val) == len(tmpl_val):
-                    result[key] = [a - b for a, b in zip(sub_val, tmpl_val)]
+                    result[key] = [max(0, a - b) for a, b in zip(sub_val, tmpl_val)]
                 else:
-                    # If lengths differ, pad shorter with zeros? We'll just keep submission as is.
                     result[key] = sub_val.copy()
             else:
-                # Mixed or unknown list type: keep submission
                 result[key] = sub_val.copy()
         else:
-            # For other types (e.g., string, bool), keep submission (assuming template should not affect)
             result[key] = sub_val
     return result
 

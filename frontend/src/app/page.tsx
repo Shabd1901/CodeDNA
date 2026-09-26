@@ -40,7 +40,51 @@ export default function Home() {
   const [pipelineStage, setPipelineStage] = useState<PipelineStage>("overview");
 
   // Form State
-  const [githubLink, setGithubLink] = useState("");
+  // Form State - Multiple GitHub Profiles with Real-Time Typo Validation
+  const [githubLinks, setGithubLinks] = useState<string[]>([""]);
+
+  const validateGithubUrl = (input: string): { isValid: boolean; warning?: string } => {
+    const trimmed = input.trim();
+    if (!trimmed) return { isValid: true };
+    const lower = trimmed.toLowerCase();
+    if (lower.includes("githuub") || lower.includes("gthub") || lower.includes("githhub") || lower.includes("githup") || lower.includes("githud")) {
+      return { isValid: false, warning: "Typo in domain? Did you mean github.com?" };
+    }
+    if (lower.includes(" ")) {
+      return { isValid: false, warning: "Username/URL must not contain spaces." };
+    }
+    if (lower.startsWith("http://") || lower.startsWith("https://")) {
+      if (!lower.includes("github.com/")) {
+        return { isValid: false, warning: "Expected github.com URL (e.g. https://github.com/username)." };
+      }
+      const afterDomain = trimmed.split(/github\.com\//i)[1]?.split("/").filter(Boolean);
+      if (!afterDomain || afterDomain.length === 0) {
+        return { isValid: false, warning: "Please include a GitHub username after github.com/" };
+      }
+    } else {
+      if (!/^[a-zA-Z0-9_-]+$/.test(trimmed)) {
+        return { isValid: false, warning: "Contains invalid characters for a GitHub handle." };
+      }
+    }
+    return { isValid: true };
+  };
+
+  const handleAddGithubLink = () => {
+    setGithubLinks((prev) => [...prev, ""]);
+  };
+
+  const handleUpdateGithubLink = (index: number, val: string) => {
+    setGithubLinks((prev) => {
+      const next = [...prev];
+      next[index] = val;
+      return next;
+    });
+  };
+
+  const handleRemoveGithubLink = (index: number) => {
+    setGithubLinks((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : [""]));
+  };
+
   const [repoFiles, setRepoFiles] = useState<FileList | null>(null);
   const [stagedBaselineList, setStagedBaselineList] = useState<File[]>([]);
   const [submissionFile, setSubmissionFile] = useState<File | null>(null);
@@ -79,6 +123,7 @@ export default function Home() {
   const [errorNotice, setErrorNotice] = useState<{ title: string; detail: string; isRateLimit?: boolean } | null>(null);
   // Alternative baseline comparison for dashboard metrics when both baselines are available
   const [alternativeReport, setAlternativeReport] = useState<any>(null);
+  const [dossierExportMode, setDossierExportMode] = useState<"simple" | "extended">("simple");
 
   // Progress tracking
   const [analysisStep, setAnalysisStep] = useState(0);
@@ -114,7 +159,7 @@ export default function Home() {
         console.error("Failed to clean up session on server:", err);
       }
     }
-    setGithubLink("");
+    setGithubLinks([""]);
     setRepoFiles(null);
     setSubmissionFile(null);
     setTemplateFile(null);
@@ -134,11 +179,12 @@ export default function Home() {
     if (!submissionFile) return;
 
     const baselineUploadList = stagedBaselineList.length > 0 ? stagedBaselineList : (repoFiles ? Array.from(repoFiles) : []);
-    const hasPersonalData = !!githubLink || baselineUploadList.length > 0;
+    const validGithubLinks = githubLinks.filter((l) => l.trim().length > 0);
+    const hasPersonalData = validGithubLinks.length > 0 || baselineUploadList.length > 0;
     const hasCohortData = (selectedBaselineTab === 1 && !!cohortFile) ||
                          (selectedBaselineTab === 2 && !!cohortOrganization && !!cohortAssignmentPrefix);
 
-    // For cohort tabs, validate specific data is present
+    // For cohort tabs, validate specific data is present; cohort can run without personal baselines
     if (selectedBaselineTab === 1 && !hasCohortData) return;
     if (selectedBaselineTab === 2 && !hasCohortData) return;
     if (selectedBaselineTab === 0 && !hasPersonalData) return;
@@ -165,30 +211,32 @@ export default function Home() {
 
       // Step 1 — Upload Baseline Data
       setAnalysisStep(1);
-      const formData = new FormData();
-      formData.append("session_id", newSessionId);
 
       if (selectedBaselineTab === 0) {
-        let targetUsername = githubLink.trim();
-        if (targetUsername.includes("github.com/")) {
-          const parts = targetUsername.split("github.com/")[1].split("/");
-          if (parts.length > 0) targetUsername = parts[0];
-        }
+        for (const link of validGithubLinks) {
+          let targetUsername = link.trim();
+          if (targetUsername.includes("github.com/")) {
+            const parts = targetUsername.split(/github\.com\//i)[1]?.split("/").filter(Boolean);
+            if (parts && parts.length > 0) targetUsername = parts[0];
+          }
 
-        if (targetUsername) {
-          formData.append("username", targetUsername);
-          const ghRes = await fetch("http://localhost:8000/api/repositories/github", {
-            method: "POST",
-            body: formData
-          });
-          if (!ghRes.ok) {
-            const errData = await ghRes.json().catch(() => ({ detail: "Failed to fetch GitHub repositories." }));
-            const isRateLimit = ghRes.status === 429 || (errData.detail && errData.detail.toLowerCase().includes("rate limit"));
-            throw {
-              title: isRateLimit ? "GitHub API Rate Limit Reached" : "GitHub Fetch Failed",
-              detail: errData.detail || "Unable to download repositories from GitHub.",
-              isRateLimit
-            };
+          if (targetUsername) {
+            const formData = new FormData();
+            formData.append("session_id", newSessionId);
+            formData.append("username", targetUsername);
+            const ghRes = await fetch("http://localhost:8000/api/repositories/github", {
+              method: "POST",
+              body: formData
+            });
+            if (!ghRes.ok) {
+              const errData = await ghRes.json().catch(() => ({ detail: `Failed to fetch GitHub repositories for ${targetUsername}.` }));
+              const isRateLimit = ghRes.status === 429 || (errData.detail && errData.detail.toLowerCase().includes("rate limit"));
+              throw {
+                title: isRateLimit ? "GitHub API Rate Limit Reached" : "GitHub Fetch Failed",
+                detail: errData.detail || `Unable to download repositories for GitHub user ${targetUsername}.`,
+                isRateLimit
+              };
+            }
           }
         }
 
@@ -540,27 +588,64 @@ export default function Home() {
                   {selectedBaselineTab === 0 && (
                     <div className="space-y-3">
                       <div>
-                        <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center justify-between mb-1.5">
                           <label className="text-[11px] font-semibold text-zinc-800">
-                            GitHub Username / Repository URL
+                            GitHub Username(s) / Repository URL(s)
                           </label>
-                          <span className="text-[10px] text-zinc-400">Optional scanner</span>
+                          <span className="text-[10px] text-zinc-400">Optional live scanner</span>
                         </div>
-                        <div className="relative max-w-lg">
-                          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
-                          <input
-                            type="text"
-                            value={githubLink}
-                            onChange={(e) => setGithubLink(e.target.value)}
-                            placeholder="e.g. https://github.com/student-handle"
-                            className="w-full bg-white border border-zinc-200 rounded-lg py-1.5 pl-8 pr-3 text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-800"
-                          />
+                        <div className="space-y-2 max-w-lg">
+                          {githubLinks.map((link, idx) => {
+                            const valStatus = validateGithubUrl(link);
+                            return (
+                              <div key={idx} className="space-y-1">
+                                <div className="flex items-center gap-1.5">
+                                  <div className="relative flex-1">
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
+                                    <input
+                                      type="text"
+                                      value={link}
+                                      onChange={(e) => handleUpdateGithubLink(idx, e.target.value)}
+                                      placeholder="e.g. https://github.com/student-handle or student-handle"
+                                      className={`w-full bg-white border rounded-lg py-1.5 pl-8 pr-3 text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none ${
+                                        valStatus.isValid ? "border-zinc-200 focus:border-zinc-800" : "border-amber-300 focus:border-amber-500 bg-amber-50/20"
+                                      }`}
+                                    />
+                                  </div>
+                                  {githubLinks.length > 1 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveGithubLink(idx)}
+                                      className="p-1.5 text-zinc-400 hover:text-rose-600 rounded-md transition-colors shrink-0 cursor-pointer"
+                                      title="Remove this profile"
+                                    >
+                                      <X className="w-3.5 h-3.5" />
+                                    </button>
+                                  )}
+                                </div>
+                                {!valStatus.isValid && valStatus.warning && (
+                                  <p className="text-[10px] text-amber-700 font-medium pl-1 flex items-center gap-1">
+                                    <span>⚠️</span>
+                                    <span>{valStatus.warning}</span>
+                                  </p>
+                                )}
+                              </div>
+                            );
+                          })}
+                          <button
+                            type="button"
+                            onClick={handleAddGithubLink}
+                            className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer pt-0.5"
+                          >
+                            <span>+ Add another GitHub profile</span>
+                          </button>
                         </div>
                       </div>
 
                       <div className="border-2 border-dashed border-zinc-200 hover:border-indigo-400 rounded-xl p-3 text-center bg-zinc-50/70 hover:bg-indigo-50/30 transition-all cursor-pointer relative">
                         <FileArchive className="w-4 h-4 text-zinc-400 mx-auto mb-0.5" />
                         <p className="text-xs font-semibold text-zinc-800">Drop Historical Baseline ZIPs</p>
+                        <p className="text-[10px] text-zinc-500 mt-0.5">Supports up to 20 baseline project archives</p>
                         <input
                           key={`repo-${resetKey}`}
                           type="file"
@@ -571,8 +656,8 @@ export default function Home() {
                         />
                       </div>
 
-                      {/* Staged Baseline Files Manager */}
-                      <div className="bg-zinc-50/50 border border-zinc-100 rounded-lg p-2 min-h-[48px]">
+                      {/* Staged Baseline Files Manager with max 3-line scroll cap */}
+                      <div className="bg-zinc-50/50 border border-zinc-100 rounded-lg p-2 min-h-[48px] max-h-[84px] overflow-y-auto scrollbar-thin">
                         {stagedBaselineList.length > 0 ? (
                           <div className="space-y-1.5">
                             <div className="flex items-center justify-between px-1">
@@ -593,10 +678,10 @@ export default function Home() {
                               {stagedBaselineList.map((file, idx) => (
                                 <div
                                   key={idx}
-                                  className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-white border border-zinc-200 text-xs"
+                                  className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-white border border-zinc-200 text-xs shrink-0 max-w-[200px]"
                                 >
                                   <FileArchive className="w-3 h-3 text-indigo-600 shrink-0" />
-                                  <span className="font-mono text-[10px] font-semibold text-zinc-800 truncate max-w-[140px]">
+                                  <span className="font-mono text-[10px] font-semibold text-zinc-800 truncate" title={file.name}>
                                     {file.name}
                                   </span>
                                   <button
@@ -695,7 +780,7 @@ export default function Home() {
                   )}
                 </div>
 
-                {/* Starter Template Subtraction Footer */}
+                {/* Starter Template Subtraction Footer with Removal Option */}
                 <div className="pt-3 mt-4 border-t border-zinc-100">
                   <div className="flex items-center justify-between mb-1">
                     <label className="text-[11px] font-semibold text-zinc-700 flex items-center gap-1.5">
@@ -712,77 +797,91 @@ export default function Home() {
                       onChange={(e) => setTemplateFile(e.target.files?.[0] || null)}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
-                    <p className="text-[11px] text-zinc-600 font-medium truncate px-2">
-                      {templateFile ? `✓ Starter: ${templateFile.name}` : "+ Attach skeleton starter code ZIP to eliminate false positives"}
-                    </p>
+                    {templateFile ? (
+                      <div className="flex items-center justify-between px-2">
+                        <span className="text-[11px] text-zinc-800 font-semibold font-mono truncate">
+                          ✓ Starter: {templateFile.name}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setTemplateFile(null);
+                          }}
+                          title="Remove starter template"
+                          className="p-1 rounded text-zinc-400 hover:text-rose-600 transition-colors shrink-0 cursor-pointer z-10"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="text-[11px] text-zinc-600 font-medium truncate px-2">
+                        + Attach skeleton starter code ZIP to eliminate false positives
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Card 2: Investigated Submission — Compact Full Width Bar */}
-              <div className="clean-card p-5 bg-white shadow-sm border border-zinc-200 rounded-xl">
-                <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-                  {/* Left: Title + Guarantees */}
-                  <div className="flex items-center gap-3 shrink-0">
-                    <span className="p-2 rounded-lg bg-rose-50 text-rose-700 border border-rose-100">
-                      <FileCode2 className="w-5 h-5" />
+              {/* Card 2: Investigated Submission — Standard Aligned Layout */}
+              <div className="clean-card p-6 bg-white shadow-sm border border-zinc-200 rounded-xl space-y-4">
+                <div className="flex items-center justify-between border-b border-zinc-100 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <span className="p-1.5 rounded-lg bg-rose-50 text-rose-700 border border-rose-100">
+                      <FileCode2 className="w-4 h-4" />
                     </span>
-                    <div>
-                      <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wide">
-                        2. Investigated Submission
-                      </h2>
-                      <span className="text-[11px] text-rose-600 font-mono font-semibold">Target Archive</span>
-                    </div>
+                    <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wide">
+                      2. Investigated Submission
+                    </h2>
                   </div>
+                  <span className="text-[11px] text-rose-600 font-mono font-semibold">Target Archive</span>
+                </div>
 
-                  {/* Center: Drop Zone */}
-                  <div className="flex-1">
-                    <div className="border-2 border-dashed border-rose-200/80 hover:border-rose-400 rounded-xl p-4 text-center bg-rose-50/20 hover:bg-rose-50/40 transition-all cursor-pointer relative">
-                      <div className="flex items-center justify-center gap-3">
-                        <Upload className="w-5 h-5 text-rose-400 shrink-0" />
-                        <div className="text-left">
-                          <p className="text-xs font-bold text-zinc-800">Drop Target Student Submission ZIP</p>
-                          <p className="text-[10px] text-zinc-500">The code archive under investigation</p>
-                        </div>
-                      </div>
-                      <input
-                        key={`sub-${resetKey}`}
-                        type="file"
-                        accept=".zip"
-                        onChange={(e) => setSubmissionFile(e.target.files?.[0] || null)}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      />
+                {/* Drop Zone below title */}
+                <div className="border-2 border-dashed border-rose-200/80 hover:border-rose-400 rounded-xl p-6 text-center bg-rose-50/20 hover:bg-rose-50/40 transition-all cursor-pointer relative">
+                  <Upload className="w-7 h-7 text-rose-400 mx-auto mb-1.5" />
+                  <p className="text-xs font-bold text-zinc-800">Drop Target Student Submission ZIP</p>
+                  <p className="text-[11px] text-zinc-500 mt-1">The code archive under investigation to compare against baseline</p>
+                  <input
+                    key={`sub-${resetKey}`}
+                    type="file"
+                    accept=".zip"
+                    onChange={(e) => setSubmissionFile(e.target.files?.[0] || null)}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  {submissionFile ? (
+                    <div className="mt-2.5 inline-block bg-white border border-rose-300 text-rose-900 px-3 py-1 rounded-lg text-xs font-mono font-bold shadow-xs">
+                      ✓ {submissionFile.name}
                     </div>
-                    {submissionFile && (
-                      <div className="mt-2 inline-block bg-white border border-rose-300 text-rose-900 px-3 py-1 rounded-lg text-xs font-mono font-bold shadow-xs">
-                        ✓ {submissionFile.name}
-                      </div>
-                    )}
+                  ) : (
+                    <div className="mt-2.5 inline-block bg-white/80 border border-zinc-200 text-zinc-400 px-3 py-1 rounded text-[11px] font-mono">
+                      No ZIP selected yet
+                    </div>
+                  )}
+                </div>
+
+                {/* Engine Guarantees */}
+                <div className="bg-zinc-50 border border-zinc-200/80 rounded-lg p-3">
+                  <div className="flex items-center gap-1.5 font-semibold text-zinc-800 text-[10px] uppercase tracking-wider mb-2">
+                    <ShieldAlert className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Forensic Engine Guarantees</span>
                   </div>
-
-                  {/* Right: Engine Guarantees */}
-                  <div className="bg-zinc-50 border border-zinc-200/80 rounded-lg p-3 shrink-0 lg:w-[260px]">
-                    <div className="flex items-center gap-1.5 font-semibold text-zinc-800 text-[10px] uppercase tracking-wider mb-1.5">
-                      <ShieldAlert className="w-3 h-3 text-amber-500" />
-                      <span>Engine Guarantees</span>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-zinc-600">
+                    <div className="flex items-center gap-1.5">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>8-Vector Anomaly Math</span>
                     </div>
-                    <div className="grid grid-cols-1 gap-1 text-[10px] text-zinc-600">
-                      <div className="flex items-center gap-1.5">
-                        <CheckCircle className="w-3 h-3 text-emerald-600 shrink-0" />
-                        <span>8-Vector Anomaly Math</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <CheckCircle className="w-3 h-3 text-emerald-600 shrink-0" />
-                        <span>Gemini Flash Forensic Reasoning</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <CheckCircle className="w-3 h-3 text-emerald-600 shrink-0" />
-                        <span>Exact Line Pinpointing</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <CheckCircle className="w-3 h-3 text-emerald-600 shrink-0" />
-                        <span>100% Privacy-Preserving</span>
-                      </div>
+                    <div className="flex items-center gap-1.5">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>Gemini Flash Reasoning</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>Exact Line Pinpointing</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>100% Privacy-Preserving</span>
                     </div>
                   </div>
                 </div>
@@ -797,7 +896,7 @@ export default function Home() {
                     <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold">
                       Forensic Audit Protocol
                     </span>
-                    {!submissionFile || (!githubLink && (stagedBaselineList.length === 0) && (!repoFiles || repoFiles.length === 0) && !cohortFile && !cohortOrganization) ? (
+                    {!submissionFile || (!githubLinks.some((l) => l.trim().length > 0) && stagedBaselineList.length === 0 && (!repoFiles || repoFiles.length === 0) && !cohortFile && !cohortOrganization) ? (
                       <span className="px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-mono font-semibold">
                         Awaiting Inputs
                       </span>
@@ -815,7 +914,7 @@ export default function Home() {
                 <div className="shrink-0">
                   <button
                     onClick={startAnalysis}
-                    disabled={!submissionFile || (!githubLink && (stagedBaselineList.length === 0) && (!repoFiles || repoFiles.length === 0) && !cohortFile && !cohortOrganization)}
+                    disabled={!submissionFile || (!githubLinks.some((l) => l.trim().length > 0) && stagedBaselineList.length === 0 && (!repoFiles || repoFiles.length === 0) && !cohortFile && !cohortOrganization)}
                     className="w-full sm:w-auto flex items-center justify-center gap-2 py-3 px-8 bg-zinc-900 hover:bg-zinc-800 text-white font-bold rounded-xl text-xs shadow-xs transition-all disabled:bg-zinc-100 disabled:text-zinc-400 disabled:border disabled:border-zinc-200 disabled:shadow-none disabled:cursor-not-allowed group cursor-pointer"
                   >
                     <span>Initiate Forensic Investigation</span>
@@ -846,14 +945,21 @@ export default function Home() {
               </div>
               <div>
                 <h2 className="text-base font-bold text-zinc-900">Executing Forensic Audit Pipeline</h2>
-                <p className="text-xs text-zinc-500 mt-0.5">{STEPS[analysisStep]?.detail}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 font-semibold">
+                    Est. Duration: ~{Math.max(4, Math.round((5 - analysisStep) * 2.5))}s
+                  </span>
+                  <span className="text-[11px] text-zinc-500 font-mono">
+                    ({stagedBaselineList.length + githubLinks.filter((l) => l.trim().length > 0).length || 1} project archives)
+                  </span>
+                </div>
               </div>
             </div>
 
             {/* Progress Bar */}
             <div className="mb-6">
               <div className="flex justify-between text-[11px] font-mono text-zinc-500 mb-1.5">
-                <span>STAGE {analysisStep + 1} OF {STEPS.length}</span>
+                <span>STAGE {analysisStep + 1} OF {STEPS.length}: {STEPS[analysisStep]?.label}</span>
                 <span>{Math.round(((analysisStep) / (STEPS.length - 1)) * 100)}%</span>
               </div>
               <div className="w-full h-1.5 bg-zinc-100 rounded-full overflow-hidden">
@@ -918,12 +1024,9 @@ export default function Home() {
               onRunAi={runAiAnalysis}
               onNewInvestigation={handleNewInvestigation}
               onExportDossier={(mode) => {
-                if (mode === "extended") {
-                  setPipelineStage("dossier");
-                  setTimeout(() => window.print(), 200);
-                } else {
-                  window.print();
-                }
+                setDossierExportMode(mode);
+                setPipelineStage("dossier");
+                setTimeout(() => window.print(), 150);
               }}
             />
 
@@ -965,64 +1068,6 @@ export default function Home() {
                           {report.deterministic_data.authorship_intelligence.concern_reason}
                         </p>
                       </div>
-                    </div>
-                  )}
-
-                  {/* ML Probabilistic Calibration Banner */}
-                  {report.deterministic_data?.ml_intelligence?.statistical_calibration && (
-                    <div className="p-3.5 bg-indigo-50/70 border border-indigo-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm">
-                      <div className="flex items-center gap-2.5">
-                        <span className="px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold font-mono text-[10px] shrink-0 border border-indigo-200">
-                          ML CALIBRATED
-                        </span>
-                        <span className="text-indigo-950 font-medium">
-                          Empirical Substitution Probability: <strong className="font-mono text-indigo-900">{Math.round(report.deterministic_data.ml_intelligence.statistical_calibration.calibrated_probability * 100)}%</strong>
-                          {" "}
-                          <span className="text-indigo-600 font-mono text-[11px]">
-                            [95% CI: {Math.round(report.deterministic_data.ml_intelligence.statistical_calibration.confidence_interval_95.lower * 100)}% – {Math.round(report.deterministic_data.ml_intelligence.statistical_calibration.confidence_interval_95.upper * 100)}%]
-                          </span>
-                          {" • "}
-                          <span className="text-indigo-700 font-mono text-[11px]">
-                            {report.deterministic_data.ml_intelligence.statistical_calibration.risk_tier}
-                          </span>
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => setPipelineStage("ml")}
-                        className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-[11px] transition-colors shrink-0 shadow-xs flex items-center gap-1 self-start sm:self-auto"
-                      >
-                        <span>Siamese Latent Space</span>
-                        <ArrowRight className="w-3 h-3" />
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Temporal Evolution Trajectory Banner */}
-                  {report.deterministic_data?.temporal_intelligence && (
-                    <div className={`p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm ${
-                      report.deterministic_data.temporal_intelligence.temporal_severity === "High"
-                        ? "bg-red-50/70 border-red-200 text-red-950"
-                        : report.deterministic_data.temporal_intelligence.temporal_severity === "Moderate"
-                        ? "bg-amber-50/70 border-amber-200 text-amber-950"
-                        : "bg-emerald-50/70 border-emerald-200 text-emerald-950"
-                    }`}>
-                      <div className="flex items-center gap-2.5">
-                        <span className="px-2 py-0.5 rounded bg-white font-bold font-mono text-[10px] shrink-0 border border-zinc-200 text-zinc-800">
-                          TEMPORAL CUSUM
-                        </span>
-                        <span className="font-medium">
-                          Evolution Trajectory: <strong className="font-bold">{report.deterministic_data.temporal_intelligence.trajectory_diagnosis}</strong>
-                          {" • "}
-                          <span className="opacity-90">{report.deterministic_data.temporal_intelligence.evaluator_temporal_narrative}</span>
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => setPipelineStage("timeline")}
-                        className="px-3 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-[11px] transition-colors shrink-0 shadow-xs flex items-center gap-1 self-start sm:self-auto"
-                      >
-                        <span>Milestone Timeline</span>
-                        <ArrowRight className="w-3 h-3" />
-                      </button>
                     </div>
                   )}
 
@@ -1215,6 +1260,7 @@ export default function Home() {
                   suspiciousRegions={report.deterministic_data?.forensics?.exact_suspicious_regions_lines || []}
                   fileAnomalies={report.deterministic_data?.forensics?.per_file_anomaly_scores || []}
                   unseenPatterns={report.deterministic_data?.forensics?.new_unseen_patterns || []}
+                  consistencyScore={report.deterministic_data?.authorship_intelligence?.historical_codedna_similarity}
                 />
               )}
 
@@ -1234,6 +1280,8 @@ export default function Home() {
                 <ForensicDossierView
                   sessionId={sessionId}
                   report={report}
+                  submissionFileName={submissionFile?.name || "student_submission.zip"}
+                  initialMode={dossierExportMode}
                 />
               )}
             </div>
