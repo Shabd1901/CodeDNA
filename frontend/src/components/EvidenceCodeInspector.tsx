@@ -126,7 +126,13 @@ export function EvidenceCodeInspector({
 
             {filteredRegions.length === 0 ? (
               <div className="p-6 text-center text-xs text-zinc-500">
-                No suspicious code regions match the search filter.
+                {searchFilter ? (
+                  "No suspicious code regions match the search filter."
+                ) : (
+                  <span className="text-emerald-700 font-medium">
+                    ✓ Clean syntactic baseline alignment. All functions conform to historical bounds.
+                  </span>
+                )}
               </div>
             ) : (
               <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
@@ -274,6 +280,16 @@ export function EvidenceCodeInspector({
                   </span>
                 </div>
               </div>
+            </div>
+          ) : suspiciousRegions.length === 0 ? (
+            <div className="bg-white border border-zinc-200 rounded-xl p-12 text-center text-zinc-500 shadow-sm space-y-2">
+              <div className="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto mb-2">
+                <CheckCircle2 className="w-6 h-6" />
+              </div>
+              <p className="font-bold text-zinc-900 text-sm">Zero Syntactic Anomalies Detected</p>
+              <p className="text-xs text-zinc-500 max-w-md mx-auto leading-relaxed">
+                The submission demonstrates complete structural fidelity with the historical baseline profile. No cyclomatic complexity outliers, conversational LLM generation markers, or dangerous syntax shifts were detected.
+              </p>
             </div>
           ) : (
             <div className="bg-white border border-zinc-200 rounded-xl p-12 text-center text-zinc-500 shadow-sm">

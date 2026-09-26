@@ -104,8 +104,18 @@ export function AIForensicPanel({
             <span>AI Forensic Reasoning Engine</span>
           </h4>
           <p className="text-xs text-zinc-500 mt-1 max-w-md mx-auto">
-            Deterministic deviation analysis is already complete. Click &quot;Run AI Analysis&quot; in the top context header to generate Gemini Flash forensic reasoning.
+            Deterministic AST and ML deviation analysis is complete. Click below to execute Google Gemini Flash multi-vector forensic reasoning.
           </p>
+          <div className="mt-4">
+            <button
+              onClick={onRunAi}
+              disabled={!sessionId || aiLoading}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-all cursor-pointer disabled:opacity-50"
+            >
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span>Generate Gemini Flash Reasoning</span>
+            </button>
+          </div>
         </div>
       )}
 

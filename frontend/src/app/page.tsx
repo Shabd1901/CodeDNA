@@ -532,6 +532,16 @@ export default function Home() {
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
+            {/* Evaluator Quick Guide Banner */}
+            <div className="bg-zinc-50 border border-zinc-200/80 rounded-xl p-3.5 px-4 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-zinc-700">
+              <div className="flex items-center gap-2.5">
+                <span className="p-1 px-1.5 rounded-md bg-zinc-200 text-zinc-800 font-mono font-bold text-[10px] shrink-0">EVALUATOR TIP</span>
+                <p className="text-[11px] leading-relaxed text-zinc-600">
+                  Pre-configured test datasets (<span className="font-mono text-zinc-900 font-semibold">1_clean</span>, <span className="font-mono text-zinc-900 font-semibold">2_sudden_ai</span>, <span className="font-mono text-zinc-900 font-semibold">3_consistent_ai</span>, <span className="font-mono text-zinc-900 font-semibold">8_template</span>) are ready in the <code className="px-1 py-0.5 rounded bg-zinc-200/70 font-mono text-zinc-800">test_data/</code> folder with instant drop-in <code className="px-1 py-0.5 rounded bg-zinc-200/70 font-mono text-zinc-800">baseline.zip</code> and <code className="px-1 py-0.5 rounded bg-zinc-200/70 font-mono text-zinc-800">submission.zip</code> files.
+                </p>
+              </div>
+            </div>
+
             {/* Stacked Vertical Intake Layout — Full Width Cards (No Side-by-Side Width Competition) */}
             <div className="space-y-5">
               {/* Card 1: Historical Reference Baseline — Full Width */}

@@ -88,3 +88,23 @@ During this pass, all 5 stages of the user journey were traced. Genuine gaps—i
 4. **Clean Configuration**:
    - Removed legacy unused `AI_MOCK=true` flag from `backend/.env` to eliminate ambiguity.
 
+---
+
+## 6. First-Time Evaluator Frontend Usability & Ergonomics Audit
+
+**Audit Focus:** Verification that a first-time external evaluator can operate the complete platform without terminal commands, developer knowledge, hidden steps, or confusing UI states.
+
+### 6.1 Usability Findings & Enhancements
+1. **Intake Guidance for Evaluators**:
+   - Added an **Evaluator Tip Banner** right above the intake cards on the homepage pointing to pre-configured test archives in `test_data/` (`1_clean`, `2_sudden_ai`, `3_consistent_ai`, `8_template`) with instant drop-in `baseline.zip` and `submission.zip` files.
+   - Evaluators without local files can also instantly click **Open Evaluation Lab** to run all 14 benchmark scenarios without uploading anything.
+2. **Clean Submission Empty State Clarity**:
+   - In `EvidenceCodeInspector.tsx`, updated the left and right inspector columns to present an explicit green verification badge and clear confirmation (`"Zero Syntactic Anomalies Detected - Complete AST & Behavioral Alignment with Baseline"`) when an authentic clean submission has zero flagged regions, replacing ambiguous "No item selected" placeholders.
+3. **One-Click Action Discovery in AI Panel**:
+   - In `AIForensicPanel.tsx`, added a direct, prominent **Generate Gemini Flash Reasoning** button directly inside the empty state card, eliminating any hunt for the action trigger in the top context header.
+4. **Extended Dossier Completeness Transparency**:
+   - In `ForensicDossierView.tsx`, added an informative status block for Section 9 when viewing the Extended Dossier prior to triggering Gemini Flash, clarifying that quantitative AST data is complete and guiding the reviewer on appending qualitative viva scripts.
+5. **Zero Terminal / Developer Knowledge Requirement**:
+   - All flows—drag-and-drop ingestion, comparison execution, stage switching, code inspection, AI reasoning, and print/PDF export—are 100% GUI-driven with real-time feedback, estimated durations, and clear status badges.
+
+

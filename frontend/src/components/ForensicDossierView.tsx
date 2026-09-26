@@ -461,6 +461,18 @@ export function ForensicDossierView({
           </div>
         )}
 
+        {/* 9. AI Forensic Reasoning (Pending State in Extended Mode) */}
+        {mode === "extended" && !forensicReport && (
+          <div className="print-break-inside-avoid space-y-2 p-4 bg-zinc-50 border border-zinc-200 rounded-lg text-xs">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+              9. AI Forensic Reasoning Findings &amp; VivaGuard Script
+            </h2>
+            <p className="text-zinc-600 leading-relaxed">
+              Quantitative deterministic AST deviations and Siamese neural distances have been compiled above. To append qualitative Gemini Flash findings, counter-evidence reasoning, and the VivaGuard oral defense script, trigger <strong>Run AI Analysis</strong> in the workstation navigation bar.
+            </p>
+          </div>
+        )}
+
         {/* Simple Mode VivaGuard (if in simple mode) */}
         {mode === "simple" && forensicReport?.optional_vivaguard_questions && forensicReport.optional_vivaguard_questions.length > 0 && (
           <div className="print-break-inside-avoid">
