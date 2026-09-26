@@ -148,6 +148,8 @@ async def generate_forensic_report(comparison_data: dict) -> tuple[dict, str]:
     err_str = str(last_error)
     if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
         raise RuntimeError("Gemini free-tier quota (250,000 tokens/min) temporarily exceeded. Please wait 45 seconds and retry.")
+    if "1024KB" in err_str or "exceeded maximum size" in err_str or "maximum size" in err_str:
+        raise ValueError("Gemini API request payload size exceeded 1,024 KB (1 MB) single-part limit due to large codebase metrics. Core static CodeDNA analysis remains fully operational.")
     raise RuntimeError(f"All Gemini models in fallback chain failed. Last error: {err_str}")
 
 

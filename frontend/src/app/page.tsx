@@ -310,12 +310,24 @@ export default function Home() {
       console.error("AI Analysis Execution Error:", error);
       const msg = error?.message || "";
       const isCutoff = msg.includes("10 October 2026") || msg.includes("no longer available") || msg.includes("403");
-      setErrorNotice({
-        title: isCutoff ? "AI Forensic Analysis Unavailable" : "AI Forensic Reasoning Error",
-        detail: isCutoff 
-          ? "AI-powered forensic analysis is no longer available for this demonstration deployment. Core CodeDNA analysis remains available." 
-          : msg || "Failed to generate AI forensic reasoning. Check console for full details."
-      });
+      const isPayloadSizeLimit = msg.includes("1024KB") || msg.includes("maximum size") || msg.includes("1,024 KB") || msg.includes("exceeded");
+      
+      if (isCutoff) {
+        setErrorNotice({
+          title: "AI Forensic Analysis Unavailable",
+          detail: "AI-powered forensic analysis is no longer available for this demonstration deployment. Core CodeDNA analysis remains available."
+        });
+      } else if (isPayloadSizeLimit) {
+        setErrorNotice({
+          title: "Gemini API Payload Limit Exceeded (1024 KB)",
+          detail: "The Google Gemini API enforces a strict single-part payload limit of 1,024 KB (1 MB). The analysis metrics for this submission exceeded 1 MB due to large codebase size or long code snippets. Core CodeDNA static analysis (AST metrics, 8-vector radar charts, CUSUM timeline, line inspector) operates locally and remains fully operational."
+        });
+      } else {
+        setErrorNotice({
+          title: "AI Forensic Reasoning Error",
+          detail: msg || "Failed to generate AI forensic reasoning. Check console for full details."
+        });
+      }
     } finally {
       setAiLoading(false);
     }
@@ -520,7 +532,7 @@ export default function Home() {
                                       type="text"
                                       value={link}
                                       onChange={(e) => handleUpdateGithubLink(idx, e.target.value)}
-                                      placeholder="e.g. https://github.com/student-handle or student-handle"
+                                      placeholder="e.g. https://github.com/student-handle"
                                       className={`w-full bg-white border rounded-lg py-1.5 pl-8 pr-3 text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none ${
                                         valStatus.isValid ? "border-zinc-200 focus:border-zinc-800" : "border-amber-300 focus:border-amber-500 bg-amber-50/20"
                                       }`}
