@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Printer, ShieldAlert, CheckCircle, FileText, Activity, FileCheck, Layers, Terminal } from "lucide-react";
+import { Printer, ShieldAlert, CheckCircle, FileText, FileCheck, Layers, Terminal } from "lucide-react";
 
 interface ForensicDossierViewProps {
   sessionId: string | null;
@@ -109,7 +109,6 @@ export function ForensicDossierView({
           </div>
           <div className="sm:text-right font-mono text-xs text-zinc-600">
             <p><strong>Generated:</strong> {currentDate}</p>
-            <p><strong>Engine:</strong> CodeDNA v2.4 (AST Hybrid)</p>
             <p className="mt-1">
               <strong>Status:</strong>{" "}
               <span className="uppercase font-bold text-zinc-900">

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { ShieldAlert, ShieldCheck, Activity, Printer, Sparkles, RefreshCw, FolderSearch, ChevronDown, FileText, FileCheck } from "lucide-react";
+import { CodeDNALogo } from "@/components/CodeDNALogo";
 
 interface PersistentInvestigationContextProps {
   sessionId: string | null;
@@ -39,8 +40,8 @@ export function PersistentInvestigationContext({
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         {/* Left: Case Title & Author Profile */}
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-zinc-100 rounded-lg border border-zinc-200 shrink-0">
-            <Activity className="w-5 h-5 text-zinc-700" />
+          <div className="p-2.5 bg-zinc-100 rounded-lg border border-zinc-200 shrink-0 text-zinc-700">
+            <CodeDNALogo size={20} bare />
           </div>
           <div>
             <div className="flex items-center gap-2">

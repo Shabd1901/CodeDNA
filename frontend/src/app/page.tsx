@@ -34,6 +34,7 @@ import { MLIntelligenceView } from "@/components/MLIntelligenceView";
 import { TemporalEvolutionView } from "@/components/TemporalEvolutionView";
 import { BenchmarkSuiteView } from "@/components/BenchmarkSuiteView";
 import { InfoHelper } from "@/components/InfoTooltipModal";
+import { CodeDNALogo } from "@/components/CodeDNALogo";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -442,9 +443,7 @@ export default function Home() {
       {/* Top Application Bar */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 border-b border-zinc-200 pb-6 print:hidden">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-zinc-900 text-white rounded-xl shadow-sm">
-            <Activity className="w-6 h-6" />
-          </div>
+          <CodeDNALogo size={24} />
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold tracking-tight text-zinc-950">CodeDNA Forensic Workstation</h1>
