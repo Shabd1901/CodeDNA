@@ -19,9 +19,6 @@
 - **Architecture Specification:** [docs/architecture.md](docs/architecture.md)
 - **Product Requirements Document (PRD):** [docs/PRD.md](docs/PRD.md)
 - **Technical Requirements Document (TRD):** [docs/TRD.md](docs/TRD.md)
-- **Engineering Explainer & Changelog:** [docs/explainer.md](docs/explainer.md)
-- **Evaluator Audit Pass 1:** [docs/projecteval1.md](docs/projecteval1.md)
-- **Evaluator Audit Pass 2:** [docs/projecteval2.md](docs/projecteval2.md)
 - **Frontend Overview:** [frontend/README.md](frontend/README.md)
 
 ---
@@ -204,10 +201,13 @@ python scripts/run_tests.py
 ```
 
 ### Running the Scientific Evaluation Lab
-Execute the 14-scenario ground-truth benchmark suite:
+Execute the 14-scenario ground-truth benchmark suite via CLI:
 ```powershell
 python scripts/run_evaluation_lab.py
 ```
+
+> **Note on the "Re-Run Suite" Workstation Button:**  
+> In the frontend web UI, clicking **"Re-Run Suite"** invokes `GET /api/benchmarks/run` on the live FastAPI backend server (`backend/ml_engine/benchmark_runner.py`). It dynamically executes all 14 controlled ground-truth test cases through the 24-dimensional feature extractor, Siamese projection head, and Platt logistic calibrator, recalculating live empirical accuracy (92.9%), confusion matrix, and ROC/PR curve points in real-time.
 
 #### Verified Benchmark Results:
 - **Total Scenarios Evaluated:** 14 (8 benign/authentic, 6 adversarial/suspicious)
@@ -305,10 +305,7 @@ CodeDNA/
 ├── docs/
 │   ├── architecture.md          # In-depth system architecture specification
 │   ├── PRD.md                   # Product Requirements Document
-│   ├── TRD.md                   # Technical Requirements Document
-│   ├── explainer.md             # Detailed engineering log, risk matrix & changelog
-│   ├── projecteval1.md          # Internal audit & verification record
-│   └── projecteval2.md          # External evaluator audit pass reports
+│   └── TRD.md                   # Technical Requirements Document
 └── vercel.json                  # Unified Vercel monorepo services routing
 ```
 

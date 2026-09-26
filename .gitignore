@@ -42,3 +42,9 @@ yarn-error.log*
 Thumbs.db
 
 .vercel
+
+# Internal Dev Changelogs & Draft Audit Reports (Private)
+docs/explainer.md
+*explainer.md
+docs/projecteval*.md
+*projecteval*

@@ -3,7 +3,7 @@
 > **Document Version:** 2.0  
 > **Status:** Production / Evaluator-Ready  
 > **Primary Entry Point:** [../README.md](../README.md)  
-> **Related Documents:** [architecture.md](architecture.md) | [TRD.md](TRD.md) | [explainer.md](explainer.md)
+> **Related Documents:** [architecture.md](architecture.md) | [TRD.md](TRD.md)
 
 ---
 
@@ -84,3 +84,17 @@ CodeDNA evaluates **Longitudinal Stylistic Invariants** by comparing a target su
 1. **Privacy-Preserving & Zero Permanent Retention:** No student code is written to permanent databases. All processing occurs in ephemeral serverless storage or local disk.
 2. **Speed & Responsiveness:** Deterministic AST extraction and ML projection execute in `<150ms`. Complete end-to-end analysis finishes in `<2.0s`.
 3. **Human-in-the-Loop Requirement:** CodeDNA is an investigative decision-support system. It never generates automated sanctions, penalties, or disciplinary verdicts.
+
+---
+
+## 5. Fundamental System Limitations & Honest Assessment
+
+1. **Consistent AI Authors (Baseline Contamination):**
+   - **The Problem:** If a student *always* uses AI (even across all historical baseline repositories), their historical CodeDNA will be inherently AI-derived. Comparing a new AI submission against an AI baseline yields **low behavioral deviation** (because they match), but **high AI-associated signals**.
+   - **The Solution (Implemented):** CodeDNA distinguishes between `Consistent AI Author` (low behavioral deviation + AI signals present in baseline & submission) vs `Sudden AI Introduction` (baseline is clean, submission introduces AI patterns). For `Consistent AI Author`, the investigation concern is downgraded from **HIGH** to **MODERATE** with an explicit diagnostic note: *"This student consistently uses AI. Focus investigation on AI policy compliance, not substitution fraud."*
+
+2. **Intra-Author Topic Variance:**
+   - A single author writing a CLI script vs a React UI vs a Database ORM will naturally use different libraries, naming conventions, and AST structures. CodeDNA mitigates this using non-linear sigmoid normalization so small/natural drifts do not inflate anomaly scores.
+
+3. **Language-Specific AST Coverage:**
+   - Deep AST parsing is active for Python. JS/TS, Java, and C-family files utilize normalized static AST heuristics (`cross_language_parser.py`) which capture control flow, cyclomatic density, and OOP patterns with cognitive invariant discounts.

@@ -3,7 +3,7 @@
 > **Document Version:** 2.0  
 > **Status:** Production / Evaluator-Ready  
 > **Primary Entry Point:** [../README.md](../README.md)  
-> **Related Documents:** [architecture.md](architecture.md) | [PRD.md](PRD.md) | [explainer.md](explainer.md)
+> **Related Documents:** [architecture.md](architecture.md) | [PRD.md](PRD.md)
 
 ---
 

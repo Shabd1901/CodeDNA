@@ -3,7 +3,7 @@
 > **Document Version:** 2.0  
 > **Status:** Production / Evaluator-Ready  
 > **Primary Entry Point:** [../README.md](../README.md)  
-> **Related Documents:** [PRD.md](PRD.md) | [TRD.md](TRD.md) | [explainer.md](explainer.md)
+> **Related Documents:** [PRD.md](PRD.md) | [TRD.md](TRD.md)
 
 ---
 
@@ -133,3 +133,51 @@ sequenceDiagram
 - **Interactive Workstation:** 9 modular pipeline views built with Next.js 16, TypeScript, Recharts, and Tailwind CSS.
 - **Syntactic Evidence Inspector:** Split-pane viewer highlighting authentic student code lines associated with flagged anomalies.
 - **Formal Case Dossier:** Court-ready A4 document layout with dual export modes (Executive Brief vs Full Extended Dossier) and CSS page-break print optimizations.
+
+---
+
+## 5. Cohort Normalization & Starter Template Engine
+
+### 5.1 Purpose & Core Value
+Cohort Normalization eliminates false-positive flags caused by course-wide assignment rules, mandatory framework imports (e.g. PyTorch, FastAPI), or shared instructor starter code. It transitions CodeDNA from 1-dimensional personal comparison to a 2-dimensional matrix evaluating both **Personal Behavioral Drift** and **Cohort Norm Alignment**.
+
+### 5.2 The 3 Ingestion Pathways
+- **Master Class ZIP Ingestion (LMS Export):** Unpacks bulk exports from Canvas, Moodle, or Blackboard (`CS101_Submissions.zip`), parses student folders in parallel, and compiles a class baseline (`cohort_baseline.json`) containing P50, P75, P90, and Interquartile Range (IQR) metrics.
+- **GitHub Classroom Auto-Fetch:** Asynchronously streams repositories from a GitHub organization (`github.com/cs101-fall2026/assignment-2-*`) into temporary session storage to generate an automated class baseline.
+- **Starter Template Subtraction Filter:** Parses an instructor's skeleton starter ZIP and subtracts identical AST nodes, boilerplate imports, and function signatures prior to computing student deviation scores.
+
+### 5.3 Dual-Vector Decision Matrix
+$$\text{Adjusted Anomaly Score} = \text{Personal Deviation} \times (1 - \text{Cohort Similarity})$$
+
+| Personal Deviation | Cohort Similarity | Diagnosis | Forensic Output |
+| :--- | :--- | :--- | :--- |
+| **High** | **High** (Matches Class) | Student followed course template / assignment guidelines. | 🟢 **CLEAR / TEMPLATE NORM** |
+| **High** | **Low** (Differs from Class) | Student inserted external code or LLM output unlike peers. | 🔴 **HIGH CONCERN** |
+| **Low** | **High** (Matches Both) | Student code matches past work and assignment norm. | 🟢 **CLEAR** |
+
+---
+
+## 6. Forensic Engineering Rationale & Architectural FAQ
+
+- **Gemini Free-Tier 429 Prevention:** Solved via smart payload compacting in `backend/ai_engine.py`. By stripping raw file dumps and summarizing metrics into P75/P90 distributions, total prompt token volume is kept under 25,000 tokens (well below the 250k tokens/min limit).
+- **Starter Template Subtraction Semantics:** The Starter Template is an active subtractive filter removing instructor boilerplate, not a standalone baseline. Baseline comparison requires either personal historical archives or a cohort export. Cohort investigations can launch with or without personal baseline ZIPs.
+- **Tamper-Evident Dossier Case ID:** Every investigation session generates a cryptographically derived hash identifier (`CASE-` + timestamp/hash) ensuring tamper-evident tracking during formal academic integrity hearings.
+- **Reassurance on High Consistency:** When CodeDNA consistency is \(\ge 95\%\), an explicit green verification banner is displayed to confirm genuine authorial match and avoid misinterpreting minor residual style differences.
+- **Printable Dossier Engine:** Overhauled with dual-mode toggle (Simple Executive Summary vs Full Extended Audit), rendering evaluated archive names, embedding AI findings, suppressing screen headers, and enforcing signature blocks on the final page.
+
+---
+
+## 7. Architecture Vulnerabilities, Gotchas & Known Risk Matrix
+
+| Risk / Gotcha | Issue & Context | Engineered Mitigation |
+| :--- | :--- | :--- |
+| **Deprecated Gemini SDK** | `google.generativeai` package is deprecated in favor of `google-genai`. | Migrated import to `from google import genai` and initialized official `client = genai.Client()`. |
+| **Model Name Mismatch & High Demand 503s** | Hardcoded model names or peak demand 503s can cause investigation failures. | Configured `GEMINI_MODEL` via `.env` with automatic fallback chain (`gemini-2.5-flash` → `gemini-3.5-flash-lite` → `gemini-1.5-flash`). |
+| **Global Python Environment Leak** | Running `pip install` without an activated virtualenv installs packages globally. | Always use `.\venv\Scripts\python.exe -m pip install -r requirements.txt` or equivalent virtualenv binaries. |
+| **Multi-Language AST Parity** | Multi-language codebases require standardized AST feature depth across languages. | Implemented `cross_language_parser.py` extracting normalized AST constructs across JS, TS, Java, and C-family languages with cognitive invariant discounts. |
+| **Unbounded ZIP Extraction Risk** | Uploading massive `.zip` files can exhaust serverless memory or trigger zip bombs. | Enforced archive size safety checks, maximum file count caps (200 usable files), and 512KB single-file parsing limits in `analysis.py`. |
+| **GitHub Rate Limiting** | Unauthenticated requests are capped at 60 req/hr by GitHub's API. | Supported `GITHUB_TOKEN` in `main.py` (increasing limit to 5,000 req/hr) and added frontend HTTP 429 alert cards. |
+| **Invalid Baseline GitHub Link** | Non-existent user or unreachable URL can hang while backend awaits response. | Configured 15.0s `httpx` timeouts, client-side regex pre-validation, and instant error card triggers. |
+| **Session Volatility (Serverless /tmp)** | Vercel Serverless Functions run in ephemeral microVMs with unshared local disk. | Implemented atomic `POST /api/analyze/direct` endpoint that extracts and evaluates archives in one request, plus stateless `deterministic_data` payloads in AI reporting. |
+| **Wildcard CORS Policy** | Wildcard `allow_origins=["*"]` exposes API to unauthorized cross-origin requests. | Configured `ALLOWED_ORIGINS` environment variable in `backend/main.py` supporting comma-separated origin whitelisting. |
+| **Secret Leakage Risk** | Accidental commit of `GEMINI_API_KEY` to public Git repositories. | Kept `.env` strictly in `.gitignore`, provided clean `.env.example` templates, and verified via git tracking audits. |
