@@ -113,6 +113,7 @@ sequenceDiagram
 
 ### 4.1 Deterministic AST Parser & Metric Engine (`backend/analysis.py`)
 - **AST Explorer:** Parses Python source files into standard `ast.AST` representations, analyzing control flow nodes (`If`, `For`, `While`, `Try`, `With`), abstraction features (`FunctionDef`, `AsyncFunctionDef`, `ClassDef`, `decorator_list`, type annotations), and comprehension expressions.
+- **Relative Path Scoping:** Resolves file paths relative to the extraction root (`repo_root`) during `is_usable_file()` filtering. This strictly isolates excluded directory matches (e.g. `tmp`, `temp`, `venv`) to internal project subdirectories, preventing collisions with Linux/Vercel system mounts like `/tmp/codedna_sessions/`.
 - **Lexical & Static Heuristics:** Employs regex passes across multi-language codebases (`.js`, `.ts`, `.java`, `.c`, `.cpp`, `.cs`, `.go`, `.rs`) for uniform indentation distribution, comment density, and naming convention classification.
 - **Percentile-Based Complexity Distributions:** Calculates P75, P90, median, and mean cyclomatic metrics across all functions to avoid single-outlier distortion.
 - **Subtractive Starter Template Filter:** Subtracts identical AST nodes present in the instructor skeleton code before evaluating student variance.
@@ -131,6 +132,7 @@ sequenceDiagram
 
 ### 4.4 Presentation Layer (`frontend/src/`)
 - **Interactive Workstation:** 9 modular pipeline views built with Next.js 16, TypeScript, Recharts, and Tailwind CSS.
+- **Monotonic Forward Stepper:** Single-direction progressive stage transitions (1 through 4, holding on 5) during analysis polling, eliminating cyclical progress flashing.
 - **Syntactic Evidence Inspector:** Split-pane viewer highlighting authentic student code lines associated with flagged anomalies.
 - **Formal Case Dossier:** Court-ready A4 document layout with dual export modes (Executive Brief vs Full Extended Dossier) and CSS page-break print optimizations.
 
@@ -179,5 +181,7 @@ $$\text{Adjusted Anomaly Score} = \text{Personal Deviation} \times (1 - \text{Co
 | **GitHub Rate Limiting** | Unauthenticated requests are capped at 60 req/hr by GitHub's API. | Supported `GITHUB_TOKEN` in `main.py` (increasing limit to 5,000 req/hr) and added frontend HTTP 429 alert cards. |
 | **Invalid Baseline GitHub Link** | Non-existent user or unreachable URL can hang while backend awaits response. | Configured 15.0s `httpx` timeouts, client-side regex pre-validation, and instant error card triggers. |
 | **Session Volatility (Serverless /tmp)** | Vercel Serverless Functions run in ephemeral microVMs with unshared local disk. | Implemented atomic `POST /api/analyze/direct` endpoint that extracts and evaluates archives in one request, plus stateless `deterministic_data` payloads in AI reporting. |
+| **Linux `/tmp` Directory Collision** | Absolute path filtering on Linux/Vercel serverless extracts sessions into `/tmp/...`, accidentally matching `tmp` exclusion patterns and dropping all files. | Scoped directory exclusion checks to relative paths (`Path(filepath).relative_to(repo_root)`), removing top-level `tmp` exclusion collision while preserving student subdirectory filtering. |
+| **Cyclic Progress Loader Desync** | Modulo-based interval stepping (`(step + 1) % 4`) causes the progress bar to cycle repeatedly (1-2-3-4-5-2-3-4-5) during long serverless operations. | Replaced cyclical loops with monotonic forward progression (advancing stages 1 to 4 and idling at 5 until request completion). |
 | **Wildcard CORS Policy** | Wildcard `allow_origins=["*"]` exposes API to unauthorized cross-origin requests. | Configured `ALLOWED_ORIGINS` environment variable in `backend/main.py` supporting comma-separated origin whitelisting. |
 | **Secret Leakage Risk** | Accidental commit of `GEMINI_API_KEY` to public Git repositories. | Kept `.env` strictly in `.gitignore`, provided clean `.env.example` templates, and verified via git tracking audits. |

@@ -28,6 +28,9 @@ The CodeDNA Forensic Workstation is a professional single-page web application d
   9. `Validation & Hardening`: Standalone benchmark runner displaying live empirical accuracy (92.9%), 0% FPR, and ROC curves.
 - **Google Gemini Flash Integration:**
   - On-demand qualitative evidence weighting, counter-evidence analysis, and VivaGuard oral defense scripts.
+- **Resilient Cloud & Serverless Pipeline:**
+  - Employs atomic `POST /api/analyze/direct` single-request execution to prevent serverless container state dropoffs.
+  - Features a monotonic forward progress stepper that smoothly advances through pipeline stages 1 to 4 and idles at stage 5 until the API responds.
 
 ---
 

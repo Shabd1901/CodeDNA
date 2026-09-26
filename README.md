@@ -248,7 +248,7 @@ CodeDNA is configured as a **single-domain unified monorepo** on Vercel using `v
 | :--- | :--- | :--- |
 | **HTTP 429 GitHub API Rate Limit** | Unauthenticated GitHub requests are capped at 60 req/hr. | Add a free `GITHUB_TOKEN` to `backend/.env` or upload baseline files directly as ZIPs. |
 | **Gemini 429 RESOURCE_EXHAUSTED** | Free tier TPM limits exceeded by large file payloads. | CodeDNA compacts file metrics to <25,000 tokens before sending to Gemini Flash. Ensure your Gemini API key has active quota. |
-| **"Submission contains no usable source code files"** | The ZIP archive contains no supported code extensions (`.py`, `.js`, `.ts`, `.java`, `.c`, `.cpp`, `.cs`, `.go`, `.rs`) or files are nested under excluded paths. | Ensure files have supported extensions. For instant testing, use pre-packaged fixtures from `test_data/1_clean/`. |
+| **"Submission contains no usable source code files"** | The ZIP archive contains no supported code extensions (`.py`, `.js`, `.ts`, `.java`, `.c`, `.cpp`, `.cs`, `.go`, `.rs`) or files are nested under excluded project folders (e.g. `venv`, `node_modules`). *(Note: Linux serverless `/tmp` extraction collisions are resolved in v2.0 via relative path sandboxing).* | Ensure files have supported extensions. For instant testing, use pre-packaged fixtures from `test_data/1_clean/`. |
 | **Frontend Network Error (`API_BASE`)** | Backend server is not running on port 8000. | Start FastAPI with `uvicorn main:app --reload --port 8000`. In development, Next.js rewrites `/api/*` to `127.0.0.1:8000`. |
 | **Vercel 4.5 MB Payload Limit** | Serverless function body cap exceeded. | Keep individual uploaded archives under 4.5 MB. For larger archives, run CodeDNA locally. |
 

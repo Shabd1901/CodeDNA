@@ -130,6 +130,7 @@ CodeDNA operates as a 3-tier decoupled architecture:
 ```
 - **Localhost Environment:** `backend/tmp_sessions/`
 - **Serverless Vercel Environment:** `tempfile.gettempdir()/codedna_sessions/` (`/tmp/codedna_sessions/`)
+- **Relative Path Evaluation:** File exclusion checks (`is_usable_file`) evaluate paths relative to the extraction root (`repo_root`). This guarantees that extracting under Linux system directories (`/tmp/...`) never accidentally triggers directory exclusion patterns on the system mount point.
 
 ---
 
@@ -213,3 +214,5 @@ To prevent `429 RESOURCE_EXHAUSTED` errors on Gemini free-tier TPM (250,000 toke
 1. **Zero Database Retention:** CodeDNA retains zero student data permanently. Sessions are volatile and scrubbed upon completion or container teardown.
 2. **Serverless Payload Limits:** Individual ZIP payloads are constrained by Vercel serverless request limits (**4.5 MB**). Larger corporate/institutional archives are processed via the local desktop workflow.
 3. **Execution Timeouts:** CPU-bound AST comparisons run in a thread pool with a **60.0s** safety guardrail timeout to protect server resources.
+4. **Relative Path Directory Sandboxing:** Path filtering is strictly scoped to relative paths within the student archive, preventing root filesystem mount names (`/tmp`, `/var`) from causing false exclusion.
+5. **Monotonic Client Progress Flow:** Client-side progress tracking during analysis uses forward-only state progression (stages 1 to 4, holding on 5) to eliminate cyclical progress flickering under variable latency.
