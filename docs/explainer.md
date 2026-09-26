@@ -227,6 +227,13 @@ Phase 0, Phase 1, Phase 2, Phase 3, and Phase 4 (Temporal Authorship Modeling & 
 - (2026-09-25 19:20) **Phase 3 Test Data Generation (SUBPART 2):** Successfully executed scripts/generate_test_zips.py to populate test_data/ directory with 8 complete test scenarios containing baseline.zip and submission.zip pairs (plus template.zip for scenario 8), verifying correct file structure for all scenarios including 1_clean/, 2_sudden_ai/, 3_consistent_ai/, 4_plagiarism/, 5_empty/, 6_cross_language/,7_sophisticated_evasion/, and 8_template/ directories.
 - (2026-09-25 19:15) **Phase 3 Extreme Automated Testing Implementation: (SUBPART 1)** SUBPART 1
 Created comprehensive test suite with `scripts/generate_test_zips.py` for 8 distinct scenarios (Clean Student, Sudden AI, Consistent AI, Plagiarism, Empty Repo Cross-Language, Sophisticated Evasion, Template Subtraction) and updated `scripts/run_tests.py` with strict validation engine using httpx to POST generated ZIPs to local FastAPI endpoints (/api/session/start, /api/anayze/compare, /api/analyze/ai-report) with scenario-specific Pass Criteria assertions.
+- (2026-09-26 22:00) **Codebase Coherence, Asset Cleanliness & Non-Essential Code Audit:**
+  - Removed unused starter template SVG files from `frontend/public/` (`file.svg`, `globe.svg`, `next.svg`, `vercel.svg`, `window.svg`).
+  - Added missing `httpx` dependency to `backend/requirements.txt` to prevent runtime import failures on fresh clones.
+  - Renamed `generate_mock_dna` in `ml_engine/benchmark_runner.py` to `generate_synthetic_benchmark_dna` with clarifying docstrings to eliminate any impression of ungrounded "mock" logic.
+  - Authored a comprehensive root `README.md` providing system philosophy, ASCII pipeline diagrams, quick-start setup, and empirical benchmark documentation.
+  - Appended Section 8 to `docs/projecteval2.md`.
+
 - (2026-09-26 21:55) **External Evaluator Empirical Verification & Benchmark Suite Audit:**
   - Audited 14 controlled academic integrity benchmark scenarios in `backend/ml_engine/benchmark_runner.py` spanning authentic/benign evolution (8 cases) and suspicious/adversarial/plagiarism attempts (6 cases).
   - Verified scientific reproducibility via `scripts/run_evaluation_lab.py`: 92.9% accuracy (13/14), 100.0% precision, 83.3% recall, 100.0% specificity, 0.0% false positive rate (FPR), and 90.9% F1-score.

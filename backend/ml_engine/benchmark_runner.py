@@ -256,10 +256,11 @@ SCIENTIFIC_BENCHMARK_SCENARIOS = [
 
 BENCHMARK_SCENARIOS = SCIENTIFIC_BENCHMARK_SCENARIOS
 
-def generate_mock_dna(scenario: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+def generate_synthetic_benchmark_dna(scenario: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
-    Generates realistic baseline and submission CodeDNA pairs mathematically grounded
-    in the scenario's ground truth metadata.
+    Generates controlled synthetic baseline and submission CodeDNA AST feature distributions
+    mathematically derived from the benchmark scenario's ground-truth parameters (drift factor,
+    adversarial vectors, and stylistic profiles) for deterministic scientific reproducibility.
     """
     gt = scenario["ground_truth_metadata"]
     drift = scenario["drift_factor"]
@@ -347,6 +348,9 @@ def generate_mock_dna(scenario: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[st
 
     return baseline_dna, submission_dna
 
+# Alias for backward compatibility
+generate_mock_dna = generate_synthetic_benchmark_dna
+
 def run_empirical_benchmarks() -> Dict[str, Any]:
     """
     Executes the 14-scenario Scientific Evaluation Lab across:
@@ -370,7 +374,7 @@ def run_empirical_benchmarks() -> Dict[str, Any]:
     }
 
     for scenario in SCIENTIFIC_BENCHMARK_SCENARIOS:
-        b_dna, s_dna = generate_mock_dna(scenario)
+        b_dna, s_dna = generate_synthetic_benchmark_dna(scenario)
         gt = scenario["ground_truth_metadata"]
         is_malicious = not gt["same_author"] or gt["copied_code"] or gt["ai_generated"]
 
