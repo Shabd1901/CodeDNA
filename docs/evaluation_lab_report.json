@@ -1,0 +1,725 @@
+{
+  "evaluation_architecture": {
+    "version": "CodeDNA Scientific Evaluation Lab v1.1",
+    "layers": [
+      "Layer 1: Deterministic 8-Vector AST Feature Extraction",
+      "Layer 2: Contrastive Siamese Latent Metric Projection (24-Dim Hypersphere)",
+      "Layer 3: Logistic Platt Sigmoid Probability Calibration (95% CI)",
+      "Layer 4: Dual-Vector Cohort & Temporal Change-Point Verification"
+    ],
+    "ground_truth_policy": "Explicit ground-truth metadata tags (same_author, legitimate_change, copied_code, ai_generated, baseline_sufficient)"
+  },
+  "benchmark_summary": {
+    "total_cases": 14,
+    "correct_behavioral_classifications": 13,
+    "accuracy": 92.9,
+    "precision": 100.0,
+    "recall_sensitivity": 83.3,
+    "specificity": 100.0,
+    "false_positive_rate": 0.0,
+    "false_negative_rate": 16.7,
+    "f1_score": 90.9,
+    "auc_roc_estimate": 0.938,
+    "overall_adversarial_resilience": 75.0,
+    "deterministic_engine_accuracy": 100.0,
+    "ml_engine_accuracy": 57.1
+  },
+  "confusion_matrix": {
+    "true_positives": 5,
+    "false_positives": 0,
+    "true_negatives": 8,
+    "false_negatives": 1
+  },
+  "roc_curve": [
+    {
+      "threshold": 0.0,
+      "fpr": 1.0,
+      "tpr": 1.0
+    },
+    {
+      "threshold": 0.05,
+      "fpr": 0.125,
+      "tpr": 1.0
+    },
+    {
+      "threshold": 0.1,
+      "fpr": 0.0,
+      "tpr": 1.0
+    },
+    {
+      "threshold": 0.15,
+      "fpr": 0.0,
+      "tpr": 1.0
+    },
+    {
+      "threshold": 0.2,
+      "fpr": 0.0,
+      "tpr": 1.0
+    },
+    {
+      "threshold": 0.25,
+      "fpr": 0.0,
+      "tpr": 1.0
+    },
+    {
+      "threshold": 0.3,
+      "fpr": 0.0,
+      "tpr": 1.0
+    },
+    {
+      "threshold": 0.35,
+      "fpr": 0.0,
+      "tpr": 1.0
+    },
+    {
+      "threshold": 0.4,
+      "fpr": 0.0,
+      "tpr": 0.833
+    },
+    {
+      "threshold": 0.45,
+      "fpr": 0.0,
+      "tpr": 0.833
+    },
+    {
+      "threshold": 0.5,
+      "fpr": 0.0,
+      "tpr": 0.833
+    },
+    {
+      "threshold": 0.55,
+      "fpr": 0.0,
+      "tpr": 0.667
+    },
+    {
+      "threshold": 0.6,
+      "fpr": 0.0,
+      "tpr": 0.5
+    },
+    {
+      "threshold": 0.65,
+      "fpr": 0.0,
+      "tpr": 0.333
+    },
+    {
+      "threshold": 0.7,
+      "fpr": 0.0,
+      "tpr": 0.167
+    },
+    {
+      "threshold": 0.75,
+      "fpr": 0.0,
+      "tpr": 0.0
+    },
+    {
+      "threshold": 0.8,
+      "fpr": 0.0,
+      "tpr": 0.0
+    },
+    {
+      "threshold": 0.85,
+      "fpr": 0.0,
+      "tpr": 0.0
+    },
+    {
+      "threshold": 0.9,
+      "fpr": 0.0,
+      "tpr": 0.0
+    },
+    {
+      "threshold": 0.95,
+      "fpr": 0.0,
+      "tpr": 0.0
+    },
+    {
+      "threshold": 1.0,
+      "fpr": 0.0,
+      "tpr": 0.0
+    }
+  ],
+  "pr_curve": [
+    {
+      "threshold": 0.0,
+      "recall": 1.0,
+      "precision": 0.429
+    },
+    {
+      "threshold": 0.05,
+      "recall": 1.0,
+      "precision": 0.857
+    },
+    {
+      "threshold": 0.1,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "threshold": 0.15,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "threshold": 0.2,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "threshold": 0.25,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "threshold": 0.3,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "threshold": 0.35,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "threshold": 0.4,
+      "recall": 0.833,
+      "precision": 1.0
+    },
+    {
+      "threshold": 0.45,
+      "recall": 0.833,
+      "precision": 1.0
+    },
+    {
+      "threshold": 0.5,
+      "recall": 0.833,
+      "precision": 1.0
+    },
+    {
+      "threshold": 0.55,
+      "recall": 0.667,
+      "precision": 1.0
+    },
+    {
+      "threshold": 0.6,
+      "recall": 0.5,
+      "precision": 1.0
+    },
+    {
+      "threshold": 0.65,
+      "recall": 0.333,
+      "precision": 1.0
+    },
+    {
+      "threshold": 0.7,
+      "recall": 0.167,
+      "precision": 1.0
+    },
+    {
+      "threshold": 0.75,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "threshold": 0.8,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "threshold": 0.85,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "threshold": 0.9,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "threshold": 0.95,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "threshold": 1.0,
+      "recall": 0.0,
+      "precision": 0.0
+    }
+  ],
+  "adversarial_breakdown": {
+    "identifier_renaming": {
+      "resilience_score": 100.0,
+      "tested": 1,
+      "detected": 1
+    },
+    "formatting_only": {
+      "resilience_score": 0.0,
+      "tested": 1,
+      "detected": 0
+    },
+    "dead_code_injection": {
+      "resilience_score": 100.0,
+      "tested": 1,
+      "detected": 1
+    },
+    "partial_insertion": {
+      "resilience_score": 100.0,
+      "tested": 1,
+      "detected": 1
+    }
+  },
+  "scenarios": [
+    {
+      "id": "scenario_same_author_normal",
+      "name": "1. Same Author \u2014 Normal Progression",
+      "category": "benign",
+      "ground_truth_metadata": {
+        "same_author": true,
+        "legitimate_change": true,
+        "copied_code": false,
+        "ai_generated": false,
+        "baseline_sufficient": true
+      },
+      "expected_behavioral_outcome": "Clear / Authentic Progression",
+      "observed_metrics": {
+        "structural_deviation": 7.2,
+        "naming_deviation": 6.4,
+        "formatting_deviation": 6.4,
+        "complexity_deviation": 6.8,
+        "baseline_reliability": 85.0,
+        "ai_markers_found": 0
+      },
+      "model_inference": {
+        "calibrated_probability": 0.021,
+        "siamese_latent_distance": 0.1,
+        "hybrid_anomaly_score": 3.2,
+        "predicted_anomaly": false,
+        "verdict": "Authentic Baseline Match"
+      },
+      "outcome": "TN",
+      "accuracy_verdict": "MATCH",
+      "explanation": "Student continues developing in their established style with minor natural feature drift."
+    },
+    {
+      "id": "scenario_skill_growth",
+      "name": "2. Same Author \u2014 Skill Advancement",
+      "category": "benign",
+      "ground_truth_metadata": {
+        "same_author": true,
+        "legitimate_change": true,
+        "copied_code": false,
+        "ai_generated": false,
+        "baseline_sufficient": true
+      },
+      "expected_behavioral_outcome": "Clear / Skill Advancement",
+      "observed_metrics": {
+        "structural_deviation": 19.8,
+        "naming_deviation": 17.6,
+        "formatting_deviation": 17.6,
+        "complexity_deviation": 18.7,
+        "baseline_reliability": 85.0,
+        "ai_markers_found": 0
+      },
+      "model_inference": {
+        "calibrated_probability": 0.033,
+        "siamese_latent_distance": 0.1,
+        "hybrid_anomaly_score": 8.8,
+        "predicted_anomaly": false,
+        "verdict": "Authentic Baseline Match"
+      },
+      "outcome": "TN",
+      "accuracy_verdict": "MATCH",
+      "explanation": "Student adopts type annotations and higher modularity; core stylistic idioms remain consistent."
+    },
+    {
+      "id": "scenario_framework_migration",
+      "name": "3. Same Author \u2014 Framework / Paradigm Shift",
+      "category": "benign",
+      "ground_truth_metadata": {
+        "same_author": true,
+        "legitimate_change": true,
+        "copied_code": false,
+        "ai_generated": false,
+        "baseline_sufficient": true
+      },
+      "expected_behavioral_outcome": "Clear / Framework Transition",
+      "observed_metrics": {
+        "structural_deviation": 31.5,
+        "naming_deviation": 28.0,
+        "formatting_deviation": 28.0,
+        "complexity_deviation": 29.8,
+        "baseline_reliability": 85.0,
+        "ai_markers_found": 0
+      },
+      "model_inference": {
+        "calibrated_probability": 0.05,
+        "siamese_latent_distance": 0.1,
+        "hybrid_anomaly_score": 14.0,
+        "predicted_anomaly": false,
+        "verdict": "Authentic Baseline Match"
+      },
+      "outcome": "TN",
+      "accuracy_verdict": "MATCH",
+      "explanation": "Transitioning from CLI scripts to Streamlit/FastAPI shifts architectural imports but latent style signature persists."
+    },
+    {
+      "id": "scenario_ai_assisted",
+      "name": "4. Same Author \u2014 AI-Assisted Submission",
+      "category": "malicious",
+      "ground_truth_metadata": {
+        "same_author": true,
+        "legitimate_change": false,
+        "copied_code": false,
+        "ai_generated": true,
+        "baseline_sufficient": true
+      },
+      "expected_behavioral_outcome": "Moderate Concern / AI Policy Check",
+      "observed_metrics": {
+        "structural_deviation": 58.5,
+        "naming_deviation": 52.0,
+        "formatting_deviation": 52.0,
+        "complexity_deviation": 55.2,
+        "baseline_reliability": 85.0,
+        "ai_markers_found": 6
+      },
+      "model_inference": {
+        "calibrated_probability": 0.353,
+        "siamese_latent_distance": 1.1,
+        "hybrid_anomaly_score": 42.6,
+        "predicted_anomaly": false,
+        "verdict": "Ambiguous / Policy Review Needed"
+      },
+      "outcome": "FN",
+      "accuracy_verdict": "MISMATCH",
+      "explanation": "Baseline is clean, but submission suddenly introduces AI-associated docstrings, bare excepts, or LLM signatures."
+    },
+    {
+      "id": "scenario_different_author",
+      "name": "5. Different Author \u2014 Peer Substitution",
+      "category": "malicious",
+      "ground_truth_metadata": {
+        "same_author": false,
+        "legitimate_change": false,
+        "copied_code": true,
+        "ai_generated": false,
+        "baseline_sufficient": true
+      },
+      "expected_behavioral_outcome": "High Concern / Substitution Fraud",
+      "observed_metrics": {
+        "structural_deviation": 82.8,
+        "naming_deviation": 73.6,
+        "formatting_deviation": 73.6,
+        "complexity_deviation": 78.2,
+        "baseline_reliability": 85.0,
+        "ai_markers_found": 0
+      },
+      "model_inference": {
+        "calibrated_probability": 0.705,
+        "siamese_latent_distance": 2.4,
+        "hybrid_anomaly_score": 60.6,
+        "predicted_anomaly": true,
+        "verdict": "High Discontinuity Probability"
+      },
+      "outcome": "TP",
+      "accuracy_verdict": "MATCH",
+      "explanation": "Entire submission written by a completely different author with novel OOP habits, identifier token cadence, and control flow."
+    },
+    {
+      "id": "scenario_copied_code",
+      "name": "6. Known Copied-Code Injection",
+      "category": "malicious",
+      "ground_truth_metadata": {
+        "same_author": false,
+        "legitimate_change": false,
+        "copied_code": true,
+        "ai_generated": false,
+        "baseline_sufficient": true
+      },
+      "expected_behavioral_outcome": "High Concern / Plagiarism",
+      "observed_metrics": {
+        "structural_deviation": 79.2,
+        "naming_deviation": 70.4,
+        "formatting_deviation": 70.4,
+        "complexity_deviation": 74.8,
+        "baseline_reliability": 85.0,
+        "ai_markers_found": 0
+      },
+      "model_inference": {
+        "calibrated_probability": 0.658,
+        "siamese_latent_distance": 2.2,
+        "hybrid_anomaly_score": 58.0,
+        "predicted_anomaly": true,
+        "verdict": "Ambiguous / Policy Review Needed"
+      },
+      "outcome": "TP",
+      "accuracy_verdict": "MATCH",
+      "explanation": "Contains direct verbatim or near-verbatim code blocks copied from an external source or peer repo."
+    },
+    {
+      "id": "scenario_variable_renaming",
+      "name": "7. Variable Renaming Only",
+      "category": "adversarial",
+      "ground_truth_metadata": {
+        "same_author": false,
+        "legitimate_change": false,
+        "copied_code": true,
+        "ai_generated": true,
+        "baseline_sufficient": true
+      },
+      "expected_behavioral_outcome": "High Concern / Evasion Detected",
+      "observed_metrics": {
+        "structural_deviation": 73.8,
+        "naming_deviation": 65.6,
+        "formatting_deviation": 65.6,
+        "complexity_deviation": 69.7,
+        "baseline_reliability": 85.0,
+        "ai_markers_found": 7
+      },
+      "model_inference": {
+        "calibrated_probability": 0.577,
+        "siamese_latent_distance": 1.4,
+        "hybrid_anomaly_score": 53.8,
+        "predicted_anomaly": true,
+        "verdict": "Ambiguous / Policy Review Needed"
+      },
+      "outcome": "TP",
+      "accuracy_verdict": "MATCH",
+      "explanation": "Variables renamed to short tokens or randomized camelCase while preserving identical AST control flow."
+    },
+    {
+      "id": "scenario_formatting_only",
+      "name": "8. Formatting & Refactoring Only",
+      "category": "benign",
+      "ground_truth_metadata": {
+        "same_author": true,
+        "legitimate_change": true,
+        "copied_code": false,
+        "ai_generated": false,
+        "baseline_sufficient": true
+      },
+      "expected_behavioral_outcome": "Clear / Refactoring",
+      "observed_metrics": {
+        "structural_deviation": 10.8,
+        "naming_deviation": 9.6,
+        "formatting_deviation": 1.2,
+        "complexity_deviation": 10.2,
+        "baseline_reliability": 85.0,
+        "ai_markers_found": 0
+      },
+      "model_inference": {
+        "calibrated_probability": 0.024,
+        "siamese_latent_distance": 0.1,
+        "hybrid_anomaly_score": 4.8,
+        "predicted_anomaly": false,
+        "verdict": "Authentic Baseline Match"
+      },
+      "outcome": "TN",
+      "accuracy_verdict": "MATCH",
+      "explanation": "Reformatting tabs/spaces and adjusting comment line-breaks preserves identical AST structure and cyclomatic complexity."
+    },
+    {
+      "id": "scenario_dead_code_adversarial",
+      "name": "9. Dead-Code / Junk Insertion Evasion",
+      "category": "adversarial",
+      "ground_truth_metadata": {
+        "same_author": false,
+        "legitimate_change": false,
+        "copied_code": true,
+        "ai_generated": true,
+        "baseline_sufficient": true
+      },
+      "expected_behavioral_outcome": "High Concern / Evasion Detected",
+      "observed_metrics": {
+        "structural_deviation": 75.6,
+        "naming_deviation": 67.2,
+        "formatting_deviation": 67.2,
+        "complexity_deviation": 71.4,
+        "baseline_reliability": 85.0,
+        "ai_markers_found": 8
+      },
+      "model_inference": {
+        "calibrated_probability": 0.607,
+        "siamese_latent_distance": 2.0,
+        "hybrid_anomaly_score": 55.3,
+        "predicted_anomaly": true,
+        "verdict": "Ambiguous / Policy Review Needed"
+      },
+      "outcome": "TP",
+      "accuracy_verdict": "MATCH",
+      "explanation": "Injecting dummy helper functions and dead math blocks to camouflage AI code structure fails against Siamese latent projection."
+    },
+    {
+      "id": "scenario_starter_template",
+      "name": "10. Starter-Template Heavy Submission",
+      "category": "benign",
+      "ground_truth_metadata": {
+        "same_author": true,
+        "legitimate_change": true,
+        "copied_code": false,
+        "ai_generated": false,
+        "baseline_sufficient": true
+      },
+      "expected_behavioral_outcome": "Clear / Template Norm",
+      "observed_metrics": {
+        "structural_deviation": 18.0,
+        "naming_deviation": 16.0,
+        "formatting_deviation": 16.0,
+        "complexity_deviation": 17.0,
+        "baseline_reliability": 85.0,
+        "ai_markers_found": 0
+      },
+      "model_inference": {
+        "calibrated_probability": 0.031,
+        "siamese_latent_distance": 0.1,
+        "hybrid_anomaly_score": 8.0,
+        "predicted_anomaly": false,
+        "verdict": "Authentic Baseline Match"
+      },
+      "outcome": "TN",
+      "accuracy_verdict": "MATCH",
+      "explanation": "Starter code boilerplate AST nodes are subtracted before computing deviation scores, eliminating false positives."
+    },
+    {
+      "id": "scenario_insufficient_baseline",
+      "name": "11. Insufficient Historical Baseline",
+      "category": "benign",
+      "ground_truth_metadata": {
+        "same_author": true,
+        "legitimate_change": true,
+        "copied_code": false,
+        "ai_generated": false,
+        "baseline_sufficient": false
+      },
+      "expected_behavioral_outcome": "Low Reliability Guardrail",
+      "observed_metrics": {
+        "structural_deviation": 13.5,
+        "naming_deviation": 12.0,
+        "formatting_deviation": 12.0,
+        "complexity_deviation": 12.8,
+        "baseline_reliability": 35.0,
+        "ai_markers_found": 0
+      },
+      "model_inference": {
+        "calibrated_probability": 0.026,
+        "siamese_latent_distance": 0.1,
+        "hybrid_anomaly_score": 6.0,
+        "predicted_anomaly": false,
+        "verdict": "Authentic Baseline Match"
+      },
+      "outcome": "TN",
+      "accuracy_verdict": "MATCH",
+      "explanation": "Baseline contains less than 3 repositories or <500 total LOC, automatically downgrading reliability score."
+    },
+    {
+      "id": "scenario_very_small_sub",
+      "name": "12. Very Small Micro-Submission",
+      "category": "benign",
+      "ground_truth_metadata": {
+        "same_author": true,
+        "legitimate_change": true,
+        "copied_code": false,
+        "ai_generated": false,
+        "baseline_sufficient": true
+      },
+      "expected_behavioral_outcome": "Clear / Micro-Script",
+      "observed_metrics": {
+        "structural_deviation": 9.0,
+        "naming_deviation": 8.0,
+        "formatting_deviation": 8.0,
+        "complexity_deviation": 8.5,
+        "baseline_reliability": 85.0,
+        "ai_markers_found": 0
+      },
+      "model_inference": {
+        "calibrated_probability": 0.023,
+        "siamese_latent_distance": 0.1,
+        "hybrid_anomaly_score": 4.0,
+        "predicted_anomaly": false,
+        "verdict": "Authentic Baseline Match"
+      },
+      "outcome": "TN",
+      "accuracy_verdict": "MATCH",
+      "explanation": "Submissions under 30 LOC use scaled deviation weights so single-function scripts do not trigger false alarms."
+    },
+    {
+      "id": "scenario_large_complex_sub",
+      "name": "13. Large & Complex Monolith Submission",
+      "category": "benign",
+      "ground_truth_metadata": {
+        "same_author": true,
+        "legitimate_change": true,
+        "copied_code": false,
+        "ai_generated": false,
+        "baseline_sufficient": true
+      },
+      "expected_behavioral_outcome": "Clear / Major Monolith",
+      "observed_metrics": {
+        "structural_deviation": 25.2,
+        "naming_deviation": 22.4,
+        "formatting_deviation": 22.4,
+        "complexity_deviation": 23.8,
+        "baseline_reliability": 85.0,
+        "ai_markers_found": 0
+      },
+      "model_inference": {
+        "calibrated_probability": 0.04,
+        "siamese_latent_distance": 0.1,
+        "hybrid_anomaly_score": 11.2,
+        "predicted_anomaly": false,
+        "verdict": "Authentic Baseline Match"
+      },
+      "outcome": "TN",
+      "accuracy_verdict": "MATCH",
+      "explanation": "Large multi-module project (500+ LOC) evaluated across percentile distributions (P75/P90) rather than simple line counts."
+    },
+    {
+      "id": "scenario_mixed_authorship",
+      "name": "14. Mixed-Authorship / Partial Insertion",
+      "category": "malicious",
+      "ground_truth_metadata": {
+        "same_author": false,
+        "legitimate_change": false,
+        "copied_code": true,
+        "ai_generated": true,
+        "baseline_sufficient": true
+      },
+      "expected_behavioral_outcome": "High Concern / Partial Insertion",
+      "observed_metrics": {
+        "structural_deviation": 70.2,
+        "naming_deviation": 62.4,
+        "formatting_deviation": 62.4,
+        "complexity_deviation": 66.3,
+        "baseline_reliability": 85.0,
+        "ai_markers_found": 7
+      },
+      "model_inference": {
+        "calibrated_probability": 0.527,
+        "siamese_latent_distance": 1.7,
+        "hybrid_anomaly_score": 51.3,
+        "predicted_anomaly": true,
+        "verdict": "Ambiguous / Policy Review Needed"
+      },
+      "outcome": "TP",
+      "accuracy_verdict": "MATCH",
+      "explanation": "Student wrote 60% of the code but pasted 40% external LLM module, creating high per-file anomaly score disparity."
+    }
+  ],
+  "metrics_measured": [
+    "baseline_reliability",
+    "CodeDNA_consistency",
+    "structural_deviation",
+    "style_deviation",
+    "complexity_deviation",
+    "similarity_evidence",
+    "anomaly_count",
+    "calibrated_probability",
+    "AI_associated_signals"
+  ],
+  "how_to_run": {
+    "cli": "python -m scripts.run_evaluation_lab",
+    "api": "GET /api/benchmarks/run",
+    "ui": "Navigate to Validation & Hardening tab (hotkey 9) in CodeDNA Workstation"
+  },
+  "limitations": [
+    "Synthetic feature perturbation used for controlled baseline synthesis; live repository mining provides additional real-world noise.",
+    "AST depth currently optimized for Python/JS/TS; C-family languages utilize standardized AST node heuristics."
+  ]
+}

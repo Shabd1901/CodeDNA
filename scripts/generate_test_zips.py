@@ -456,7 +456,7 @@ if (require.main === module) {
 }
 '''
 
-    create_zip_scenario("6_cross_language", baseline_content, submission_content)
+    create_zip_scenario_internal("6_cross_language", baseline_content, submission_content, "python", "javascript")
 
 def create_sophisticated_evasion_scenario():
     """Scenario 7: Sophisticated Evasion - AI trying to evade detection"""

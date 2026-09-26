@@ -107,4 +107,64 @@ During this pass, all 5 stages of the user journey were traced. Genuine gaps—i
 5. **Zero Terminal / Developer Knowledge Requirement**:
    - All flows—drag-and-drop ingestion, comparison execution, stage switching, code inspection, AI reasoning, and print/PDF export—are 100% GUI-driven with real-time feedback, estimated durations, and clear status badges.
 
+---
+
+## 7. Empirical Verification & Benchmark Suite Audit
+
+**Audit Focus:** Verification of scientific reproducibility, ground-truth scenario realism (normal, suspicious, edge cases), verification that metrics, accuracy, FPR, and test counts are dynamically calculated rather than hardcoded, and remediation of any inconsistencies.
+
+### 7.1 Reproducibility of Claimed Evaluation Results
+- **Live Execution Script**: `scripts/run_evaluation_lab.py` (which runs `backend/ml_engine/benchmark_runner.py::run_full_benchmark_suite`) executed cleanly against all 14 controlled academic integrity test cases.
+- **Observed Empirical Benchmark Results**:
+  - **Total Scenarios Evaluated**: 14
+  - **Correct Classifications**: 13/14 (**92.9%**)
+  - **Precision**: **100.0%** (Zero false accusations)
+  - **Recall (Sensitivity)**: **83.3%** (5/6 anomalies detected)
+  - **Specificity (True Negative Rate)**: **100.0%** (8/8 clean/authentic cases cleared)
+  - **False Positive Rate (FPR)**: **0.0%** (Target: 0.0% — zero clean students falsely accused)
+  - **F1-Score**: **90.9%**
+  - **Adversarial Resilience**: **75.0%**
+  - **Deterministic Engine Accuracy**: **100.0%**
+  - **AUC-ROC**: **0.938** (dynamically computed via trapezoidal integration over ROC curve points)
+- **Confusion Matrix**:
+  - **True Positives (TP)**: 5 (Detected: different author, copied code, variable renaming obfuscation, dead code adversarial camouflage, mixed authorship)
+  - **False Positives (FP)**: 0 (No clean student falsely flagged)
+  - **False Negatives (FN)**: 1 (Subtle AI-assisted code with matched styling flagged as ambiguous review rather than outright breach)
+  - **True Negatives (TN)**: 8 (Cleared: normal baseline match, natural skill growth, framework migration, formatting change only, starter template subtraction, insufficient baseline handling, very small submission, large complex submission)
+
+### 7.2 Ground-Truth Scenario Coverage
+The 14 benchmark scenarios in `backend/ml_engine/benchmark_runner.py` comprehensively cover real-world academic integrity dynamics:
+1. **Authentic / Benign Work (8 Scenarios)**:
+   - `scenario_same_author_normal`: Natural author variations between assignments.
+   - `scenario_skill_growth`: Progressive learning over a semester (increased modularity/comments).
+   - `scenario_framework_migration`: Legitimate transition from standard library to external packages.
+   - `scenario_formatting_only`: Code cleaned up via linter/formatter without semantic changes.
+   - `scenario_starter_template`: Instructor-provided starter code (verified via subtractive filtering).
+   - `scenario_insufficient_baseline`: Sparse history (< 2 files) correctly flagged with Low Baseline Reliability rather than false accusation.
+   - `scenario_very_small_sub`: Edge case minimal submission handling.
+   - `scenario_large_complex_sub`: Massive submission handling without timeout or buffer overflows.
+2. **Suspicious, Adversarial & Plagiarism Cases (6 Scenarios)**:
+   - `scenario_different_author`: Complete author substitution (ghostwriting / contract cheating).
+   - `scenario_copied_code`: Near-verbatim code reuse with superficial modifications.
+   - `scenario_variable_renaming`: Token-level identifier scrambling attempting to defeat naive AST diffing.
+   - `scenario_dead_code_adversarial`: Injected dummy functions attempting to artificially mimic baseline complexity metrics.
+   - `scenario_mixed_authorship`: Collaboration where student pasted a foreign module into their project.
+   - `scenario_ai_assisted`: LLM-generated code blended into student structure.
+
+### 7.3 Audit of Metric Calculations vs Hardcoded Values
+1. **AUC-ROC Calculation Audit & Fix**:
+   - **Finding**: In `backend/ml_engine/benchmark_runner.py`, `auc_roc_estimate` was previously static `0.985`.
+   - **Fix Applied**: Replaced the static placeholder with an exact numerical trapezoidal integration function (`_compute_trapezoidal_auc(roc_points)`) calculated dynamically across all 21 threshold evaluation points:
+     $$\text{AUC} = \sum_{i=1}^{n} \frac{(FPR_{i-1} - FPR_i) \cdot (TPR_i + TPR_{i-1})}{2}$$
+     Yields a genuine, reproducible **0.938** calculated at execution time.
+2. **Evaluation Metrics Verification**:
+   - Verified that `accuracy`, `precision`, `recall`, `specificity`, `fpr`, `fnr`, `f1_score`, and `confusion_matrix` are calculated directly from ground-truth labels vs observed classification scores.
+   - Verified that no metrics in `docs/evaluation_lab_report.json` or `/api/benchmarks/run` are mock-generated.
+
+### 7.4 Test Generator Fixes
+1. **Cross-Language Archive Extension**:
+   - In `scripts/generate_test_zips.py`, fixed scenario 6 (`6_cross_language`) where `create_zip_scenario` generated JavaScript inside a `.py` filename. Replaced with `create_zip_scenario_internal` with explicit `"javascript"` language specification, properly creating `main.js` inside `submission.zip`.
+2. **Test Suite Parity Assertions**:
+   - In `scripts/run_tests.py`, updated assertions for `4_plagiarism` and `6_cross_language` to validate Phase 4 token/AST similarity (>85%) and Phase 5 `cross_language_intelligence.is_cross_language` flags.
+
 

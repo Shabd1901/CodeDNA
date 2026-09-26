@@ -485,6 +485,15 @@ def run_empirical_benchmarks() -> Dict[str, Any]:
         roc_points.append({"threshold": round(tau, 2), "fpr": round(t_fpr, 3), "tpr": round(t_tpr, 3)})
         pr_points.append({"threshold": round(tau, 2), "recall": round(t_tpr, 3), "precision": round(t_prec, 3)})
 
+    # Calculate exact numerical trapezoidal AUC-ROC from curve points
+    sorted_roc = sorted(roc_points, key=lambda p: p["fpr"])
+    auc_val = 0.0
+    for i in range(len(sorted_roc) - 1):
+        dx = sorted_roc[i+1]["fpr"] - sorted_roc[i]["fpr"]
+        if dx > 0:
+            auc_val += 0.5 * (sorted_roc[i]["tpr"] + sorted_roc[i+1]["tpr"]) * dx
+    auc_roc = round(max(0.5, min(1.0, auc_val)), 3)
+
     resilience_summary = {}
     total_adv, detected_adv = 0, 0
     for adv, data in adversarial_stats.items():
@@ -520,7 +529,7 @@ def run_empirical_benchmarks() -> Dict[str, Any]:
             "false_positive_rate": round(fpr * 100.0, 1),
             "false_negative_rate": round(fnr * 100.0, 1),
             "f1_score": round(f1 * 100.0, 1),
-            "auc_roc_estimate": 0.985,
+            "auc_roc_estimate": auc_roc,
             "overall_adversarial_resilience": overall_adversarial_resilience,
             "deterministic_engine_accuracy": round((det_correct / total_samples) * 100.0, 1),
             "ml_engine_accuracy": round((ml_correct / total_samples) * 100.0, 1)
