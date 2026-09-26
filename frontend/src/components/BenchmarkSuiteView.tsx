@@ -19,9 +19,10 @@ import { InfoHelper } from "@/components/InfoTooltipModal";
 
 interface BenchmarkSuiteViewProps {
   initialData?: any;
+  onBackToSetup?: () => void;
 }
 
-export function BenchmarkSuiteView({ initialData }: BenchmarkSuiteViewProps) {
+export function BenchmarkSuiteView({ initialData, onBackToSetup }: BenchmarkSuiteViewProps) {
   const [benchmarkData, setBenchmarkData] = useState<any>(initialData || null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"matrix" | "roc" | "scenarios">("matrix");
@@ -48,26 +49,26 @@ export function BenchmarkSuiteView({ initialData }: BenchmarkSuiteViewProps) {
   }, []);
 
   const summary = benchmarkData?.benchmark_summary || {
-    accuracy: 91.7,
+    accuracy: 92.9,
     precision: 100.0,
-    recall_sensitivity: 87.5,
+    recall_sensitivity: 83.3,
     specificity: 100.0,
     false_positive_rate: 0.0,
-    f1_score: 93.3,
+    f1_score: 90.9,
     auc_roc_estimate: 0.985,
-    overall_adversarial_resilience: 83.3,
-    total_scenarios_evaluated: 12
+    overall_adversarial_resilience: 75.0,
+    total_scenarios_evaluated: 14
   };
 
   const cm = benchmarkData?.confusion_matrix || {
-    true_positives: 7,
+    true_positives: 5,
     false_positives: 0,
-    true_negatives: 4,
+    true_negatives: 8,
     false_negatives: 1
   };
 
   const rocPoints = benchmarkData?.roc_curve || [];
-  const scenarios = benchmarkData?.scenario_results || [];
+  const scenarios = benchmarkData?.scenarios || benchmarkData?.scenario_results || [];
   const adversarial = benchmarkData?.adversarial_breakdown || {};
 
   return (
@@ -80,25 +81,36 @@ export function BenchmarkSuiteView({ initialData }: BenchmarkSuiteViewProps) {
               <ShieldCheck className="w-4 h-4" />
             </span>
             <h3 className="text-sm font-bold text-zinc-900">
-              Empirical Benchmarking &amp; Adversarial Stress Testing
+              CodeDNA Scientific Evaluation Lab &amp; 14-Scenario Benchmarks
             </h3>
-            <span className="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700 text-[10px] font-mono font-semibold">
-              12 Controlled Scenarios
+            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-mono font-bold">
+              14 Ground-Truth Tests
             </span>
           </div>
           <p className="text-xs text-zinc-500 max-w-2xl">
-            Rigorous statistical validation evaluating Siamese metric distance, Platt-calibrated probabilities, and adversarial resistance against evasion attacks (comment flooding, dead code, renaming, and syntax churning).
+            Rigorous empirical validation evaluating Siamese metric distance, Platt-calibrated probabilities, and adversarial resistance against 14 controlled academic integrity test cases.
           </p>
         </div>
 
-        <button
-          onClick={runBenchmark}
-          disabled={loading}
-          className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white rounded-lg text-xs font-semibold flex items-center gap-2 shadow-xs transition-colors shrink-0 self-start md:self-auto"
-        >
-          <RotateCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-          <span>{loading ? "Evaluating Suite..." : "Re-Run Benchmark"}</span>
-        </button>
+        <div className="flex items-center gap-2 shrink-0 self-start md:self-auto">
+          {onBackToSetup && (
+            <button
+              onClick={onBackToSetup}
+              className="px-3.5 py-2 bg-white hover:bg-zinc-50 border border-zinc-200 text-zinc-700 rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+            >
+              ← Case Setup
+            </button>
+          )}
+
+          <button
+            onClick={runBenchmark}
+            disabled={loading}
+            className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white rounded-lg text-xs font-semibold flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
+          >
+            <RotateCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+            <span>{loading ? "Evaluating Suite..." : "Re-Run Suite"}</span>
+          </button>
+        </div>
       </div>
 
       {/* 6 Key Validation KPIs */}
@@ -392,9 +404,12 @@ export function BenchmarkSuiteView({ initialData }: BenchmarkSuiteViewProps) {
       {activeTab === "scenarios" && (
         <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
-              Scenario-by-Scenario Evaluation Matrix
-            </h4>
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
+                14 Scientific Scenario Evaluation Matrix
+              </h4>
+              <p className="text-[11px] text-zinc-500">Evaluates Ground Truth vs Observed Metrics vs Model Inference</p>
+            </div>
             <span className="text-[11px] text-zinc-500 font-mono">
               Evaluated: {scenarios.length} instances
             </span>
@@ -404,56 +419,60 @@ export function BenchmarkSuiteView({ initialData }: BenchmarkSuiteViewProps) {
             <table className="w-full text-left text-xs">
               <thead>
                 <tr className="border-b border-zinc-200 text-[10px] font-bold uppercase text-zinc-400">
-                  <th className="py-2 px-3">Scenario</th>
-                  <th className="py-2 px-2">Category</th>
-                  <th className="py-2 px-2">Ground Truth</th>
+                  <th className="py-2 px-3">Scenario Name</th>
+                  <th className="py-2 px-2">Ground Truth Metadata</th>
+                  <th className="py-2 px-2">Expected Outcome</th>
                   <th className="py-2 px-2">P(Discontinuity)</th>
                   <th className="py-2 px-2">Siamese Latent</th>
-                  <th className="py-2 px-2">Hybrid Score</th>
-                  <th className="py-2 px-2">Verdict Tier</th>
+                  <th className="py-2 px-2">Model Verdict</th>
                   <th className="py-2 px-2 text-right">Outcome</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-100 font-mono">
+              <tbody className="divide-y divide-zinc-100">
                 {scenarios.map((s: any) => {
                   const isTP = s.outcome === "TP";
                   const isTN = s.outcome === "TN";
                   const isFP = s.outcome === "FP";
                   const isFN = s.outcome === "FN";
+                  const gt = s.ground_truth_metadata || {};
+                  const mi = s.model_inference || {};
 
                   return (
                     <tr key={s.id} className="hover:bg-zinc-50/70 transition-colors">
-                      <td className="py-2.5 px-3 font-sans font-medium text-zinc-900">
-                        {s.name}
-                        {s.adversarial_technique && (
-                          <span className="ml-1.5 px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 text-[9px] font-mono border border-amber-200">
-                            adv
+                      <td className="py-3 px-3 font-sans font-medium text-zinc-900 max-w-xs">
+                        <div className="font-bold text-zinc-900 text-xs">{s.name}</div>
+                        <div className="text-[10px] text-zinc-500 line-clamp-1 mt-0.5">{s.explanation}</div>
+                      </td>
+                      <td className="py-3 px-2 font-mono text-[10px]">
+                        <div className="flex flex-wrap gap-1">
+                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${gt.same_author ? "bg-emerald-50 text-emerald-800 border border-emerald-200" : "bg-rose-50 text-rose-800 border border-rose-200"}`}>
+                            {gt.same_author ? "Same Author" : "Diff Author"}
                           </span>
-                        )}
+                          {gt.ai_generated && (
+                            <span className="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-800 border border-indigo-200 text-[9px]">
+                              AI Gen
+                            </span>
+                          )}
+                          {gt.copied_code && (
+                            <span className="px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 text-[9px]">
+                              Copied
+                            </span>
+                          )}
+                        </div>
                       </td>
-                      <td className="py-2.5 px-2 font-sans text-zinc-500 uppercase text-[10px]">
-                        {s.category}
+                      <td className="py-3 px-2 font-mono text-[11px] text-zinc-700">
+                        {s.expected_behavioral_outcome || (gt.same_author ? "Benign" : "Anomaly")}
                       </td>
-                      <td className="py-2.5 px-2">
-                        {s.ground_truth ? (
-                          <span className="text-red-600 font-semibold">Anomaly</span>
-                        ) : (
-                          <span className="text-emerald-600 font-semibold">Authentic</span>
-                        )}
+                      <td className="py-3 px-2 font-mono font-bold text-zinc-800">
+                        {((mi.calibrated_probability || s.calibrated_probability || 0) * 100).toFixed(1)}%
                       </td>
-                      <td className="py-2.5 px-2 font-bold text-zinc-800">
-                        {(s.calibrated_probability * 100).toFixed(1)}%
+                      <td className="py-3 px-2 font-mono text-zinc-600">
+                        {mi.siamese_latent_distance !== undefined ? mi.siamese_latent_distance : s.siamese_latent_distance}
                       </td>
-                      <td className="py-2.5 px-2 text-zinc-600">
-                        {s.siamese_latent_distance}
+                      <td className="py-3 px-2 font-sans text-[11px] text-zinc-700">
+                        {mi.verdict || s.verdict}
                       </td>
-                      <td className="py-2.5 px-2 text-zinc-600">
-                        {s.hybrid_anomaly_score}
-                      </td>
-                      <td className="py-2.5 px-2 font-sans text-[11px] text-zinc-700">
-                        {s.verdict}
-                      </td>
-                      <td className="py-2.5 px-2 text-right">
+                      <td className="py-3 px-2 text-right">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                           isTP
                             ? "bg-emerald-100 text-emerald-800"

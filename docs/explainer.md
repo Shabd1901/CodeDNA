@@ -73,6 +73,18 @@ $$\text{Adjusted Anomaly Score} = \text{Personal Deviation} \times (1 - \text{Co
 Phase 0, Phase 1, Phase 2, Phase 3, and Phase 4 (Temporal Authorship Modeling & Change-Point Detection) Complete! Ready for Phase 5 (Cross-Language AST Parity & AST Normalization).
 
 ## Completed Changes:
+- (2026-09-26 12:28) **Dedicated Scientific Evaluation Lab Standalone Separation & Clean Navigation:**
+  - Separated the Scientific Evaluation Lab into a dedicated, standalone page view (`appState === "eval_lab"`) rendering [`BenchmarkSuiteView.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/components/BenchmarkSuiteView.tsx).
+  - Removed stage 9 (`Validation & Hardening`) from [`PipelineNav.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/components/PipelineNav.tsx) so the student case investigation workflow focuses 100% on the investigated student's evidence across 8 dedicated pipeline stages.
+  - Linked the top header bar **"Scientific Evaluation Lab (14 Tests)"** button in [`page.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/app/page.tsx) to switch directly to the evaluation laboratory view from any state with smooth back navigation (`"← Case Setup"`).
+- (2026-09-26 12:05) **Direct Frontend Access to Scientific Evaluation Lab:**
+  - Added a persistent **"Scientific Evaluation Lab (14 Tests)"** button directly in the top header bar of [`page.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/app/page.tsx) accessible from any screen.
+  - Added a prominent **"Scientific Evaluation Lab & Controlled Benchmarks"** banner with an **"Open Evaluation Lab →"** CTA button on the home page setup view.
+  - Added a **"← Case Setup"** navigation button in [`BenchmarkSuiteView.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/components/BenchmarkSuiteView.tsx) so users can toggle back and forth smoothly without uploading files.
+- (2026-09-26 11:54) **CodeDNA Scientific Evaluation Lab & 14-Scenario Benchmark Implemented:**
+  - Implemented 14-scenario controlled scientific benchmark suite in [`benchmark_runner.py`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/backend/ml_engine/benchmark_runner.py) evaluating ground truth metadata (`same_author`, `legitimate_change`, `copied_code`, `ai_generated`, `baseline_sufficient`) against model inferences.
+  - Built standalone CLI runner [`run_evaluation_lab.py`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/scripts/run_evaluation_lab.py) outputting empirical metrics (92.9% accuracy, 100.0% precision, 0.0% FPR, 83.3% recall, 90.9% F1) and exporting JSON reports to `docs/evaluation_lab_report.json`.
+  - Updated REST API endpoint (`GET /api/benchmarks/run`) and frontend workstation view [`BenchmarkSuiteView.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/components/BenchmarkSuiteView.tsx) to display ground truth metadata tags and expected vs observed outcome comparisons.
 - (2026-09-26 01:29) **UI UX Enhancements, Light Theme Fixes & Dual Export Menu:**
   - **Executive Brief Light Theme Redesign:** Updated the `Executive Investigation Brief` card in [`AIForensicPanel.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/components/AIForensicPanel.tsx) from dark black (`bg-zinc-950 text-white`) to a clean light indigo-slate gradient (`bg-gradient-to-r from-indigo-50/90 via-slate-50 to-sky-50/90 border-indigo-200/90 text-zinc-900`).
   - **Context Header Cleanup:** Removed redundant `✨ Gemini Flash` chip from [`PersistentInvestigationContext.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/components/PersistentInvestigationContext.tsx).
@@ -221,127 +233,7 @@ Created comprehensive test suite with `scripts/generate_test_zips.py` for 8 dist
 - Cohort normalization: compare a student's CodeDNA against a class/course baseline, not just their own history.
 
 ## Known Issues / Need To make these updates:
-We have finished the major CodeDNA implementation.
-
-Now build a dedicated CodeDNA Evaluation Lab so we can scientifically test whether the system actually works.
-
-Do NOT modify the core detection logic yet.
-
-First inspect the existing analysis pipeline and determine exactly what outputs can be measured.
-
-Create a controlled benchmark framework inside the project.
-
-The benchmark must use cases with known ground truth rather than arbitrary expected scores.
-
-Create at least these scenarios:
-
-1. Same author — normal submission
-2. Same author — legitimate skill improvement
-3. Same author — framework/language change
-4. Same author — AI-assisted submission
-5. Different author — unrelated coding style
-6. Known copied-code injection
-7. Variable renaming only
-8. Formatting/refactoring only
-9. Dead-code/adversarial modification
-10. Starter-template-heavy submission
-11. Insufficient historical baseline
-12. Very small submission
-13. Large/complex submission
-14. Mixed-authorship submission
-
-For every case create:
-
-- historical baseline
-- new submission
-- ground-truth metadata
-- expected behavioral outcome
-- explanation of why that outcome is expected
-
-IMPORTANT:
-
-Do NOT hardcode expected CodeDNA scores.
-
-Ground truth should describe reality, for example:
-
-same_author=true
-legitimate_change=true
-copied_code=false
-ai_generated=false
-baseline_sufficient=true
-
-Then define expected behavioral constraints such as:
-
-- same author + legitimate growth should not automatically produce high concern
-- different author should produce stronger authorship deviation
-- formatting-only changes should not create large structural deviation
-- variable renaming should preserve structural similarity
-- known copied code should create measurable similarity evidence
-- insufficient baseline should reduce reliability
-- starter template should not contaminate authorship evidence
-
-Build an automated benchmark runner that executes CodeDNA against every case and records:
-
-- baseline reliability
-- CodeDNA consistency
-- structural deviation
-- style deviation
-- complexity deviation
-- similarity evidence
-- anomaly count
-- investigation status
-- AI-associated signals
-- relevant evidence
-- runtime/errors
-
-Then compare actual results against the ground-truth expectations.
-
-Generate a benchmark report containing:
-
-- total cases
-- correct behavioral classifications
-- false positives
-- false negatives
-- precision where applicable
-- recall where applicable
-- confusion matrix where applicable
-- robustness results
-- per-case explanation
-- deterministic-engine performance
-- ML-engine performance if an ML component now exists
-
-IMPORTANT:
-
-Do not claim an AI/ML model is accurate merely because it produces plausible scores.
-
-Do not fabricate benchmark results.
-
-Do not treat "AI-associated signals" as proof that AI was used.
-
-Clearly distinguish:
-GROUND TRUTH
-OBSERVED METRICS
-MODEL INFERENCE
-
-Also create a simple way for us to add new benchmark cases later.
-
-Do not substantially redesign the UI yet.
-
-Do not add random datasets from the internet yet.
-
-First make the controlled evaluation framework reliable and runnable.
-
-At the end, show:
-
-1. Evaluation architecture
-2. All test cases created
-3. Ground truth for each case
-4. Metrics being measured
-5. How the benchmark determines success/failure
-6. How to run the complete benchmark
-7. Any limitations in the benchmark itself
-
-Do not modify core detection algorithms until the benchmark exists.
+- *None currently open.* CodeDNA Scientific Evaluation Lab & 14-scenario benchmark framework fully operational!
 
 
 ## Architecture Vulnerabilities, Gotchas & Known Risk Matrix:

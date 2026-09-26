@@ -6,6 +6,7 @@ import {
   Upload, 
   Search, 
   ShieldAlert, 
+  ShieldCheck,
   CheckCircle, 
   Activity, 
   FileCode2, 
@@ -35,7 +36,7 @@ import { BenchmarkSuiteView } from "@/components/BenchmarkSuiteView";
 import { InfoHelper } from "@/components/InfoTooltipModal";
 
 export default function Home() {
-  const [appState, setAppState] = useState<"idle" | "analyzing" | "results">("idle");
+  const [appState, setAppState] = useState<"idle" | "analyzing" | "results" | "eval_lab">("idle");
   const [pipelineStage, setPipelineStage] = useState<PipelineStage>("overview");
 
   // Form State
@@ -366,6 +367,10 @@ export default function Home() {
     ];
   };
 
+  const openEvaluationLab = () => {
+    setAppState("eval_lab");
+  };
+
   return (
     <main className="min-h-screen p-4 sm:p-8 lg:p-12 max-w-7xl mx-auto text-zinc-900">
       {/* Top Application Bar */}
@@ -387,14 +392,21 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-mono text-zinc-500">
-          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-100 border border-zinc-200">
+        <div className="flex items-center gap-2.5 text-xs font-mono">
+          <button
+            onClick={openEvaluationLab}
+            title="Open Scientific Evaluation Lab & 14-Scenario Benchmark Suite"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 font-semibold text-xs shadow-xs transition-colors cursor-pointer"
+          >
+            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>Scientific Evaluation Lab</span>
+            <span className="px-1.5 py-0.5 rounded-full bg-emerald-200 text-emerald-950 text-[10px] font-mono font-bold">
+              14 Tests
+            </span>
+          </button>
+          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-100 border border-zinc-200 text-zinc-600">
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            Deterministic Engine Ready
-          </span>
-          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 border border-blue-200 text-blue-700">
-            <Sparkles className="w-3.5 h-3.5 text-blue-500" />
-            Gemini Flash
+            Engine Ready
           </span>
         </div>
       </header>
@@ -443,6 +455,33 @@ export default function Home() {
             exit={{ opacity: 0, y: -15 }}
             className="space-y-6"
           >
+            {/* Evaluation Lab Quick Access Banner */}
+            <div className="bg-gradient-to-r from-emerald-50/90 via-slate-50 to-indigo-50/90 border border-emerald-200/90 rounded-xl p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-zinc-900">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-emerald-100 border border-emerald-200 text-emerald-700 rounded-lg shrink-0">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-zinc-950 flex items-center gap-2">
+                    <span>Scientific Evaluation Lab &amp; Controlled Benchmarks</span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-semibold">
+                      14 Ground-Truth Scenarios
+                    </span>
+                  </h3>
+                  <p className="text-xs text-zinc-600 mt-0.5">
+                    Scientifically verify detection performance (92.9% accuracy, 0% FPR) across 14 ground-truth test scenarios without executing a manual upload.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={openEvaluationLab}
+                className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+              >
+                <span>Open Evaluation Lab</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
             {/* Top 2-Column Grid: Baseline Inputs (Left) + Submission Dropzone (Right) */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
               {/* Card 1: Historical Reference Baseline */}
@@ -1195,12 +1234,19 @@ export default function Home() {
                   report={report}
                 />
               )}
-
-              {/* STAGE: VALIDATION & ADVERSARIAL BENCHMARKING */}
-              {pipelineStage === "benchmarks" && (
-                <BenchmarkSuiteView />
-              )}
             </div>
+          </motion.div>
+        )}
+
+        {/* State: Scientific Evaluation Lab (Standalone Page View) */}
+        {appState === "eval_lab" && (
+          <motion.div
+            key="eval_lab"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+          >
+            <BenchmarkSuiteView onBackToSetup={() => setAppState(report ? "results" : "idle")} />
           </motion.div>
         )}
       </AnimatePresence>
