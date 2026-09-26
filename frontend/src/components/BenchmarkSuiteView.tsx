@@ -13,7 +13,9 @@ import {
   Zap, 
   Code2, 
   Lock,
-  Cpu
+  Cpu,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { InfoHelper } from "@/components/InfoTooltipModal";
 
@@ -25,7 +27,8 @@ interface BenchmarkSuiteViewProps {
 export function BenchmarkSuiteView({ initialData, onBackToSetup }: BenchmarkSuiteViewProps) {
   const [benchmarkData, setBenchmarkData] = useState<any>(initialData || null);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"matrix" | "roc" | "scenarios">("matrix");
+  const [activeTab, setActiveTab] = useState<"matrix" | "roc" | "scenarios">("scenarios");
+  const [expandedScenarioId, setExpandedScenarioId] = useState<string | null>(null);
 
   const runBenchmark = async () => {
     setLoading(true);
@@ -155,8 +158,18 @@ export function BenchmarkSuiteView({ initialData, onBackToSetup }: BenchmarkSuit
       {/* Tab Switcher */}
       <div className="flex items-center gap-2 border-b border-zinc-200 pb-2">
         <button
+          onClick={() => setActiveTab("scenarios")}
+          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+            activeTab === "scenarios"
+              ? "bg-zinc-900 text-white shadow-xs"
+              : "text-zinc-600 hover:bg-zinc-100"
+          }`}
+        >
+          Scenario Breakdown Matrix ({scenarios.length})
+        </button>
+        <button
           onClick={() => setActiveTab("matrix")}
-          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
             activeTab === "matrix"
               ? "bg-zinc-900 text-white shadow-xs"
               : "text-zinc-600 hover:bg-zinc-100"
@@ -166,23 +179,13 @@ export function BenchmarkSuiteView({ initialData, onBackToSetup }: BenchmarkSuit
         </button>
         <button
           onClick={() => setActiveTab("roc")}
-          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
             activeTab === "roc"
               ? "bg-zinc-900 text-white shadow-xs"
               : "text-zinc-600 hover:bg-zinc-100"
           }`}
         >
           ROC &amp; PR Curves
-        </button>
-        <button
-          onClick={() => setActiveTab("scenarios")}
-          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-            activeTab === "scenarios"
-              ? "bg-zinc-900 text-white shadow-xs"
-              : "text-zinc-600 hover:bg-zinc-100"
-          }`}
-        >
-          Scenario Breakdown Matrix ({scenarios.length})
         </button>
       </div>
 
@@ -430,6 +433,7 @@ export function BenchmarkSuiteView({ initialData, onBackToSetup }: BenchmarkSuit
               </thead>
               <tbody className="divide-y divide-zinc-100">
                 {scenarios.map((s: any) => {
+                  const isExpanded = expandedScenarioId === s.id;
                   const isTP = s.outcome === "TP";
                   const isTN = s.outcome === "TN";
                   const isFP = s.outcome === "FP";
@@ -438,54 +442,119 @@ export function BenchmarkSuiteView({ initialData, onBackToSetup }: BenchmarkSuit
                   const mi = s.model_inference || {};
 
                   return (
-                    <tr key={s.id} className="hover:bg-zinc-50/70 transition-colors">
-                      <td className="py-3 px-3 font-sans font-medium text-zinc-900 max-w-xs">
-                        <div className="font-bold text-zinc-900 text-xs">{s.name}</div>
-                        <div className="text-[10px] text-zinc-500 line-clamp-1 mt-0.5">{s.explanation}</div>
-                      </td>
-                      <td className="py-3 px-2 font-mono text-[10px]">
-                        <div className="flex flex-wrap gap-1">
-                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${gt.same_author ? "bg-emerald-50 text-emerald-800 border border-emerald-200" : "bg-rose-50 text-rose-800 border border-rose-200"}`}>
-                            {gt.same_author ? "Same Author" : "Diff Author"}
+                    <React.Fragment key={s.id}>
+                      <tr 
+                        onClick={() => setExpandedScenarioId(isExpanded ? null : s.id)}
+                        className={`hover:bg-zinc-50/90 transition-colors cursor-pointer ${isExpanded ? "bg-zinc-50/90 font-medium" : ""}`}
+                      >
+                        <td className="py-3 px-3 font-sans font-medium text-zinc-900 max-w-xs">
+                          <div className="flex items-center gap-1.5 font-bold text-zinc-900 text-xs">
+                            {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-zinc-500 shrink-0" /> : <ChevronDown className="w-3.5 h-3.5 text-zinc-400 shrink-0" />}
+                            <span>{s.name}</span>
+                          </div>
+                          <div className="text-[10px] text-zinc-500 line-clamp-1 mt-0.5 pl-5">{s.explanation}</div>
+                        </td>
+                        <td className="py-3 px-2 font-mono text-[10px]">
+                          <div className="flex flex-wrap gap-1">
+                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${gt.same_author ? "bg-emerald-50 text-emerald-800 border border-emerald-200" : "bg-rose-50 text-rose-800 border border-rose-200"}`}>
+                              {gt.same_author ? "Same Author" : "Diff Author"}
+                            </span>
+                            {gt.ai_generated && (
+                              <span className="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-800 border border-indigo-200 text-[9px]">
+                                AI Gen
+                              </span>
+                            )}
+                            {gt.copied_code && (
+                              <span className="px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 text-[9px]">
+                                Copied
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-3 px-2 font-mono text-[11px] text-zinc-700">
+                          {s.expected_behavioral_outcome || (gt.same_author ? "Benign" : "Anomaly")}
+                        </td>
+                        <td className="py-3 px-2 font-mono font-bold text-zinc-800">
+                          {((mi.calibrated_probability || s.calibrated_probability || 0) * 100).toFixed(1)}%
+                        </td>
+                        <td className="py-3 px-2 font-mono text-zinc-600">
+                          {mi.siamese_latent_distance !== undefined ? mi.siamese_latent_distance : s.siamese_latent_distance}
+                        </td>
+                        <td className="py-3 px-2 font-sans text-[11px] text-zinc-700">
+                          {mi.verdict || s.verdict}
+                        </td>
+                        <td className="py-3 px-2 text-right">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            isTP
+                              ? "bg-emerald-100 text-emerald-800"
+                              : isTN
+                              ? "bg-sky-100 text-sky-800"
+                              : isFP
+                              ? "bg-red-100 text-red-800"
+                              : "bg-amber-100 text-amber-800"
+                          }`}>
+                            {s.outcome}
                           </span>
-                          {gt.ai_generated && (
-                            <span className="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-800 border border-indigo-200 text-[9px]">
-                              AI Gen
-                            </span>
-                          )}
-                          {gt.copied_code && (
-                            <span className="px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 text-[9px]">
-                              Copied
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-3 px-2 font-mono text-[11px] text-zinc-700">
-                        {s.expected_behavioral_outcome || (gt.same_author ? "Benign" : "Anomaly")}
-                      </td>
-                      <td className="py-3 px-2 font-mono font-bold text-zinc-800">
-                        {((mi.calibrated_probability || s.calibrated_probability || 0) * 100).toFixed(1)}%
-                      </td>
-                      <td className="py-3 px-2 font-mono text-zinc-600">
-                        {mi.siamese_latent_distance !== undefined ? mi.siamese_latent_distance : s.siamese_latent_distance}
-                      </td>
-                      <td className="py-3 px-2 font-sans text-[11px] text-zinc-700">
-                        {mi.verdict || s.verdict}
-                      </td>
-                      <td className="py-3 px-2 text-right">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                          isTP
-                            ? "bg-emerald-100 text-emerald-800"
-                            : isTN
-                            ? "bg-sky-100 text-sky-800"
-                            : isFP
-                            ? "bg-red-100 text-red-800"
-                            : "bg-amber-100 text-amber-800"
-                        }`}>
-                          {s.outcome}
-                        </span>
-                      </td>
-                    </tr>
+                        </td>
+                      </tr>
+
+                      {/* Expanded Details Row */}
+                      {isExpanded && (
+                        <tr className="bg-zinc-50/90 border-b border-zinc-200">
+                          <td colSpan={7} className="p-4 text-xs text-zinc-700">
+                            <div className="bg-white border border-zinc-200 rounded-lg p-4 space-y-3 shadow-xs">
+                              <div>
+                                <h5 className="font-bold text-zinc-900 text-xs flex items-center gap-2">
+                                  <span>Scenario Specification &amp; Narrative:</span>
+                                  <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-zinc-100 text-zinc-600 font-semibold">
+                                    ID: {s.id}
+                                  </span>
+                                </h5>
+                                <p className="mt-1 leading-relaxed text-zinc-700 font-normal">
+                                  {s.explanation}
+                                </p>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 border-t border-zinc-100 text-[11px]">
+                                <div className="p-2.5 rounded bg-zinc-50 border border-zinc-100">
+                                  <span className="font-bold text-zinc-500 uppercase text-[9px] tracking-wider block mb-1">
+                                    Ground Truth Metadata
+                                  </span>
+                                  <div className="space-y-1 font-mono text-[10px]">
+                                    <div>Author Identity: <strong className="text-zinc-900">{gt.same_author ? "Same Author" : "Different Author"}</strong></div>
+                                    <div>AI Code Generated: <strong className="text-zinc-900">{gt.ai_generated ? "Yes" : "No"}</strong></div>
+                                    <div>Direct Code Reuse: <strong className="text-zinc-900">{gt.copied_code ? "Yes" : "No"}</strong></div>
+                                    <div>Baseline Sufficient: <strong className="text-zinc-900">{gt.baseline_sufficient !== false ? "Yes" : "No"}</strong></div>
+                                  </div>
+                                </div>
+
+                                <div className="p-2.5 rounded bg-zinc-50 border border-zinc-100">
+                                  <span className="font-bold text-zinc-500 uppercase text-[9px] tracking-wider block mb-1">
+                                    Observed Forensic Metrics
+                                  </span>
+                                  <div className="space-y-1 font-mono text-[10px]">
+                                    <div>Discontinuity P(x): <strong className="text-zinc-900">{((mi.calibrated_probability || s.calibrated_probability || 0) * 100).toFixed(1)}%</strong></div>
+                                    <div>Siamese Latent Dist: <strong className="text-zinc-900">{mi.siamese_latent_distance !== undefined ? mi.siamese_latent_distance : s.siamese_latent_distance}</strong></div>
+                                    <div>Structural Anomaly: <strong className="text-zinc-900">{mi.structural_deviation !== undefined ? mi.structural_deviation : (s.structural_deviation || "N/A")}</strong></div>
+                                  </div>
+                                </div>
+
+                                <div className="p-2.5 rounded bg-zinc-50 border border-zinc-100">
+                                  <span className="font-bold text-zinc-500 uppercase text-[9px] tracking-wider block mb-1">
+                                    Model Decision &amp; Evaluation
+                                  </span>
+                                  <div className="space-y-1 text-[10px]">
+                                    <div>Expected Outcome: <strong className="font-mono text-zinc-900">{s.expected_behavioral_outcome || (gt.same_author ? "Benign" : "Anomaly")}</strong></div>
+                                    <div>Observed Verdict: <strong className="font-bold text-indigo-700">{mi.verdict || s.verdict}</strong></div>
+                                    <div>Evaluation Matrix: <strong className={`font-mono font-bold ${isTP ? "text-emerald-700" : isTN ? "text-sky-700" : isFP ? "text-rose-700" : "text-amber-700"}`}>{s.outcome} ({s.outcome === "TP" ? "True Positive" : s.outcome === "TN" ? "True Negative" : s.outcome === "FP" ? "False Positive" : "False Negative"})</strong></div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </tbody>

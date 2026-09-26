@@ -73,6 +73,10 @@ $$\text{Adjusted Anomaly Score} = \text{Personal Deviation} \times (1 - \text{Co
 Phase 0, Phase 1, Phase 2, Phase 3, and Phase 4 (Temporal Authorship Modeling & Change-Point Detection) Complete! Ready for Phase 5 (Cross-Language AST Parity & AST Normalization).
 
 ## Completed Changes:
+- (2026-09-26 12:55) **Workstation UI Polish, Browser History Navigation & Interactive Benchmark Matrix:**
+  - **Interactive Scenario Breakdown Matrix:** Set `Scenario Breakdown Matrix (14)` as the default primary tab in [`BenchmarkSuiteView.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/components/BenchmarkSuiteView.tsx). Made scenario table rows interactive with click-to-expand drawers displaying full scenario explanations, ground truth metadata, and model inferences without text clipping.
+  - **Browser Back Button State Sync:** Integrated `popstate` event listener and history state sync in [`page.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/app/page.tsx) so browser Back (`←`) and Forward (`→`) buttons transition between application states without exiting the platform.
+  - **Clean Header Controls:** Streamlined the top header bar by removing the redundant top evaluation lab button while maintaining the dedicated intake banner on the main workstation setup view.
 - (2026-09-26 12:28) **Dedicated Scientific Evaluation Lab Standalone Separation & Clean Navigation:**
   - Separated the Scientific Evaluation Lab into a dedicated, standalone page view (`appState === "eval_lab"`) rendering [`BenchmarkSuiteView.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/components/BenchmarkSuiteView.tsx).
   - Removed stage 9 (`Validation & Hardening`) from [`PipelineNav.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/components/PipelineNav.tsx) so the student case investigation workflow focuses 100% on the investigated student's evidence across 8 dedicated pipeline stages.
@@ -230,10 +234,15 @@ Created comprehensive test suite with `scripts/generate_test_zips.py` for 8 dist
 
 
 ## Next Pending Work:
-- Cohort normalization: compare a student's CodeDNA against a class/course baseline, not just their own history.
+- *Cohort Normalization Engine Fully Verified:* Master LMS ZIP Ingestion, GitHub Classroom Auto-Fetch, and Instructor Starter Template Subtraction are 100% operational in backend & frontend.
 
 ## Known Issues / Need To make these updates:
-- *None currently open.* CodeDNA Scientific Evaluation Lab & 14-scenario benchmark framework fully operational!
+- *None currently open.* All requested UI updates, scenario matrix drawer expansions, browser history back-button synchronization, and tab reordering completed.
+
+### Clarification — Re-Run Suite Button:
+- **What does the Re-Run Suite button do?**
+  Clicking **"Re-Run Suite"** invokes `GET /api/benchmarks/run` on the FastAPI backend server (`benchmark_runner.py`). It dynamically executes all 14 controlled ground-truth test cases through the feature extractor, Siamese deep projection head, and Platt logistic calibrator, recalculating live empirical accuracy (92.9%), confusion matrix, and ROC/PR curve points in real-time. 
+
 
 
 ## Architecture Vulnerabilities, Gotchas & Known Risk Matrix:

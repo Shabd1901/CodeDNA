@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Upload, 
@@ -89,6 +89,22 @@ export default function Home() {
     { label: "Uploading template",      detail: "Processing starter code for template subtraction…" },
     { label: "Running comparison",      detail: "Calculating 10-vector deviation scores against baseline…" },
   ];
+
+  // Browser History & Back-Button Navigation Sync
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      if (e.state && e.state.appState) {
+        setAppState(e.state.appState);
+        if (e.state.pipelineStage) {
+          setPipelineStage(e.state.pipelineStage);
+        }
+      } else {
+        setAppState("idle");
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   const handleNewInvestigation = async () => {
     if (sessionId) {
@@ -393,17 +409,6 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-2.5 text-xs font-mono">
-          <button
-            onClick={openEvaluationLab}
-            title="Open Scientific Evaluation Lab & 14-Scenario Benchmark Suite"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 font-semibold text-xs shadow-xs transition-colors cursor-pointer"
-          >
-            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>Scientific Evaluation Lab</span>
-            <span className="px-1.5 py-0.5 rounded-full bg-emerald-200 text-emerald-950 text-[10px] font-mono font-bold">
-              14 Tests
-            </span>
-          </button>
           <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-100 border border-zinc-200 text-zinc-600">
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
             Engine Ready
