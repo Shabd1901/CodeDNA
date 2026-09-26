@@ -127,7 +127,7 @@ export function MetricComparisonGrid({
               <span>Naming Conventions Breakdown</span>
             </h4>
             <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-zinc-100 text-zinc-700">
-              Dev: {Math.round(forensics?.naming_deviation || 0)}%
+              Deviation: {Math.round(forensics?.naming_deviation || 0)}%
             </span>
           </div>
           <div className="grid grid-cols-2 gap-4 text-xs">
@@ -176,7 +176,7 @@ export function MetricComparisonGrid({
               <span>Complexity & Distribution Shifts</span>
             </h4>
             <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-zinc-100 text-zinc-700">
-              Dev: {Math.round(forensics?.complexity_deviation || 0)}%
+              Deviation: {Math.round(forensics?.complexity_deviation || 0)}%
             </span>
           </div>
           <div className="grid grid-cols-2 gap-4 text-xs">
@@ -222,7 +222,7 @@ export function MetricComparisonGrid({
               <InfoHelper termKey="dependency_discontinuity" />
             </h4>
             <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-zinc-100 text-zinc-700">
-              Dev: {Math.round(forensics?.dependency_deviation || 0)}%
+              DevDeviation: {Math.round(forensics?.dependency_deviation || 0)}%
             </span>
           </div>
 
@@ -270,7 +270,7 @@ export function MetricComparisonGrid({
               <span>Architectural Paradigm Shift</span>
             </h4>
             <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-zinc-100 text-zinc-700">
-              Dev: {Math.round(forensics?.architecture_deviation || 0)}%
+              Deviation: {Math.round(forensics?.architecture_deviation || 0)}%
             </span>
           </div>
 

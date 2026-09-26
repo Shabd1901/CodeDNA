@@ -261,6 +261,10 @@ errors like -> CodeDNA Comparison Error
 Submission contains no usable source code files.
 this even i couldnt understand
 also this error happened when i uploaded one student submission and Instructor Starter Template and 9 historical baselines and 1 github repo. i dont know what caused the error and how do i fix it.
+also specify the errors such as the AI Forensic Reasoning Error
+
+also tell me in chat what is the meaning of this error
+AI analysis failed: All Gemini models in fallback chain failed. Last error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 250000, model: gemini-3.5-flash\nPlease retry in 44.472263244s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_input_token_count', 'quotaId': 'GenerateContentInputTokensPerModelPerMinute-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '250000'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '44s'}]}}
 
 - when uploading stages projects, the space that shows all the projects, it expands based on that 
 i need it to expand upto 3 lines and then have the scroll bar for it so it doesnt take the whole page when i have many projects
@@ -278,6 +282,28 @@ Instructor Starter Template: like just an example project of this so it can matc
 Master Class/Cohort Zip 
 
 - remove the cards displaying the redirection buttons siamese latent space and the milestone timeline on the overview page.
+
+- The case ID generated on the dossier, does it have any meaning? or is it just randomly generated?
+
+- The main page Drop historical baseline ZIP should display that the user can upload upto X amount of files.
+
+- Most importantly make this is a web, mobile interface so compatible and laptop/pc/tab/mobile responsive. so make sure the border margins and paddings and stuff should be properly set and responsive and i mean all pages and sections and graphs and any possible thing.
+
+- for the info icons that pop up the modal stating the explanation. i need them removed. i need it to work like if i hover over it, it shows the message "Click for technical explanation of __" i need the technical explanation in that field, removing the modals and stuff and keeping it clean and minimal.
+
+- if for a project i submit, the CodeDNA Consistency is 100/100, then how come Flagged Code Regions is generated. also File-Level Composite Anomaly Scores is text.... (so i am unable to see the whole text)
+
+- export glitch:
+Print simple summary and extended dossier prints the same things. i need the extended one to print all the sections like not the page but the generated content should be printed on it and not just capture the page. so it shouldnt just capture what's on the screen, but generate the report of the evaluation so all the Baseline DNA, comparison etc etc. so this wouldnt just print up the same cards and clutter but actually print a forensic report. 
+Remove the localhost:3000 from the footer.
+None of the reports shows which file was evaluated (i dont need what was used as baseline yet because there maybe too many files)
+The extended report should check whether we generated a AI resoning and if yes, then include that in the report
+the Print/Export PDF button should download pdf of the Simple Summary but the Export Button should show the options to download any of them 
+So basically the simple report would donwload the dossier and the extended would generate report of the whole whole sections of all (except for the ones you think arent required on the report)
+the report shouldnt print the header part of the Forensic Case Audit Student Authorship Investigation, profile: etc etc the whole card
+make sure the header is not the printed version of what's displayed on the screen.
+when printing the reports, the Confidential Academic Integrity Dossier and the Evaluator Signature
+Date Reviewed should be on the last page of the report and right above the footer. so you have to make sure that it understands it dynamically based on the size of the report and not overlap the content just make another page for it if the space is available. can this happen?
 
 ### Clarification — Re-Run Suite Button:
 - **What does the Re-Run Suite button do?**
