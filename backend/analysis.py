@@ -642,25 +642,97 @@ def compare_codedna(baseline_dna: Dict[str, Any], submission_dna: Dict[str, Any]
     b_p90_comp = b_comp.get("p90", 10)
     b_mean_loc = baseline_dna.get("loc_distribution", {}).get("mean", 50)
     
+    def _extract_real_snippet(rel_path: str, target_line: int):
+        if not sub_dir or not rel_path:
+            return []
+        full_path = os.path.join(sub_dir, rel_path)
+        if not os.path.exists(full_path):
+            return []
+        try:
+            with open(full_path, "r", encoding="utf-8", errors="ignore") as f:
+                src_lines = f.read().splitlines()
+            start = max(0, target_line - 4)
+            end = min(len(src_lines), target_line + 4)
+            snippet = []
+            for i in range(start, end):
+                l_num = i + 1
+                line_text = src_lines[i]
+                snippet.append({
+                    "lineNum": l_num,
+                    "code": line_text,
+                    "isFlagged": (l_num == target_line),
+                    "isComment": line_text.strip().startswith(("#", "//", "/*", "*"))
+                })
+            return snippet
+        except Exception:
+            return []
+
     for f_metrics in submission_dna.get("file_metrics", []):
         f_score = 0
-        if f_metrics.get("loc", 0) > b_mean_loc * 3: f_score += 30
+        rel_fpath = f_metrics.get("filepath", "")
+        full_fpath = os.path.join(sub_dir, rel_fpath) if sub_dir and rel_fpath else None
+        
+        # Check for explicit AI generation patterns in source lines
+        if f_metrics.get("ai_patterns", 0) > 0 and full_fpath and os.path.exists(full_fpath):
+            try:
+                with open(full_fpath, "r", encoding="utf-8", errors="ignore") as f:
+                    for l_idx, line in enumerate(f.readlines(), start=1):
+                        if RE_AI_PATTERN.search(line):
+                            f_score += 40
+                            snippet = _extract_real_snippet(rel_fpath, l_idx)
+                            suspicious_regions.append({
+                                "file": rel_fpath,
+                                "line": l_idx,
+                                "reason": "Explicit AI generation disclaimer or conversational LLM marker in source",
+                                "score": 85,
+                                "code_snippet": snippet
+                            })
+                            break
+            except Exception:
+                pass
+
+        # Check for dangerous bare excepts or eval introduced
+        if f_metrics.get("bare_excepts", 0) > 0 and baseline_dna.get("code_quality_error_patterns", {}).get("bare_excepts", 0) == 0 and full_fpath and os.path.exists(full_fpath):
+            try:
+                with open(full_fpath, "r", encoding="utf-8", errors="ignore") as f:
+                    for l_idx, line in enumerate(f.readlines(), start=1):
+                        if RE_BARE_EXCEPT.search(line):
+                            f_score += 20
+                            snippet = _extract_real_snippet(rel_fpath, l_idx)
+                            suspicious_regions.append({
+                                "file": rel_fpath,
+                                "line": l_idx,
+                                "reason": "Introduced dangerous bare except clause not present in historical baseline",
+                                "score": 40,
+                                "code_snippet": snippet
+                            })
+                            break
+            except Exception:
+                pass
+
+        if f_metrics.get("loc", 0) > b_mean_loc * 3:
+            f_score += 30
         
         funcs = f_metrics.get("function_details", [])
         for fn in funcs:
             fn_score = 0
             if fn["complexity"] > b_p90_comp * 1.5:
                 fn_score += 50
+                snippet = _extract_real_snippet(rel_fpath, fn["line"])
                 suspicious_regions.append({
-                    "file": f_metrics["filepath"], "line": fn["line"],
-                    "reason": f"Function {fn['name']} complexity ({fn['complexity']}) exceeds baseline P90 ({b_p90_comp})"
+                    "file": rel_fpath,
+                    "line": fn["line"],
+                    "function": fn["name"],
+                    "reason": f"Function {fn['name']} complexity ({fn['complexity']}) exceeds baseline P90 ({b_p90_comp:.1f})",
+                    "score": 50,
+                    "code_snippet": snippet
                 })
             if fn_score > 0:
-                per_function_scores.append({"file": f_metrics["filepath"], "function": fn["name"], "anomaly_score": fn_score})
+                per_function_scores.append({"file": rel_fpath, "function": fn["name"], "anomaly_score": fn_score})
                 
-        f_score += sum(fn["anomaly_score"] for fn in per_function_scores if fn["file"] == f_metrics["filepath"])
+        f_score += sum(fn["anomaly_score"] for fn in per_function_scores if fn["file"] == rel_fpath)
         if f_score > 0:
-            per_file_scores.append({"file": f_metrics["filepath"], "anomaly_score": min(100, f_score)})
+            per_file_scores.append({"file": rel_fpath, "anomaly_score": min(100, f_score)})
             
     deviations["per_file_anomaly_scores"] = sorted(per_file_scores, key=lambda x: x["anomaly_score"], reverse=True)
     deviations["per_function_anomaly_scores"] = sorted(per_function_scores, key=lambda x: x["anomaly_score"], reverse=True)
@@ -684,37 +756,43 @@ def compare_codedna(baseline_dna: Dict[str, Any], submission_dna: Dict[str, Any]
 
     b_reliability = baseline_dna.get("baseline_reliability_score", 0)
     
-    # Fix 3: AI Author Profile Tiers
+    # AI Author Profile Tiers:
     # Tier A: Baseline already has AI patterns AND submission also has them → "Consistent AI Author"
     # Tier B: Baseline is clean BUT submission introduces AI patterns → "Sudden AI Introduction"
-    # Tier C: No AI patterns detected in either → "No AI signal"
+    # Tier C: No AI patterns and high CodeDNA similarity (>= 60) → "Clean Student / Consistent Human Author"
+    # Tier D: Low CodeDNA similarity (< 45) or sudden sophistication leap → "High Behavioral Drift"
     baseline_already_ai = b_ai_indicators > 0
     submission_has_ai   = s_ai_indicators > 0 or sudden_sophistication == "High"
+    similarity_score    = deviations["overall_behavioral_stylistic_deviation_score"]
 
     if baseline_already_ai and submission_has_ai:
         ai_author_profile = "Consistent AI Author"
         ai_signals = "High"
-        concern_reason = "Both baseline and submission exhibit AI-associated patterns. This student may consistently use AI tools. Deviation from their own baseline is low — investigation should focus on AI policy compliance, not substitution fraud."
+        concern_reason = "Both baseline and submission exhibit AI-associated patterns. This student consistently uses AI tools. Deviation from their own baseline is low — investigation should focus on AI policy compliance, not substitution fraud."
     elif not baseline_already_ai and submission_has_ai:
         ai_author_profile = "Sudden AI Introduction"
         ai_signals = "High"
         concern_reason = "Baseline shows no AI patterns, but submission introduces them suddenly. This is a stronger forensic signal of possible substitution."
-    elif not baseline_already_ai and not submission_has_ai and deviations["overall_behavioral_stylistic_deviation_score"] < 40:
-        ai_author_profile = "Low Evidence"
+    elif not baseline_already_ai and not submission_has_ai and similarity_score >= 60.0:
+        ai_author_profile = "Clean Student / Consistent Human Author"
         ai_signals = "Low"
-        concern_reason = "Submission behaviorally matches the baseline. No forensic anomalies detected."
+        concern_reason = "Submission behaviorally matches the historical baseline. No forensic anomalies or external substitution patterns detected."
+    elif similarity_score < 45.0 or sudden_sophistication == "High":
+        ai_author_profile = "High Behavioral Drift"
+        ai_signals = "Moderate"
+        concern_reason = "Severe behavioral divergence from historical baseline across multiple structural and architectural dimensions."
     else:
         ai_author_profile = "Uncertain"
         ai_signals = "Moderate"
         concern_reason = "Partial deviations detected. Insufficient evidence to conclude either way."
 
     baseline_contamination = "High" if baseline_already_ai else "Low"
-    authorship_ev = "Strong" if deviations["overall_behavioral_stylistic_deviation_score"] > 75 else ("Moderate" if deviations["overall_behavioral_stylistic_deviation_score"] > 50 else "Weak")
+    authorship_ev = "Strong" if similarity_score > 75 else ("Moderate" if similarity_score > 50 else "Weak")
     
     # Overall concern respects the tiered model
     if ai_author_profile == "Consistent AI Author":
-        concern = "Moderate"  # Not "High" — this is a policy question, not substitution
-    elif ai_author_profile == "Sudden AI Introduction":
+        concern = "Moderate"  # Policy question, not substitution
+    elif ai_author_profile in ("Sudden AI Introduction", "High Behavioral Drift"):
         concern = "High"
     elif authorship_ev == "Weak":
         concern = "Moderate"

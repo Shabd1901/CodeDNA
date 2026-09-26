@@ -3,7 +3,7 @@ import httpx
 import time
 
 TEST_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "test_data")
-BASE_URL = "http://localhost:8001"
+BASE_URL = os.getenv("API_URL", "http://localhost:8000")
 
 def run_test(scenario_name, baseline_zip, submission_zip, template_zip=None):
     print(f"--- Running Test: {scenario_name} ---")

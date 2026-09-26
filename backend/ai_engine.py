@@ -90,7 +90,7 @@ async def generate_forensic_report(comparison_data: dict) -> tuple[dict, str]:
     import asyncio
 
     primary_model = (os.getenv("GEMINI_MODEL") or "gemini-3.5-flash-lite").strip()
-    fallback_chain = [primary_model, "gemini-3.5-flash-lite", "gemini-3.5-flash"]
+    fallback_chain = [primary_model, "gemini-3.5-flash-lite", "gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-1.5-flash"]
     candidate_models = []
     for m in fallback_chain:
         if m not in candidate_models:
