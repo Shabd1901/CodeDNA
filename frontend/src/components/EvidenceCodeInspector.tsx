@@ -130,7 +130,7 @@ export function EvidenceCodeInspector({
                   "No suspicious code regions match the search filter."
                 ) : (
                   <span className="text-emerald-700 font-medium">
-                    ✓ Clean syntactic baseline alignment. All functions conform to historical bounds.
+                    ✓ Clean syntactic baseline alignment. All functions confirm to historical bounds.
                   </span>
                 )}
               </div>
