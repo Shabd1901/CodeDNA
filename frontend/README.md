@@ -1,70 +1,110 @@
 # CodeDNA — Forensic Workstation Frontend
 
-The CodeDNA Forensic Workstation is a Next.js 16 (Turbopack) single-page application engineered for academic integrity officers, department chairs, and computer science educators. It provides interactive, multi-dimensional code authorship investigation, evidence-weighted qualitative reasoning, and printable forensic case dossiers.
+> **Interactive Client for Multi-Vector Student Code Authorship Investigation**  
+> Built with Next.js 16 (App Router, Turbopack), TypeScript, Tailwind CSS, Lucide Icons, Recharts, and Framer Motion.  
+> **Primary Documentation:** [../README.md](../README.md) | [../docs/architecture.md](../docs/architecture.md)
 
 ---
 
-## Key Capabilities
+## 1. Overview & Workstation Experience
 
-1. **Intake & Multi-Modal Ingestion**:
-   - **Personal Historical Archives**: Drag-and-drop up to 20 reference ZIP archives or synchronize directly with student GitHub profiles (with real-time domain and handle typo validation).
-   - **Cohort LMS Master Class Ingestion**: Bulk ingest class exports from Canvas, Blackboard, or Moodle to compile class-wide baseline percentiles.
-   - **Instructor Starter Template Filter**: Attach skeleton starter code to automatically subtract boilerplate AST nodes before deviation calculation.
-   - **One-Click Scientific Evaluation Lab**: Instant demonstration access to 14 pre-computed ground-truth academic integrity scenarios without requiring manual file uploads.
+The CodeDNA Forensic Workstation is a professional single-page web application designed for academic integrity panels, computer science faculty, and teaching assistants. It delivers an intuitive, multi-stage forensic examination workflow with zero terminal requirements for the evaluator.
 
-2. **9-Stage Forensic Investigation Pipeline**:
-   - **Stage 1 (Overview)**: Executive summary, multi-vector radar graph, authorial profiling (`Consistent AI Author` vs `Sudden AI Introduction`), and baseline reliability scores.
-   - **Stage 2 (Baseline Profile)**: Deep breakdown of historical repository corpus, LOC distributions, complexity percentiles, naming conventions, and language coverage.
-   - **Stage 3 (CodeDNA Radar)**: Interactive Recharts radar visualization contrasting 8 stylistic and structural invariant dimensions against historical baselines.
-   - **Stage 4 (AST Metrics)**: Detailed tabular and distribution shift comparison, including cross-language AST normalization parity for multi-language projects.
-   - **Stage 5 (Code Inspector)**: Split-pane syntax-highlighted code inspector highlighting exact suspicious line ranges (complexity anomalies, introduced bare excepts, AI conversational disclaimers).
-   - **Stage 6 (ML Projections)**: 24-dimensional Siamese contrastive neural style projection with Platt logistic probability calibration and 95% confidence intervals.
-   - **Stage 7 (Temporal Evolution)**: Longitudinal CUSUM change-point time-series tracking historical assignments up to the investigated submission.
-   - **Stage 8 (Case Dossier)**: Official printable case report with dual export modes (Simple Executive Brief vs Extended Forensic Dossier) formatted for academic hearings.
-   - **Stage 9 (Validation & Hardening)**: Full empirical benchmark suite displaying confusion matrix, ROC/PR curves, and 14 controlled scenario outcomes.
-
-3. **Google Gemini Flash Integration**:
-   - Evidence-weighted forensic synthesis evaluating qualitative findings, counter-evidence, and false-positive guardrails.
-   - VivaGuard Oral Defense Script Generator producing structured questions and expected answers for student interviews.
+### Core Workstation Capabilities:
+- **Intake & Multi-Modal Ingestion:**
+  - **Single Student (Personal Baseline):** Drag-and-drop up to 20 reference ZIP archives or synchronize with public GitHub profiles.
+  - **Master LMS ZIP Ingestion:** Ingest bulk class archives from Canvas, Blackboard, or Moodle.
+  - **Instructor Starter Template Filter:** Ingest starter skeleton code to subtract boilerplate AST nodes automatically.
+  - **One-Click Scientific Evaluation Lab:** Instant access to 14 controlled benchmark scenarios.
+- **9-Stage Investigation Pipeline:**
+  1. `Overview`: High-level diagnosis, 8-metric summary cards, and authorial profile badge (`Clean Student`, `Consistent AI Author`, or `Sudden AI Introduction`).
+  2. `Baseline Profile`: Breakdown of historical corpus, LOC distributions, complexity percentiles, naming patterns, and language coverage.
+  3. `CodeDNA Radar`: Interactive 8-axis Recharts radar chart comparing submission metrics against the historical baseline.
+  4. `AST Metrics`: Tabular comparison of AST node distributions, cyclomatic shifts, and cross-language invariant discounts.
+  5. `Code Inspector`: Split-pane syntax viewer pinpointing exact authentic code lines exceeding historical P90 thresholds or exhibiting explicit AI conversational markers.
+  6. `ML Projections`: 24-dimensional Siamese contrastive neural projection with Platt logistic calibrated probabilities and 95% confidence intervals.
+  7. `Temporal Evolution`: Longitudinal CUSUM change-point time-series tracking skill acquisition across sequential submissions.
+  8. `Case Dossier`: Formal printable case report with dual export modes (Simple Executive Brief vs Extended Forensic Dossier).
+  9. `Validation & Hardening`: Standalone benchmark runner displaying live empirical accuracy (92.9%), 0% FPR, and ROC curves.
+- **Google Gemini Flash Integration:**
+  - On-demand qualitative evidence weighting, counter-evidence analysis, and VivaGuard oral defense scripts.
 
 ---
 
-## Getting Started
+## 2. Quick-Start (Frontend Standalone)
 
 ### Prerequisites
 - Node.js 18+ and npm
-- Running CodeDNA FastAPI backend (default: `http://localhost:8000`)
+- Running CodeDNA FastAPI backend on port `8000` (see [../README.md](../README.md))
 
-### Installation & Launch
+### Installation & Run
 ```bash
 # Install dependencies
 npm install
 
 # Start development server
 npm run dev
-
-# Or build for production
-npm run build
-npm start
 ```
-The application will be accessible at [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### Environment Configuration
-Copy `.env.example` to `.env.local` to override the default backend URL:
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
+### Production Build
+```bash
+# Build optimized production bundle
+npm run build
+
+# Start production server
+npm start
 ```
 
 ---
 
-## Keyboard Navigation
-The workstation supports rapid single-key navigation across the investigation pipeline:
-- `1` : Overview Dashboard
-- `2` : Baseline Profile
-- `3` : CodeDNA Radar
-- `4` : AST Metrics
-- `5` : Code Inspector
-- `6` : ML Projections
-- `7` : Temporal Shifts
-- `8` : Case Dossier
-- `9` : Validation & Hardening Lab
+## 3. Environment & Proxy Configuration
+
+During local development, Next.js automatically proxies `/api/:path*` requests to the local FastAPI backend (`http://127.0.0.1:8000`) via `next.config.ts`, ensuring zero CORS friction.
+
+If running the backend on a non-default host, set:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+In production on Vercel, `NEXT_PUBLIC_API_URL` defaults to `""` (relative origin), seamlessly routing requests through the unified monorepo gateway.
+
+---
+
+## 4. Workstation Keyboard Navigation
+
+| Key | Stage | View Description |
+| :---: | :--- | :--- |
+| `1` | **Overview** | Executive diagnostic finding, author profiling & 8-metric summary |
+| `2` | **Baseline Profile** | Historical repository corpus, complexity percentiles, and naming habits |
+| `3` | **CodeDNA Radar** | Multi-vector 8-axis radar comparison chart |
+| `4` | **AST Metrics** | Tabular AST shifts and cross-language invariant normalization |
+| `5` | **Code Inspector** | Split-pane authentic code viewer with highlighted anomaly lines |
+| `6` | **ML Projections** | 24-dim Siamese projection & Platt calibrated probability (95% CI) |
+| `7` | **Temporal Evolution** | Longitudinal CUSUM change-point time-series graph |
+| `8` | **Case Dossier** | Formal printable case report and hearing sign-off sheet |
+| `9` | **Validation Lab** | Live 14-scenario empirical benchmark lab and ROC curve suite |
+
+---
+
+## 5. Component Architecture
+
+```
+frontend/src/
+├── app/
+│   ├── layout.tsx               # Root layout, Geist font configuration, metadata
+│   ├── page.tsx                 # Primary state machine, pipeline controller, intake cards
+│   ├── globals.css              # Tailwind base, custom scrollbars, print stylesheets
+│   └── icon.svg                 # CodeDNA branded double-helix favicon
+└── components/
+    ├── AIForensicPanel.tsx      # Google Gemini Flash reasoning view & VivaGuard scripts
+    ├── BaselineProfileView.tsx  # Historical corpus & statistical distribution view
+    ├── BenchmarkSuiteView.tsx   # Empirical benchmark lab, confusion matrix & ROC curves
+    ├── EvidenceCodeInspector.tsx# Syntax-highlighted authentic code diff inspector
+    ├── ForensicDossierView.tsx  # Printable formal hearing case dossier (A4 formatted)
+    ├── MetricComparisonGrid.tsx # Tabular 8-vector AST deviation breakdown
+    ├── MLIntelligenceView.tsx   # Contrastive Siamese hypersphere projection view
+    ├── PersistentInvestigationContext.tsx # Sticky top action bar & stage switcher
+    ├── PipelineNav.tsx          # 9-stage pipeline navigation controller
+    ├── RadarDeviationChart.tsx  # Recharts 8-axis polygon visualization
+    └── TemporalEvolutionView.tsx# Longitudinal CUSUM time-series chart
+```

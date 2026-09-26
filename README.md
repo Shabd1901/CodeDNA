@@ -1,23 +1,41 @@
-# CodeDNA — Forensic Authorship Workstation
+# CodeDNA — Forensic Code Authorship Workstation
 
 > **Multi-Vector Student Code Authorship Investigation & Academic Integrity Platform**  
-> Moving beyond generic "AI probability" detectors to longitudinal, evidence-based authorial verification.
+> Moving beyond generic, uncalibrated "AI probability" detectors to longitudinal, evidence-based authorial verification.
+
+[![Live Deployment](https://img.shields.io/badge/Vercel-Live%20Demo-black?style=flat&logo=vercel)](https://codedna-orchestrate.vercel.app/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)](https://python.org)
+[![Next.js](https://img.shields.io/badge/Next.js-16.3-black?logo=next.js)](https://nextjs.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-1.0-009688?logo=fastapi)](https://fastapi.tiangolo.com)
+[![Google Gemini](https://img.shields.io/badge/AI-Gemini%20Flash-4285F4?logo=google)](https://ai.google.dev/)
 
 ---
 
-## 1. Executive Summary & Core Philosophy
+## Quick Links
 
-Traditional code plagiarism detectors (e.g., token-based string matchers) and contemporary "AI code detectors" fail in academic environments for three critical reasons:
-1. **High False Positive Rates (FPR)**: Stylistic formatters (Prettier, Black) and standard course templates trigger false alarms, unfairly penalizing students.
-2. **Baseline Contamination**: When students consistently use AI tools, binary AI classifiers report high AI presence without identifying whether the work represents sudden substitution fraud or permitted assistance.
-3. **Lack of Forensic Defensibility**: A black-box percentage score (e.g., "87% AI-generated") cannot withstand scrutiny in an academic integrity hearing or viva defense.
-
-**CodeDNA resolves this by evaluating Longitudinal Stylistic Invariants**:
-Rather than comparing a student's submission against the entire internet or an uncalibrated LLM detector, CodeDNA compares a student's submission against **their own verified historical programming baseline** across 8 deterministic AST vectors, contrastive Siamese metric projections, temporal CUSUM change-point analysis, and evidence-weighted Gemini Flash forensic reasoning.
+- **Live Deployed Application:** [https://codedna-orchestrate.vercel.app/](https://codedna-orchestrate.vercel.app/)
+- **Interactive API Documentation:** Available at `http://localhost:8000/docs` when running backend locally
+- **Architecture Specification:** [docs/architecture.md](docs/architecture.md)
+- **Product Requirements Document (PRD):** [docs/PRD.md](docs/PRD.md)
+- **Technical Requirements Document (TRD):** [docs/TRD.md](docs/TRD.md)
+- **Engineering Explainer & Changelog:** [docs/explainer.md](docs/explainer.md)
+- **Evaluator Audit Pass 1:** [docs/projecteval1.md](docs/projecteval1.md)
+- **Evaluator Audit Pass 2:** [docs/projecteval2.md](docs/projecteval2.md)
+- **Frontend Overview:** [frontend/README.md](frontend/README.md)
 
 ---
 
-## 2. System Architecture
+## 1. Problem Statement & Philosophy
+
+Traditional plagiarism tools (e.g. token-based string matchers like MOSS) and contemporary "AI code detectors" fail in modern computing education for three reasons:
+
+1. **High False Positive Rates (FPR):** Standard formatters (Prettier, Black), linters, and instructor-supplied boilerplate routinely trigger false alarms, penalizing innocent students.
+2. **Baseline Contamination:** When students routinely use AI tools across all projects, binary detectors flag high AI presence without distinguishing between sudden contract-cheating/substitution fraud vs. permitted continuous tool usage.
+3. **Lack of Forensic Defensibility:** A black-box percentage score (e.g. *"87% AI-generated"*) cannot withstand legal or academic scrutiny in formal academic integrity hearings or viva voce examinations.
+
+### The CodeDNA Solution: Longitudinal Stylistic Invariants
+Rather than comparing student code against the entire internet or relying on an uncalibrated LLM classifier, CodeDNA compares a submission against **the student's own verified historical programming baseline**. It evaluates multi-dimensional Abstract Syntax Tree (AST) invariants, 24-dimensional contrastive Siamese metric projections, temporal CUSUM change-point shifts, and structured Google Gemini Flash forensic reasoning.
 
 ```
                     ┌───────────────────────────────────────────────┐
@@ -43,8 +61,8 @@ Rather than comparing a student's submission against the entire internet or an u
                                             │
                                             ▼
                          ┌─────────────────────────────────────┐
-                         │   Phase 3: Google Gemini Flash      │
-                         │     Forensic Reasoning Engine       │
+                         │    Phase 3: Google Gemini Flash     │
+                         │      Forensic Reasoning Engine      │
                          ├─────────────────────────────────────┤
                          │ • Evidence-Weighted Synthesis       │
                          │ • Contradictory Evidence & Guardrails│
@@ -66,28 +84,185 @@ Rather than comparing a student's submission against the entire internet or an u
 
 ---
 
-## 3. Key Differentiators
+## 2. Key Features
 
-| Capability | Generic Detectors | CodeDNA Forensic Workstation |
-| :--- | :--- | :--- |
-| **Verification Basis** | Global training set / ungrounded LLM | Student's own verified historical baseline |
-| **False Positive Rate** | Uncontrolled (often 10–30%) | **0.0% Empirical FPR** on verified benign student work |
-| **Starter Code Handling**| Flags boilerplate as copied code | Subtractive AST filter removes instructor templates |
-| **Multi-Language Support** | Separate isolated checks | Cross-language invariant normalization (Python, JS, TS, Java, C) |
-| **Defense in Hearings** | Unverifiable probability number | Concrete line-by-line evidence + custom VivaGuard interview scripts |
-| **Auditability** | Closed-box | 100% reproducible open-source evaluation suite |
+- **8-Vector Deterministic AST Invariants:** Mathematically quantifies structural syntax nodes, cyclomatic complexity distributions (P75/P90/median), naming style ratios (snake_case, camelCase, PascalCase), indentation cadence, error-handling habits, dependency adoption, and OOP inheritance tendencies.
+- **Contrastive Siamese Neural Style Projection:** Projects code metrics onto a 24-dimensional normalized latent hypersphere to measure behavioral distance independently of variable renaming or formatting perturbation.
+- **Platt Logistic Calibration (95% CI):** Calibrates raw anomaly scores into statistically bounded posterior probabilities \(P(\text{Discontinuity} \mid \text{DNA})\) with Wald confidence intervals.
+- **Temporal CUSUM Change-Point Detection:** Distinguishes between natural, gradual skill acquisition over a semester versus abrupt, single-submission substitution jumps.
+- **Cohort Normalization & Starter Template Filter:** Ingests LMS exports (Canvas, Blackboard, Moodle) and subtracts instructor starter boilerplate AST nodes before computing student deviation scores, eliminating false positives.
+- **Cross-Language Invariant Normalization:** Normalizes language-specific syntax conventions when comparing baselines in one language (e.g. Python) against a submission in another (e.g. JavaScript or Java).
+- **Categorical Signal Safety Guardrails:** Strictly replaces unscientific percentages with clear categorical signals: *Authorship Evidence (Strong/Moderate/Weak)*, *Baseline Reliability (High/Moderate/Low)*, and *Overall Investigation Concern (High/Moderate/Low)*.
+- **Evidence-Weighted Gemini Flash Reasoning:** Synthesizes deterministic signals into an executive finding with mitigating factors and viva voce oral interview questions (VivaGuard).
+- **Interactive Multi-Stage Workstation & Printable Dossier:** 9-stage investigation pipeline with interactive radar chart, split-pane syntax-highlighted code inspector, and print-ready formal case dossier.
 
 ---
 
-## 4. Repository Structure
+## 3. Tech Stack
+
+| Layer | Technologies | Purpose |
+| :--- | :--- | :--- |
+| **Frontend** | Next.js 16 (App Router), TypeScript, Tailwind CSS, Lucide Icons, Recharts, Framer Motion | High-performance interactive workstation UI, responsive visualizations, A4 print styles |
+| **Backend** | Python 3.10+, FastAPI, Uvicorn, httpx, Pydantic | High-speed REST API, multi-part file ingestion, deterministic calculation |
+| **Code Analysis** | Python `ast`, regex lexical parser, statistical distribution engine | Deterministic syntax extraction, complexity calculations, formatting fingerprinting |
+| **ML Engine** | NumPy, custom contrastive Siamese projection, Platt logistic calibrator, CUSUM analyzer | Invariant metric projection, uncertainty estimation, temporal change-point detection |
+| **AI Reasoning** | Google GenAI SDK (`google-genai`), Gemini 2.5/3.5 Flash | Qualitative evidence weighting, viva voce question generation, token-budgeted synthesis |
+| **Deployment** | Vercel (Unified monorepo routing with Next.js frontend + FastAPI serverless service) | Single-domain cloud deployment with zero CORS configuration |
+
+---
+
+## 4. End-to-End User Flow
+
+1. **Intake & Ingestion:**
+   - Evaluator drops historical repository ZIPs (or provides a public GitHub username).
+   - Evaluator drops the investigated target submission ZIP.
+   - *(Optional)* Evaluator drops an instructor skeleton template ZIP to subtract course boilerplate.
+   - *(Optional)* Evaluator selects Cohort mode to ingest a Canvas/Moodle class export.
+2. **Analysis Execution:**
+   - Clicking **"Begin Forensic Analysis"** triggers deterministic AST parsing and Siamese projection locally in <150ms.
+3. **Interactive Investigation:**
+   - **Overview:** Review author profiling (`Clean Student`, `Consistent AI Author`, or `Sudden AI Introduction`) and 8-metric summary.
+   - **Baseline Profile:** Inspect historical language coverage, complexity percentiles, and naming conventions.
+   - **CodeDNA Radar:** Visualize multi-vector variance against the student's historical baseline.
+   - **AST Metrics:** Tabular breakdown of cyclomatic shifts, dependency changes, and error handling.
+   - **Code Inspector:** Review flagged line ranges with authentic uploaded code highlighting AI markers and complexity anomalies.
+   - **ML Projections:** View latent hypersphere projection, calibrated probability, and 95% confidence intervals.
+   - **Temporal Evolution:** Analyze historical timeline and CUSUM change-point graphs.
+4. **AI Reasoning (On-Demand):**
+   - Click **"Run AI Analysis"** to prompt Google Gemini Flash with the deterministic payload, generating viva defense questions and counter-evidence analysis.
+5. **Dossier Export:**
+   - Toggle between **Executive Summary** and **Extended Forensic Dossier**, then click **Print Case Dossier** for a clean, headerless, court-ready PDF.
+
+---
+
+## 5. Local Setup & Quick-Start
+
+### Prerequisites
+- **Python 3.10+** (with virtual environment capability)
+- **Node.js 18+** & npm
+- A free **Google Gemini API Key** from [aistudio.google.com](https://aistudio.google.com/app/apikey)
+
+### Step 1: Clone Repository
+```powershell
+git clone https://github.com/Shabd1901/CodeDNA.git
+cd CodeDNA
+```
+
+### Step 2: Backend Setup
+```powershell
+# Navigate to backend directory
+cd backend
+
+# Create and activate virtual environment
+python -m venv venv
+.\venv\Scripts\Activate.ps1    # On Windows
+# source venv/bin/activate     # On Linux / macOS
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure environment variables
+Copy-Item .env.example .env     # On Windows (or 'cp .env.example .env' on Linux/macOS)
+```
+
+Edit `backend/.env` with your API key:
+```env
+GEMINI_API_KEY=AIzaSy...your_gemini_api_key_here
+GITHUB_TOKEN=ghp_...your_optional_github_token_here
+ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+```
+
+Start the FastAPI server:
+```powershell
+python -m uvicorn main:app --reload --port 8000
+```
+*API documentation will be accessible at [http://localhost:8000/docs](http://localhost:8000/docs).*
+
+### Step 3: Frontend Setup
+In a new terminal window:
+```powershell
+# Navigate to frontend directory
+cd frontend
+
+# Install Node dependencies
+npm install
+
+# Start Next.js development server
+npm run dev
+```
+*Open [http://localhost:3000](http://localhost:3000) in your browser.*
+
+---
+
+## 6. Development, Testing & Verification
+
+### Running Automated Integration Tests
+CodeDNA includes an automated test runner validating 8 live scenarios (Clean student, Sudden AI, Consistent AI, Plagiarism, Empty baseline, Cross-language, Evasion, Template subtraction):
+```powershell
+# Ensure the backend server is running on port 8000, then:
+python scripts/run_tests.py
+```
+
+### Running the Scientific Evaluation Lab
+Execute the 14-scenario ground-truth benchmark suite:
+```powershell
+python scripts/run_evaluation_lab.py
+```
+
+#### Verified Benchmark Results:
+- **Total Scenarios Evaluated:** 14 (8 benign/authentic, 6 adversarial/suspicious)
+- **Classification Accuracy:** **92.9%** (13/14 matches)
+- **False Positive Rate (FPR):** **0.0%** (Zero false accusations on authentic work)
+- **Precision:** **100.0%**
+- **Recall (Sensitivity):** **83.3%**
+- **Specificity:** **100.0%**
+- **F1-Score:** **90.9%**
+- **AUC-ROC:** **0.938** (Calculated dynamically via trapezoidal numerical integration)
+- **Adversarial Resilience:** **75.0%** across identifier renaming, dead code insertion, and obfuscation
+
+---
+
+## 7. Cloud Deployment (Vercel)
+
+CodeDNA is configured as a **single-domain unified monorepo** on Vercel using `vercel.json` services:
+- **Web Service:** `frontend/` (Next.js 16 with Turbopack)
+- **API Service:** `backend/` (FastAPI via Python 3.12 Serverless runtime)
+- **Routing:** `/api/(.*)` routes to FastAPI; `/(.*)` routes to Next.js.
+- **Serverless Stability:** Includes `@app.post("/api/analyze/direct")` for atomic single-request archive extraction, eliminating ephemeral container state dropoffs.
+
+### Live Production Deployment
+- **URL:** [https://codedna-orchestrate.vercel.app/](https://codedna-orchestrate.vercel.app/)
+
+### Setting up on Vercel:
+1. Connect your GitHub repository (`Shabd1901/CodeDNA`) in the Vercel Dashboard.
+2. In **Project Settings** → **Environment Variables**, add:
+   - `GEMINI_API_KEY`: Your Gemini API key
+   - `GITHUB_TOKEN`: (Optional) Your GitHub personal access token for higher API limits
+3. Deploy! Vercel automatically detects `vercel.json` and deploys both services together.
+
+---
+
+## 8. Troubleshooting & FAQ
+
+| Symptom | Cause | Solution |
+| :--- | :--- | :--- |
+| **HTTP 429 GitHub API Rate Limit** | Unauthenticated GitHub requests are capped at 60 req/hr. | Add a free `GITHUB_TOKEN` to `backend/.env` or upload baseline files directly as ZIPs. |
+| **Gemini 429 RESOURCE_EXHAUSTED** | Free tier TPM limits exceeded by large file payloads. | CodeDNA compacts file metrics to <25,000 tokens before sending to Gemini Flash. Ensure your Gemini API key has active quota. |
+| **"Submission contains no usable source code files"** | The ZIP archive contains no supported code extensions (`.py`, `.js`, `.ts`, `.java`, `.c`, `.cpp`, `.cs`, `.go`, `.rs`) or files are nested under excluded paths. | Ensure files have supported extensions. For instant testing, use pre-packaged fixtures from `test_data/1_clean/`. |
+| **Frontend Network Error (`API_BASE`)** | Backend server is not running on port 8000. | Start FastAPI with `uvicorn main:app --reload --port 8000`. In development, Next.js rewrites `/api/*` to `127.0.0.1:8000`. |
+| **Vercel 4.5 MB Payload Limit** | Serverless function body cap exceeded. | Keep individual uploaded archives under 4.5 MB. For larger archives, run CodeDNA locally. |
+
+---
+
+## 9. Project Structure
 
 ```
-orchestrate/
+CodeDNA/
 ├── backend/
 │   ├── main.py                  # FastAPI application & REST endpoints
 │   ├── analysis.py              # 8-vector AST parser & CodeDNA deviation engine
 │   ├── ai_engine.py             # Google GenAI Gemini Flash forensic integration
-│   ├── requirements.txt         # Lightweight Python dependencies (no PyTorch/TF required)
+│   ├── requirements.txt         # Lightweight Python dependencies
 │   ├── .env.example             # Environment template
 │   └── ml_engine/
 │       ├── feature_extractor.py # 24-dimensional dense feature extraction
@@ -99,7 +274,7 @@ orchestrate/
 │       └── benchmark_runner.py  # 14-scenario empirical evaluation test harness
 ├── frontend/
 │   ├── src/
-│   │   ├── app/                 # Next.js 16 app layout & workstation page
+│   │   ├── app/                 # Next.js 16 layout & workstation page
 │   │   └── components/          # 11 interactive forensic analysis views:
 │   │       ├── AIForensicPanel.tsx
 │   │       ├── BaselineProfileView.tsx
@@ -112,7 +287,8 @@ orchestrate/
 │   │       ├── PipelineNav.tsx
 │   │       ├── RadarDeviationChart.tsx
 │   │       └── TemporalEvolutionView.tsx
-│   └── package.json             # Frontend dependencies (Tailwind CSS, Lucide, Recharts)
+│   ├── next.config.ts           # Development proxy & build settings
+│   └── package.json             # Frontend dependencies
 ├── scripts/
 │   ├── run_evaluation_lab.py    # CLI runner for the 14-scenario benchmark lab
 │   ├── run_tests.py             # Automated end-to-end integration test runner
@@ -126,118 +302,22 @@ orchestrate/
 │   ├── 6_cross_language/        # Python baseline to JavaScript submission
 │   ├── 7_sophisticated_evasion/ # Adversarial evasion scenario
 │   └── 8_template/              # Starter template subtraction test
-└── docs/
-    ├── explainer.md             # Detailed engineering log, risk matrix & changelog
-    ├── architecture.md          # In-depth system architecture specification
-    ├── projecteval1.md          # Internal audit & verification record
-    ├── projecteval2.md          # External evaluator audit pass reports
-    └── evaluation_lab_report.json # Full benchmark suite JSON results
+├── docs/
+│   ├── architecture.md          # In-depth system architecture specification
+│   ├── PRD.md                   # Product Requirements Document
+│   ├── TRD.md                   # Technical Requirements Document
+│   ├── explainer.md             # Detailed engineering log, risk matrix & changelog
+│   ├── projecteval1.md          # Internal audit & verification record
+│   └── projecteval2.md          # External evaluator audit pass reports
+└── vercel.json                  # Unified Vercel monorepo services routing
 ```
 
 ---
 
-## 5. Quick-Start Guide
-
-### Prerequisites
-- **Python 3.10+** (with virtual environment)
-- **Node.js 18+** & npm
-- A free **Google Gemini API Key** from [aistudio.google.com](https://aistudio.google.com/app/apikey)
-
-### Step 1: Backend Setup
-```powershell
-# Navigate to backend directory
-cd backend
-
-# Create and activate virtual environment
-python -m venv venv
-.\venv\Scripts\Activate.ps1    # On Windows
-# source venv/bin/activate     # On Linux / macOS
-
-# Install lightweight dependencies
-pip install -r requirements.txt
-
-# Configure your Gemini API key
-Copy-Item .env.example .env
-# Edit .env and set: GEMINI_API_KEY=AIza...your_key_here
-
-# Start the FastAPI server
-python -m uvicorn main:app --reload --port 8000
-```
-*Backend API documentation is interactively available at `http://localhost:8000/docs`.*
-
-### Step 2: Frontend Setup
-```powershell
-# In a new terminal, navigate to frontend directory
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start the Next.js development server
-npm run dev
-```
-*Open `http://localhost:3000` in your browser.*
-
----
-
-## 6. How to Run an Investigation
-
-1. **Upload Historical Baseline**:
-   - Drag and drop one or more previous project ZIPs (e.g., from `test_data/1_clean/baseline.zip`), OR
-   - Enter a public GitHub username to automatically fetch public repositories.
-2. **Upload Target Submission**:
-   - Drag and drop the assignment ZIP to be evaluated (e.g., `test_data/1_clean/submission.zip`).
-3. **Optional Starter Template**:
-   - If an instructor template was provided to the class, upload it to subtract boilerplate code automatically.
-4. **Begin Forensic Analysis**:
-   - Click **"Begin Forensic Analysis"** — the deterministic 8-vector CodeDNA comparison runs locally and instantly for free.
-5. **Explore Forensic Views**:
-   - Navigate through the pipeline: **Overview**, **Baseline Profile**, **CodeDNA Radar**, **AST Metrics**, **Inspector**, **ML Projections**, **Temporal Shifts**, and **Dossier**.
-6. **Trigger AI Forensic Reasoning**:
-   - Click **"Run AI Analysis"** (or use the one-click trigger in the AI panel) to engage Gemini Flash for qualitative evidence weighting and viva defense script generation.
-7. **Export Case Dossier**:
-   - Switch between **Simple Executive Brief** and **Full Extended Dossier**, then click **Print Case Dossier** to generate a clean, headerless PDF report.
-
----
-
-## 7. Empirical Verification & Benchmarks
-
-CodeDNA includes an open, reproducible Scientific Evaluation Lab (`scripts/run_evaluation_lab.py`) validating the system against 14 controlled academic integrity scenarios:
-
-```powershell
-# Execute the evaluation lab
-python scripts/run_evaluation_lab.py
-```
-
-### Verified Empirical Performance:
-- **Total Scenarios Evaluated**: 14 (8 benign/authentic, 6 adversarial/suspicious)
-- **Overall Classification Accuracy**: **92.9%** (13/14)
-- **Precision**: **100.0%** (Zero false accusations)
-- **Recall (Sensitivity)**: **83.3%**
-- **Specificity (True Negative Rate)**: **100.0%** (8/8 clean cases cleared)
-- **False Positive Rate (FPR)**: **0.0%** (Academic integrity safety guardrail)
-- **F1-Score**: **90.9%**
-- **AUC-ROC**: **0.938** (Calculated dynamically via trapezoidal numerical integration)
-- **Adversarial Resilience**: **75.0%** across identifier renaming, dead code injection, and obfuscation
-
----
-
-## 8. Automated Test Suite
-
-Run the end-to-end integration test suite against the live backend server:
-
-```powershell
-# Ensure backend is running on port 8000, then:
-python scripts/run_tests.py
-```
-This tests 8 live scenarios: Clean Student, Sudden AI, Consistent AI, Plagiarism Detection, Empty Baseline Handling, Cross-Language Parity, Sophisticated Evasion, and Template Subtraction.
-
----
-
-## 9. Ethical Principles & Human-in-the-Loop Policy
+## 10. Ethical Principles & Human-in-the-Loop Policy
 
 CodeDNA is explicitly architected as an **Evaluator Decision-Support Tool**, not an automated disciplinary engine:
-- It **never** issues an ungrounded binary judgment ("Cheated" / "Not Cheated").
-- It flags anomalies categorized by evidential weight (High / Moderate / Low concern).
-- It generates **VivaGuard Oral Defense Questions** so educators can interview the student fairly using their own code before making any administrative determination.
-- It actively evaluates **Counter-Evidence & Mitigating Factors** (e.g., natural skill progression, framework adoption, formatter application) to protect innocent students.
+- It **never** issues an automated verdict or ungrounded score.
+- It translates raw statistical signals into actionable, human-interpretable evidence.
+- It generates **VivaGuard Oral Defense Questions** so instructors can interview students constructively using their own code.
+- It actively evaluates **Counter-Evidence & Mitigating Factors** (framework adoption, natural learning progression, style reformatting) to safeguard students from false accusations.
