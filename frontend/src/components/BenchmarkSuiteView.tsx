@@ -24,7 +24,7 @@ interface BenchmarkSuiteViewProps {
   onBackToSetup?: () => void;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
 export function BenchmarkSuiteView({ initialData, onBackToSetup }: BenchmarkSuiteViewProps) {
   const [benchmarkData, setBenchmarkData] = useState<any>(initialData || null);

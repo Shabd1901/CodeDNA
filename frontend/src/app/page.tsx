@@ -36,7 +36,7 @@ import { BenchmarkSuiteView } from "@/components/BenchmarkSuiteView";
 import { InfoHelper } from "@/components/InfoTooltipModal";
 import { CodeDNALogo } from "@/components/CodeDNALogo";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
 export default function Home() {
   const [appState, setAppState] = useState<"idle" | "analyzing" | "results" | "eval_lab">("idle");

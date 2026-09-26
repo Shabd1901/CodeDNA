@@ -8,9 +8,15 @@ import httpx
 import asyncio
 import uuid
 import os
+import sys
 import shutil
 import zipfile
-import json
+# Ensure backend directory is in sys.path for serverless container execution
+_backend_dir = os.path.dirname(os.path.abspath(__file__))
+if _backend_dir not in sys.path:
+    sys.path.insert(0, _backend_dir)
+
+import tempfile
 from analysis import build_repository_codedna, compare_codedna, build_cohort_codedna, subtract_template_dna
 from ai_engine import generate_forensic_report
 
@@ -42,10 +48,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-SESSION_DIR = os.path.join(os.path.dirname(__file__), "tmp_sessions")
+# On Vercel Serverless (read-only filesystem), route sessions to writable /tmp
+if os.getenv("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME") or os.getenv("SESSION_STORAGE_DIR"):
+    SESSION_DIR = os.getenv("SESSION_STORAGE_DIR") or os.path.join(tempfile.gettempdir(), "codedna_sessions")
+else:
+    SESSION_DIR = os.path.join(os.path.dirname(__file__), "tmp_sessions")
 os.makedirs(SESSION_DIR, exist_ok=True)
 
 @app.get("/", tags=["Health"])
+@app.get("/api", tags=["Health"])
 @app.get("/api/health", tags=["Health"])
 def read_root():
     return {"status": "ok", "message": "CodeDNA API is running", "version": "1.0.0"}
