@@ -65,3 +65,26 @@ During this pass, all 5 stages of the user journey were traced. Genuine gaps—i
      - F1-Score: **90.9%**
 4. **Frontend Production Build Verification:**
    - Ran `npm run build` using Next.js 16 (Turbopack) with 0 errors and 0 type warnings.
+
+---
+
+## 5. Core AI/Forensic Detection Reality & Connectivity Audit
+
+**Audit Focus:** Verification of real AI/forensic execution, model connectivity, absence of hardcoded outputs, and direct contribution to the final results.
+
+### 5.1 Verification Checklist
+1. **Real LLM Connectivity**:
+   - Verified that `backend/ai_engine.py` calls Google GenAI SDK (`google.genai.Client`) directly using the `GEMINI_API_KEY`.
+   - Verified that the model prompt is dynamically constructed from real deterministic AST and ML outputs (`compact_data` via `json.dumps`).
+   - Verified live execution against Gemini Flash, returning dynamic executive forensic summaries, categorized findings with evidence and counter-evidence, and viva examination scripts.
+2. **Deterministic & ML Metric Connectivity**:
+   - Verified that `backend/analysis.py` directly executes AST parsing, cyclomatic complexity calculations, token distribution modeling, Siamese metric projection, and Platt calibration.
+   - All deviation values are calculated from student files and strictly bound to the final score without random or hardcoded constants.
+3. **Contribution to Final Usable Results**:
+   - The AI reasoning output directly populates:
+     - `AIForensicPanel.tsx`: Executive brief, findings list with severity tags, concrete evidence, why the deviation matters, false-positive guardrails, and VivaGuard defense questions.
+     - `ForensicDossierView.tsx`: Sections 1 (Executive Forensic Synthesis) and 9 (AI Forensic Reasoning Findings & VivaGuard Script) in both Simple Brief and Extended Dossier views.
+     - `PersistentInvestigationContext.tsx`: Live AI status, model indicators, and analysis action controls.
+4. **Clean Configuration**:
+   - Removed legacy unused `AI_MOCK=true` flag from `backend/.env` to eliminate ambiguity.
+
