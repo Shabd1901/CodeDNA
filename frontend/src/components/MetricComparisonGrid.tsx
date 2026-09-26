@@ -78,25 +78,37 @@ export function MetricComparisonGrid({
           {crossLanguageIntel.language_invariant_metrics && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
               <div className="p-2.5 bg-white/80 border border-sky-100 rounded-lg">
-                <span className="text-[10px] font-mono text-zinc-500 uppercase block">Complexity Density</span>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-mono text-zinc-500 uppercase block">Complexity Density</span>
+                  <InfoHelper termKey="complexity_density" />
+                </div>
                 <span className="text-xs font-mono font-bold text-zinc-900">
                   Δ {crossLanguageIntel.language_invariant_metrics.complexity_density_drift}%
                 </span>
               </div>
               <div className="p-2.5 bg-white/80 border border-sky-100 rounded-lg">
-                <span className="text-[10px] font-mono text-zinc-500 uppercase block">Nesting Profile</span>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-mono text-zinc-500 uppercase block">Nesting Profile</span>
+                  <InfoHelper termKey="nesting_profile" />
+                </div>
                 <span className="text-xs font-mono font-bold text-zinc-900">
                   Δ {crossLanguageIntel.language_invariant_metrics.nesting_profile_drift}%
                 </span>
               </div>
               <div className="p-2.5 bg-white/80 border border-sky-100 rounded-lg">
-                <span className="text-[10px] font-mono text-zinc-500 uppercase block">Identifier Cadence</span>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-mono text-zinc-500 uppercase block">Identifier Cadence</span>
+                  <InfoHelper termKey="identifier_cadence" />
+                </div>
                 <span className="text-xs font-mono font-bold text-zinc-900">
                   Δ {crossLanguageIntel.language_invariant_metrics.identifier_cadence_drift}%
                 </span>
               </div>
               <div className="p-2.5 bg-white/80 border border-sky-100 rounded-lg">
-                <span className="text-[10px] font-mono text-zinc-500 uppercase block">Comment Cadence</span>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-mono text-zinc-500 uppercase block">Comment Cadence</span>
+                  <InfoHelper termKey="comment_cadence" />
+                </div>
                 <span className="text-xs font-mono font-bold text-zinc-900">
                   Δ {crossLanguageIntel.language_invariant_metrics.comment_hygiene_drift}%
                 </span>

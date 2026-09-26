@@ -436,7 +436,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen p-4 sm:p-8 lg:p-12 max-w-7xl mx-auto text-zinc-900">
+    <main className="min-h-screen p-4 sm:p-8 lg:p-12 max-w-7xl mx-auto text-zinc-900 print:p-0 print:m-0 print:max-w-none print:min-h-0 print:w-full">
       {/* Top Application Bar */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 border-b border-zinc-200 pb-6 print:hidden">
         <div className="flex items-center gap-3">
@@ -786,6 +786,7 @@ export default function Home() {
                     <label className="text-[11px] font-semibold text-zinc-700 flex items-center gap-1.5">
                       <Sliders className="w-3.5 h-3.5 text-zinc-500" />
                       <span>Instructor Starter Template (Optional)</span>
+                      <InfoHelper termKey="instructor_starter_template" />
                     </label>
                     <span className="text-[10px] text-zinc-400">Subtracts boilerplate</span>
                   </div>
@@ -1013,7 +1014,7 @@ export default function Home() {
             key="results"
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
+            className="space-y-6 print:space-y-0"
           >
             {/* 1. Sticky Persistent Investigation Header Bar */}
             <PersistentInvestigationContext
@@ -1041,7 +1042,7 @@ export default function Home() {
             </div>
 
             {/* 3. Stage Content Views */}
-            <div className="mt-6">
+            <div className="mt-6 print:mt-0">
               {/* STAGE: OVERVIEW */}
               {pipelineStage === "overview" && (
                 <div className="space-y-6">

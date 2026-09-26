@@ -50,14 +50,19 @@ body {
 @media print {
   @page {
     size: A4 portrait;
-    margin: 15mm 15mm 20mm 15mm;
+    margin: 20mm 15mm 20mm 15mm;
   }
   
   html, body {
     background: #ffffff !important;
     color: #09090b !important;
-    font-size: 11pt !important;
+    font-size: 10pt !important;
     line-height: 1.4 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   /* Hide screen-only interactive elements */
@@ -71,7 +76,7 @@ body {
     page-break-inside: avoid !important;
   }
 
-  /* Force signatures to fresh final page */
+  /* Force signatures/sections to fresh page if specified */
   .print-break-before-page {
     break-before: page !important;
     page-break-before: always !important;

@@ -119,6 +119,31 @@ export const TECHNICAL_TERMS: Record<string, TechnicalTermDef> = {
     term: "Precision-Recall Curve (PR)",
     simpleMeaning: "Visualizes Precision vs Recall tradeoffs to verify high-confidence forensic detection without false accusations.",
     category: "Model Evaluation"
+  },
+  instructor_starter_template: {
+    term: "Instructor Starter Template",
+    simpleMeaning: "Skeleton code, boilerplate, or function stubs provided by the professor. The engine subtracts this code so students are never evaluated on code provided to the entire class.",
+    category: "Baseline Filtering"
+  },
+  complexity_density: {
+    term: "Complexity Density",
+    simpleMeaning: "Ratio of cyclomatic logic branches, loops, and conditional decision points per line of code. Detects sudden leaps in algorithmic sophistication.",
+    category: "Code Logic"
+  },
+  nesting_profile: {
+    term: "Nesting Depth Profile",
+    simpleMeaning: "Measures structural block depth (functions inside classes, loops within conditionals). Unusually deep or shallow nesting highlights deviation from personal structural habits.",
+    category: "Control Flow"
+  },
+  identifier_cadence: {
+    term: "Identifier Lexical Cadence",
+    simpleMeaning: "Analyzes naming length distributions, variable naming style ratios, and lexical token rhythms across functions and parameters.",
+    category: "Lexical Style"
+  },
+  comment_cadence: {
+    term: "Comment & Documentation Cadence",
+    simpleMeaning: "Tracks inline commentary frequency, docstring coverage, comment-to-code ratios, and tone compared to historical baseline habits.",
+    category: "Documentation Hygiene"
   }
 };
 
