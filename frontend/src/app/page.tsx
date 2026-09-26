@@ -201,176 +201,70 @@ export default function Home() {
     setAnalysisStep(0);
 
     try {
-      // Step 0 — Start Session
-      setAnalysisStep(0);
-      const sessionRes = await fetch(`${API_BASE}/api/session/start`, { method: "POST" });
-      if (!sessionRes.ok) {
-        throw { title: "Session Error", detail: "Failed to initialize server investigation session." };
-      }
-      const sessionData = await sessionRes.json();
-      const newSessionId = sessionData.session_id as string;
-      if (!newSessionId) throw new Error("No session_id returned");
-      setSessionId(newSessionId);
+      // Build Atomic Unified Payload for Serverless Stability
+      const formData = new FormData();
+      formData.append("submission", submissionFile);
+      formData.append("baseline_type", selectedBaselineTab === 0 ? "personal" : "cohort");
 
-      // Step 1 — Upload Baseline Data
-      setAnalysisStep(1);
+      if (templateFile) {
+        formData.append("template_file", templateFile);
+      }
 
       if (selectedBaselineTab === 0) {
-        for (const link of validGithubLinks) {
-          let targetUsername = link.trim();
-          if (targetUsername.includes("github.com/")) {
-            const parts = targetUsername.split(/github\.com\//i)[1]?.split("/").filter(Boolean);
-            if (parts && parts.length > 0) targetUsername = parts[0];
-          }
-
-          if (targetUsername) {
-            const formData = new FormData();
-            formData.append("session_id", newSessionId);
-            formData.append("username", targetUsername);
-            const ghRes = await fetch(`${API_BASE}/api/repositories/github`, {
-              method: "POST",
-              body: formData
-            });
-            if (!ghRes.ok) {
-              const errData = await ghRes.json().catch(() => ({ detail: `Failed to fetch GitHub repositories for ${targetUsername}.` }));
-              const isRateLimit = ghRes.status === 429 || (errData.detail && errData.detail.toLowerCase().includes("rate limit"));
-              throw {
-                title: isRateLimit ? "GitHub API Rate Limit Reached" : "GitHub Fetch Failed",
-                detail: errData.detail || `Unable to download repositories for GitHub user ${targetUsername}.`,
-                isRateLimit
-              };
-            }
-          }
+        for (const file of baselineUploadList) {
+          formData.append("baseline_files", file);
         }
-
-        if (baselineUploadList.length > 0) {
-          for (let i = 0; i < baselineUploadList.length; i++) {
-            const repoData = new FormData();
-            repoData.append("session_id", newSessionId);
-            repoData.append("file", baselineUploadList[i]);
-            const upRes = await fetch(`${API_BASE}/api/repositories/upload`, {
-              method: "POST",
-              body: repoData
-            });
-            if (!upRes.ok) {
-              const errData = await upRes.json().catch(() => ({ detail: "Upload repository failed." }));
-              throw { title: "Baseline Upload Error", detail: errData.detail || `Failed to upload ZIP ${baselineUploadList[i].name}.` };
+        const usernames = validGithubLinks
+          .map((link) => {
+            let u = link.trim();
+            if (u.includes("github.com/")) {
+              const parts = u.split(/github\.com\//i)[1]?.split("/").filter(Boolean);
+              if (parts && parts.length > 0) u = parts[0];
             }
-          }
+            return u;
+          })
+          .filter(Boolean);
+        if (usernames.length > 0) {
+          formData.append("github_usernames", usernames.join(","));
         }
       } else if (selectedBaselineTab === 1) {
         if (!cohortFile) throw { title: "Missing Cohort File", detail: "Please select a cohort ZIP file." };
-        const cohortData = new FormData();
-        cohortData.append("session_id", newSessionId);
-        cohortData.append("file", cohortFile);
-        const cohortRes = await fetch(`${API_BASE}/api/repositories/cohort-zip`, {
-          method: "POST",
-          body: cohortData
-        });
-        if (!cohortRes.ok) {
-          const errData = await cohortRes.json().catch(() => ({ detail: "Cohort ZIP processing failed." }));
-          throw { title: "Cohort Upload Error", detail: errData.detail || "Failed to process cohort ZIP." };
-        }
+        formData.append("cohort_file", cohortFile);
       } else if (selectedBaselineTab === 2) {
         if (!cohortOrganization || !cohortAssignmentPrefix) {
           throw { title: "Missing GitHub Classroom Info", detail: "Please provide organization and assignment prefix." };
         }
-        const classroomData = new FormData();
-        classroomData.append("session_id", newSessionId);
-        classroomData.append("organization", cohortOrganization);
-        classroomData.append("assignment_prefix", cohortAssignmentPrefix);
-        const classroomRes = await fetch(`${API_BASE}/api/repositories/github-classroom`, {
+        formData.append("cohort_org", cohortOrganization);
+        formData.append("cohort_prefix", cohortAssignmentPrefix);
+      }
+
+      // Smooth step animation while request runs in flight
+      let currentStep = 0;
+      setAnalysisStep(0);
+      const stepInterval = setInterval(() => {
+        currentStep = (currentStep + 1) % 4;
+        setAnalysisStep(currentStep);
+      }, 400);
+
+      let res: Response;
+      try {
+        res = await fetch(`${API_BASE}/api/analyze/direct`, {
           method: "POST",
-          body: classroomData
+          body: formData,
         });
-        if (!classroomRes.ok) {
-          const errData = await classroomRes.json().catch(() => ({ detail: "GitHub Classroom fetch failed." }));
-          throw { title: "GitHub Classroom Error", detail: errData.detail || "Failed to fetch repositories from GitHub Classroom." };
-        }
+      } finally {
+        clearInterval(stepInterval);
       }
 
-      // Step 2 — Upload Submission
-      setAnalysisStep(2);
-      const subData = new FormData();
-      subData.append("session_id", newSessionId);
-      subData.append("file", submissionFile);
-      const subRes = await fetch(`${API_BASE}/api/analyze/submission`, {
-        method: "POST",
-        body: subData
-      });
-      if (!subRes.ok) {
-        const errData = await subRes.json().catch(() => ({ detail: "Submission upload failed." }));
-        throw { title: "Submission Upload Error", detail: errData.detail || "Failed to upload submission archive." };
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ detail: "Analysis failed." }));
+        throw { title: "CodeDNA Comparison Error", detail: errData.detail || "Static metric comparison failed." };
       }
 
-      // Step 3 — Upload Template (if provided)
-      setAnalysisStep(3);
-      if (templateFile) {
-        const templateData = new FormData();
-        templateData.append("session_id", newSessionId);
-        templateData.append("file", templateFile);
-        const templateRes = await fetch(`${API_BASE}/api/repositories/template`, {
-          method: "POST",
-          body: templateData
-        });
-        if (!templateRes.ok) {
-          const errData = await templateRes.json().catch(() => ({ detail: "Template upload failed." }));
-          throw { title: "Template Upload Error", detail: errData.detail || "Failed to upload template ZIP." };
-        }
-      } else {
-        await new Promise(r => setTimeout(r, 100));
-      }
-
-      // Step 4 — Running comparison
+      const data = await res.json();
       setAnalysisStep(4);
-      await new Promise(r => setTimeout(r, 200));
-
-      const comparisonsToRun = [];
-      if (selectedBaselineTab === 0) {
-        comparisonsToRun.push({ type: "personal", label: "Personal" });
-      } else {
-        comparisonsToRun.push({ type: "cohort", label: "Cohort" });
-      }
-
-      if (hasPersonalData && hasCohortData) {
-        const alternativeType = (selectedBaselineTab as number) === 0 ? "cohort" : "personal";
-        comparisonsToRun.push({ type: alternativeType, label: alternativeType === "personal" ? "Personal" : "Cohort", isAlternative: true });
-      }
-
-      const primaryComparison = comparisonsToRun.find(comp => !comp.isAlternative);
-      if (primaryComparison) {
-        const compareData = new FormData();
-        compareData.append("session_id", newSessionId);
-        compareData.append("baseline_type", primaryComparison.type);
-        const res = await fetch(`${API_BASE}/api/analyze/compare`, {
-          method: "POST",
-          body: compareData
-        });
-
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({ detail: "Compare failed." }));
-          throw { title: "CodeDNA Comparison Error", detail: errData.detail || "Static metric comparison failed." };
-        }
-        const data = await res.json();
-        setReport(data);
-      }
-
-      const alternativeComparison = comparisonsToRun.find(comp => comp.isAlternative);
-      if (alternativeComparison) {
-        const compareData = new FormData();
-        compareData.append("session_id", newSessionId);
-        compareData.append("baseline_type", alternativeComparison.type);
-        const res = await fetch(`${API_BASE}/api/analyze/compare`, {
-          method: "POST",
-          body: compareData
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          setAlternativeReport(data);
-        }
-      }
-
+      setSessionId(data.session_id);
+      setReport(data);
       setAppState("results");
     } catch (error: any) {
       console.error("Analysis execution error:", error);
@@ -396,6 +290,9 @@ export default function Home() {
     try {
       const formData = new FormData();
       formData.append("session_id", sessionId);
+      if (report && report.deterministic_data) {
+        formData.append("deterministic_data", JSON.stringify(report.deterministic_data));
+      }
       const res = await fetch(`${API_BASE}/api/analyze/ai-report`, {
         method: "POST",
         body: formData

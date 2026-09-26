@@ -9,14 +9,17 @@ import asyncio
 import uuid
 import os
 import sys
+import io
+import json
 import shutil
 import zipfile
+import tempfile
+from typing import List, Optional
 # Ensure backend directory is in sys.path for serverless container execution
 _backend_dir = os.path.dirname(os.path.abspath(__file__))
 if _backend_dir not in sys.path:
     sys.path.insert(0, _backend_dir)
 
-import tempfile
 from analysis import build_repository_codedna, compare_codedna, build_cohort_codedna, subtract_template_dna
 from ai_engine import generate_forensic_report
 
@@ -440,17 +443,216 @@ async def analyze_and_compare(session_id: str = Form(...), baseline_type: str = 
         "deterministic_data": comparison_results
     }
 
-@app.post("/api/analyze/ai-report", tags=["Analysis"], summary="Generate AI Forensic Report")
-async def generate_ai_report(session_id: str = Form(...)):
-    """Generate the AI forensic report using previously generated deterministic data."""
+@app.post("/api/analyze/direct", tags=["Analysis"], summary="Direct Atomic Analysis (Serverless Compatible)")
+async def direct_analyze(
+    submission: UploadFile = File(...),
+    baseline_files: List[UploadFile] = File(default=[]),
+    template_file: Optional[UploadFile] = File(default=None),
+    cohort_file: Optional[UploadFile] = File(default=None),
+    baseline_type: str = Form("personal"),
+    github_usernames: Optional[str] = Form(None),
+    cohort_org: Optional[str] = Form(None),
+    cohort_prefix: Optional[str] = Form(None)
+):
+    """
+    Run an end-to-end atomic analysis in a single request.
+    Extracts all baseline, submission, and template archives within the same container,
+    eliminating serverless multi-step session dropoffs.
+    """
+    session_id = str(uuid.uuid4())
     session_path = os.path.join(SESSION_DIR, session_id)
-    results_path = os.path.join(session_path, "deterministic_results.json")
-    
-    if not os.path.exists(results_path):
-        raise HTTPException(status_code=400, detail="Deterministic analysis not found. Run /api/analyze/compare first.")
-        
-    with open(results_path, "r") as f:
-        comparison_results = json.load(f)
+    repos_dir = os.path.join(session_path, "repositories")
+    sub_dir = os.path.join(session_path, "submission", "extracted")
+    template_dir = os.path.join(session_path, "template")
+    cohort_dir = os.path.join(session_path, "cohort")
+
+    os.makedirs(repos_dir, exist_ok=True)
+    os.makedirs(sub_dir, exist_ok=True)
+
+    # 1. Unpack submission
+    if not submission.filename.endswith('.zip'):
+        raise HTTPException(status_code=400, detail="Submission file must be a .zip archive")
+    sub_zip_path = os.path.join(session_path, "submission", submission.filename)
+    with open(sub_zip_path, "wb") as buffer:
+        shutil.copyfileobj(submission.file, buffer)
+    try:
+        with zipfile.ZipFile(sub_zip_path, 'r') as zip_ref:
+            zip_ref.extractall(sub_dir)
+    except zipfile.BadZipFile:
+        raise HTTPException(status_code=400, detail="Invalid submission zip file")
+
+    # 2. Unpack baseline files
+    for b_file in baseline_files:
+        if b_file.filename and b_file.filename.endswith('.zip'):
+            b_zip_path = os.path.join(repos_dir, b_file.filename)
+            with open(b_zip_path, "wb") as buffer:
+                shutil.copyfileobj(b_file.file, buffer)
+            b_extract = os.path.join(repos_dir, b_file.filename[:-4])
+            try:
+                with zipfile.ZipFile(b_zip_path, 'r') as zip_ref:
+                    zip_ref.extractall(b_extract)
+            except zipfile.BadZipFile:
+                pass
+
+    # 3. Fetch GitHub baseline repos if provided
+    if github_usernames:
+        usernames = [u.strip() for u in github_usernames.split(",") if u.strip()]
+        github_token = (os.getenv("GITHUB_TOKEN") or "").strip()
+        headers = {"User-Agent": "CodeDNA-Forensic-App"}
+        if github_token:
+            headers["Authorization"] = f"Bearer {github_token}"
+        async with httpx.AsyncClient(headers=headers, timeout=15.0) as client:
+            for username in usernames:
+                try:
+                    gh_res = await client.get(f"https://api.github.com/users/{username}/repos?sort=pushed&per_page=5")
+                    if gh_res.status_code == 200:
+                        repos = gh_res.json()
+                        if isinstance(repos, list):
+                            for repo in repos:
+                                repo_name = repo["name"]
+                                branch = repo.get("default_branch", "main")
+                                zip_url = f"https://github.com/{username}/{repo_name}/archive/refs/heads/{branch}.zip"
+                                zip_resp = await client.get(zip_url, follow_redirects=True)
+                                if zip_resp.status_code == 200:
+                                    repo_ext = os.path.join(repos_dir, repo_name)
+                                    os.makedirs(repo_ext, exist_ok=True)
+                                    with zipfile.ZipFile(io.BytesIO(zip_resp.content)) as z:
+                                        z.extractall(repo_ext)
+                except Exception:
+                    pass
+
+    # 4. Unpack template if provided
+    template_dna = None
+    if template_file and template_file.filename and template_file.filename.endswith('.zip'):
+        os.makedirs(template_dir, exist_ok=True)
+        t_zip_path = os.path.join(template_dir, template_file.filename)
+        with open(t_zip_path, "wb") as buffer:
+            shutil.copyfileobj(template_file.file, buffer)
+        t_extract = os.path.join(template_dir, template_file.filename[:-4])
+        try:
+            with zipfile.ZipFile(t_zip_path, 'r') as zip_ref:
+                zip_ref.extractall(t_extract)
+        except zipfile.BadZipFile:
+            pass
+
+    # 5. Cohort file if provided
+    if cohort_file and cohort_file.filename and cohort_file.filename.endswith('.zip'):
+        os.makedirs(cohort_dir, exist_ok=True)
+        c_zip_path = os.path.join(cohort_dir, cohort_file.filename)
+        with open(c_zip_path, "wb") as buffer:
+            shutil.copyfileobj(cohort_file.file, buffer)
+        c_extract = os.path.join(cohort_dir, "master")
+        try:
+            with zipfile.ZipFile(c_zip_path, 'r') as zip_ref:
+                zip_ref.extractall(c_extract)
+            student_dirs = []
+            for item in os.listdir(c_extract):
+                ip = os.path.join(c_extract, item)
+                if os.path.isdir(ip):
+                    student_dirs.append(ip)
+                elif item.endswith('.zip'):
+                    sp = os.path.join(c_extract, item[:-4])
+                    os.makedirs(sp, exist_ok=True)
+                    with zipfile.ZipFile(ip, 'r') as sz:
+                        sz.extractall(sp)
+                    student_dirs.append(sp)
+            if student_dirs:
+                cohort_dna = build_cohort_codedna(student_dirs)
+                with open(os.path.join(cohort_dir, "cohort_dna.json"), "w") as f:
+                    json.dump(cohort_dna, f)
+        except Exception:
+            pass
+
+    # 6. Execute CPU-bound CodeDNA analysis in thread
+    def _run_analysis():
+        if baseline_type == "cohort" and os.path.exists(cohort_dir):
+            c_path = os.path.join(cohort_dir, "cohort_dna.json")
+            if os.path.exists(c_path):
+                with open(c_path, "r") as f:
+                    b_dna = json.load(f)
+            else:
+                b_dna = build_cohort_codedna([cohort_dir])
+        else:
+            b_dna = build_repository_codedna(repos_dir)
+
+        t_dna = None
+        if os.path.exists(template_dir) and os.listdir(template_dir):
+            t_dna = build_repository_codedna(template_dir)
+            if baseline_type == "cohort":
+                b_dna = subtract_template_dna(b_dna, t_dna)
+
+        s_dna = build_repository_codedna(sub_dir)
+        if t_dna is not None:
+            s_dna = subtract_template_dna(s_dna, t_dna)
+
+        return b_dna, s_dna
+
+    try:
+        baseline_dna, submission_dna = await asyncio.wait_for(
+            asyncio.to_thread(_run_analysis),
+            timeout=60.0
+        )
+    except asyncio.TimeoutError:
+        raise HTTPException(
+            status_code=504,
+            detail="Analysis timed out (>60s). Try reducing repository size."
+        )
+
+    sub_usable = submission_dna.get("repo_count_usable_files_languages", {}).get("usable_files", 0)
+    base_usable = baseline_dna.get("repo_count_usable_files_languages", {}).get("usable_files", 0)
+
+    if sub_usable == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Submission contains no usable source code files. Supported extensions are: Python (.py), JavaScript/TypeScript (.js, .jsx, .ts, .tsx), Java (.java), C/C++ (.c, .cpp), C# (.cs), Go (.go), Rust (.rs). Please ensure the submission ZIP archive contains supported code files."
+        )
+    if base_usable == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Baseline contains no usable source code files. Supported extensions are: Python (.py), JavaScript/TypeScript (.js, .jsx, .ts, .tsx), Java (.java), C/C++ (.c, .cpp), C# (.cs), Go (.go), Rust (.rs). Please verify your historical baseline repositories."
+        )
+
+    try:
+        comparison_results = await asyncio.wait_for(
+            asyncio.to_thread(compare_codedna, baseline_dna, submission_dna),
+            timeout=60.0
+        )
+    except asyncio.TimeoutError:
+        raise HTTPException(
+            status_code=504,
+            detail="CodeDNA comparison timed out (>60s)."
+        )
+
+    # Persist deterministic results to session directory
+    with open(os.path.join(session_path, "deterministic_results.json"), "w") as f:
+        json.dump(comparison_results, f)
+
+    return {
+        "status": "success",
+        "session_id": session_id,
+        "deterministic_data": comparison_results
+    }
+
+@app.post("/api/analyze/ai-report", tags=["Analysis"], summary="Generate AI Forensic Report")
+async def generate_ai_report(
+    session_id: str = Form(...),
+    deterministic_data: Optional[str] = Form(None)
+):
+    """Generate the AI forensic report using previously generated deterministic data."""
+    comparison_results = None
+    if deterministic_data:
+        try:
+            comparison_results = json.loads(deterministic_data)
+        except Exception:
+            comparison_results = None
+
+    if comparison_results is None:
+        session_path = os.path.join(SESSION_DIR, session_id)
+        results_path = os.path.join(session_path, "deterministic_results.json")
+        if not os.path.exists(results_path):
+            raise HTTPException(status_code=400, detail="Deterministic analysis not found. Run /api/analyze/compare or /api/analyze/direct first.")
+        with open(results_path, "r") as f:
+            comparison_results = json.load(f)
     
     try:
         ai_report, ai_mode = await generate_forensic_report(comparison_results)
