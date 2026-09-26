@@ -129,6 +129,7 @@ sequenceDiagram
 - **Token Budgeter:** Compacts raw metrics to `<25,000` tokens, ensuring reliable execution on free-tier Gemini API quotas.
 - **Model Fallback Chain:** Implements automated fallback across `gemini-2.5-flash`, `gemini-3.5-flash-lite`, and `gemini-1.5-flash` to guarantee high availability.
 - **VivaGuard Defense Script Generator:** Produces targeted oral examination questions based directly on flagged anomaly regions.
+- **Server-Side Cutoff Protection & In-Flight Lock:** Enforces a server-side availability control (10 October 2026 cutoff date) preventing Gemini API calls starting 11 October 2026, alongside in-flight session deduplication to prevent duplicate concurrent AI executions. Core static CodeDNA analysis operates independently of this AI layer.
 
 ### 4.4 Presentation Layer (`frontend/src/`)
 - **Interactive Workstation:** 9 modular pipeline views built with Next.js 16, TypeScript, Recharts, and Tailwind CSS.

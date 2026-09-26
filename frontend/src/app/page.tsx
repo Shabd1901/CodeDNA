@@ -308,9 +308,13 @@ export default function Home() {
       setReport((prev: any) => ({ ...prev, forensic_report: data.forensic_report }));
     } catch (error: any) {
       console.error("AI Analysis Execution Error:", error);
+      const msg = error?.message || "";
+      const isCutoff = msg.includes("10 October 2026") || msg.includes("no longer available") || msg.includes("403");
       setErrorNotice({
-        title: "AI Forensic Reasoning Error",
-        detail: error?.message || "Failed to generate AI forensic reasoning. Check console for full details."
+        title: isCutoff ? "AI Forensic Analysis Unavailable" : "AI Forensic Reasoning Error",
+        detail: isCutoff 
+          ? "AI-powered forensic analysis is no longer available for this demonstration deployment. Core CodeDNA analysis remains available." 
+          : msg || "Failed to generate AI forensic reasoning. Check console for full details."
       });
     } finally {
       setAiLoading(false);

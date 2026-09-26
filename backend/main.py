@@ -21,7 +21,9 @@ if _backend_dir not in sys.path:
     sys.path.insert(0, _backend_dir)
 
 from analysis import build_repository_codedna, compare_codedna, build_cohort_codedna, subtract_template_dna
-from ai_engine import generate_forensic_report
+from ai_engine import generate_forensic_report, is_ai_available
+
+_IN_FLIGHT_AI_SESSIONS: set = set()
 
 app = FastAPI(
     title="CodeDNA Forensic API", 
@@ -639,6 +641,20 @@ async def generate_ai_report(
     deterministic_data: Optional[str] = Form(None)
 ):
     """Generate the AI forensic report using previously generated deterministic data."""
+    # 1. Hard Server-Side Cutoff Check
+    if not is_ai_available():
+        raise HTTPException(
+            status_code=403,
+            detail="AI-powered forensic analysis is no longer available for this demonstration deployment (cutoff date: 10 October 2026). Core CodeDNA analysis remains available."
+        )
+
+    # 2. Prevent Duplicate / Concurrent In-Flight AI Requests for the Same Session
+    if session_id in _IN_FLIGHT_AI_SESSIONS:
+        raise HTTPException(
+            status_code=409,
+            detail="AI forensic report generation is already in progress for this session. Please wait."
+        )
+
     comparison_results = None
     if deterministic_data:
         try:
@@ -654,10 +670,15 @@ async def generate_ai_report(
         with open(results_path, "r") as f:
             comparison_results = json.load(f)
     
+    _IN_FLIGHT_AI_SESSIONS.add(session_id)
     try:
         ai_report, ai_mode = await generate_forensic_report(comparison_results)
+    except PermissionError as pe:
+        raise HTTPException(status_code=403, detail=str(pe))
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"AI analysis failed: {str(e)}")
+    finally:
+        _IN_FLIGHT_AI_SESSIONS.discard(session_id)
     
     return {
         "status": "success",

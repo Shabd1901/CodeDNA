@@ -15,6 +15,7 @@
 ## Quick Links
 
 - **Live Deployed Application:** [https://codedna-orchestrate.vercel.app/](https://codedna-orchestrate.vercel.app/)
+- **AI Analysis Availability:** The deployed demonstration includes Gemini-powered forensic reasoning, available through 10 October 2026. After this date, the optional AI reasoning layer may be disabled while core CodeDNA analysis remains available.
 - **Interactive API Documentation:** Available at `http://localhost:8000/docs` when running backend locally
 - **Architecture Specification:** [docs/architecture.md](docs/architecture.md)
 - **Product Requirements Document (PRD):** [docs/PRD.md](docs/PRD.md)

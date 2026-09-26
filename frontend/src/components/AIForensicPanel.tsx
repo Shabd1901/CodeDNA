@@ -57,6 +57,9 @@ export function AIForensicPanel({
               <p className="text-xs text-zinc-500 mt-0.5">
                 Generates evidence-weighted reasoning, evaluates counter-evidence & false positives, and crafts viva questions.
               </p>
+              <p className="text-[11px] text-zinc-500 mt-1">
+                AI Analysis is available until 10 October 2026. After this date, AI-powered forensic reasoning will be disabled. Core CodeDNA analysis will remain available.
+              </p>
             </div>
           </div>
         </div>

@@ -1,9 +1,14 @@
 import os
 import json
-from google import genai
-from google.genai import types
+from datetime import datetime, timezone
 
 _client = None
+
+# Hard server-side cutoff: AI available through 10 October 2026. Disabled starting 11 October 2026.
+AI_CUTOFF_DATE = datetime(2026, 10, 11, 0, 0, 0, tzinfo=timezone.utc)
+
+def is_ai_available() -> bool:
+    return datetime.now(timezone.utc) < AI_CUTOFF_DATE
 
 def _api_key() -> str:
     return (os.getenv("GEMINI_API_KEY") or "").strip()
@@ -87,6 +92,9 @@ def _compact_comparison_data(data: dict) -> dict:
 
 async def generate_forensic_report(comparison_data: dict) -> tuple[dict, str]:
     """Analyze deterministic comparison data using Google Gemini Flash with automatic non-blocking failover and strict token budgeting."""
+    if not is_ai_available():
+        raise PermissionError("AI-powered forensic analysis is no longer available for this demonstration deployment (cutoff date: 10 October 2026). Core CodeDNA analysis remains available.")
+
     import asyncio
 
     primary_model = (os.getenv("GEMINI_MODEL") or "gemini-3.5-flash-lite").strip()
