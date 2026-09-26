@@ -238,13 +238,15 @@ export default function Home() {
         formData.append("cohort_prefix", cohortAssignmentPrefix);
       }
 
-      // Smooth step animation while request runs in flight
+      // Smooth forward step animation while request runs in flight (no cyclical looping)
       let currentStep = 0;
       setAnalysisStep(0);
       const stepInterval = setInterval(() => {
-        currentStep = (currentStep + 1) % 4;
-        setAnalysisStep(currentStep);
-      }, 400);
+        if (currentStep < 3) {
+          currentStep += 1;
+          setAnalysisStep(currentStep);
+        }
+      }, 500);
 
       let res: Response;
       try {

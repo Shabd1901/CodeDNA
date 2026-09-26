@@ -40,7 +40,7 @@ def compute_stats(data: List[float]) -> Dict[str, float]:
 EXCLUDE_DIRS = {
     'node_modules', '.git', '.vscode', '.idea', '__pycache__', 
     'venv', 'env', '.env', 'dist', 'build', 'out', 'target', 'vendor',
-    'coverage', '.next', '.nuxt', 'tmp', 'temp'
+    'coverage', '.next', '.nuxt'
 }
 CODE_EXTENSIONS = {
     '.py': 'python', '.js': 'javascript', '.jsx': 'javascript',
@@ -72,10 +72,14 @@ def classify_name(name: str) -> str:
     if RE_SNAKE.match(name): return 'snake_case'
     return 'other'
 
-def is_usable_file(filepath: str) -> bool:
-    parts = Path(filepath).parts
-    if any(p in EXCLUDE_DIRS for p in parts):
-        return False
+def is_usable_file(filepath: str, repo_root: str = None) -> bool:
+    if repo_root:
+        try:
+            rel_parts = Path(os.path.relpath(filepath, repo_root)).parts[:-1]
+            if any(p in EXCLUDE_DIRS for p in rel_parts):
+                return False
+        except Exception:
+            pass
     ext = os.path.splitext(filepath)[1].lower()
     return ext in CODE_EXTENSIONS or os.path.basename(filepath) in ['requirements.txt', 'package.json']
 
@@ -450,7 +454,7 @@ def build_repository_codedna(repo_dir: str) -> Dict[str, Any]:
             dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
             for file in files:
                 filepath = os.path.join(root, file)
-                if not is_usable_file(filepath): continue
+                if not is_usable_file(filepath, repo_dir): continue
                 if os.path.splitext(file)[1].lower() not in CODE_EXTENSIONS: continue
 
                 # Hard cap — prevent processing enormous repos
