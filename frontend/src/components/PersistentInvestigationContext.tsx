@@ -7,7 +7,7 @@ interface PersistentInvestigationContextProps {
   sessionId: string | null;
   report: any;
   aiLoading: boolean;
-  aiMode: "openai" | "gemini" | null;
+  aiMode: string | null;
   onRunAi: () => void;
   onNewInvestigation: () => void;
   onExportDossier?: (mode: "simple" | "extended") => void;

@@ -24,6 +24,8 @@ interface BenchmarkSuiteViewProps {
   onBackToSetup?: () => void;
 }
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 export function BenchmarkSuiteView({ initialData, onBackToSetup }: BenchmarkSuiteViewProps) {
   const [benchmarkData, setBenchmarkData] = useState<any>(initialData || null);
   const [loading, setLoading] = useState(false);
@@ -33,7 +35,7 @@ export function BenchmarkSuiteView({ initialData, onBackToSetup }: BenchmarkSuit
   const runBenchmark = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/api/benchmarks/run");
+      const res = await fetch(`${API_BASE}/api/benchmarks/run`);
       if (res.ok) {
         const data = await res.json();
         setBenchmarkData(data);

@@ -227,6 +227,14 @@ Phase 0, Phase 1, Phase 2, Phase 3, and Phase 4 (Temporal Authorship Modeling & 
 - (2026-09-25 19:20) **Phase 3 Test Data Generation (SUBPART 2):** Successfully executed scripts/generate_test_zips.py to populate test_data/ directory with 8 complete test scenarios containing baseline.zip and submission.zip pairs (plus template.zip for scenario 8), verifying correct file structure for all scenarios including 1_clean/, 2_sudden_ai/, 3_consistent_ai/, 4_plagiarism/, 5_empty/, 6_cross_language/,7_sophisticated_evasion/, and 8_template/ directories.
 - (2026-09-25 19:15) **Phase 3 Extreme Automated Testing Implementation: (SUBPART 1)** SUBPART 1
 Created comprehensive test suite with `scripts/generate_test_zips.py` for 8 distinct scenarios (Clean Student, Sudden AI, Consistent AI, Plagiarism, Empty Repo Cross-Language, Sophisticated Evasion, Template Subtraction) and updated `scripts/run_tests.py` with strict validation engine using httpx to POST generated ZIPs to local FastAPI endpoints (/api/session/start, /api/anayze/compare, /api/analyze/ai-report) with scenario-specific Pass Criteria assertions.
+- (2026-09-26 22:05) **Black-Box Evaluator Audit & Submission Polish:**
+  - Audited full end-to-end user journey simulating an external reviewer testing the app from fresh landing to PDF case dossier export.
+  - Added `@app.get("/api/health")` in `backend/main.py` alongside `/` for standard automated health checks.
+  - Replaced hardcoded `http://localhost:8000` URLs across `frontend/src/app/page.tsx` and `BenchmarkSuiteView.tsx` with dynamic `API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"`, and created `frontend/.env.example`.
+  - Harmonized model badges across `page.tsx`, `PersistentInvestigationContext.tsx`, and `AIForensicPanel.tsx`, removing legacy OpenAI fallback strings and displaying dynamic Google Gemini model tags.
+  - Replaced `create-next-app` template `frontend/README.md` with complete documentation for the forensic workstation.
+  - Formatted and appended Section 9 to `docs/projecteval2.md`.
+
 - (2026-09-26 22:00) **Codebase Coherence, Asset Cleanliness & Non-Essential Code Audit:**
   - Removed unused starter template SVG files from `frontend/public/` (`file.svg`, `globe.svg`, `next.svg`, `vercel.svg`, `window.svg`).
   - Added missing `httpx` dependency to `backend/requirements.txt` to prevent runtime import failures on fresh clones.

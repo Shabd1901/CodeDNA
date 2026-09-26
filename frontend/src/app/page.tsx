@@ -35,6 +35,8 @@ import { TemporalEvolutionView } from "@/components/TemporalEvolutionView";
 import { BenchmarkSuiteView } from "@/components/BenchmarkSuiteView";
 import { InfoHelper } from "@/components/InfoTooltipModal";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 export default function Home() {
   const [appState, setAppState] = useState<"idle" | "analyzing" | "results" | "eval_lab">("idle");
   const [pipelineStage, setPipelineStage] = useState<PipelineStage>("overview");
@@ -118,7 +120,7 @@ export default function Home() {
   const [report, setReport] = useState<any>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
-  const [aiMode, setAiMode] = useState<"openai" | "gemini" | null>(null);
+  const [aiMode, setAiMode] = useState<string | null>(null);
   const [resetKey, setResetKey] = useState(0);
   const [errorNotice, setErrorNotice] = useState<{ title: string; detail: string; isRateLimit?: boolean } | null>(null);
   // Alternative baseline comparison for dashboard metrics when both baselines are available
@@ -154,7 +156,7 @@ export default function Home() {
   const handleNewInvestigation = async () => {
     if (sessionId) {
       try {
-        await fetch(`http://localhost:8000/api/session/${sessionId}`, { method: "DELETE" });
+        await fetch(`${API_BASE}/api/session/${sessionId}`, { method: "DELETE" });
       } catch (err) {
         console.error("Failed to clean up session on server:", err);
       }
@@ -200,7 +202,7 @@ export default function Home() {
     try {
       // Step 0 — Start Session
       setAnalysisStep(0);
-      const sessionRes = await fetch("http://localhost:8000/api/session/start", { method: "POST" });
+      const sessionRes = await fetch(`${API_BASE}/api/session/start`, { method: "POST" });
       if (!sessionRes.ok) {
         throw { title: "Session Error", detail: "Failed to initialize server investigation session." };
       }
@@ -224,7 +226,7 @@ export default function Home() {
             const formData = new FormData();
             formData.append("session_id", newSessionId);
             formData.append("username", targetUsername);
-            const ghRes = await fetch("http://localhost:8000/api/repositories/github", {
+            const ghRes = await fetch(`${API_BASE}/api/repositories/github`, {
               method: "POST",
               body: formData
             });
@@ -245,7 +247,7 @@ export default function Home() {
             const repoData = new FormData();
             repoData.append("session_id", newSessionId);
             repoData.append("file", baselineUploadList[i]);
-            const upRes = await fetch("http://localhost:8000/api/repositories/upload", {
+            const upRes = await fetch(`${API_BASE}/api/repositories/upload`, {
               method: "POST",
               body: repoData
             });
@@ -260,7 +262,7 @@ export default function Home() {
         const cohortData = new FormData();
         cohortData.append("session_id", newSessionId);
         cohortData.append("file", cohortFile);
-        const cohortRes = await fetch("http://localhost:8000/api/repositories/cohort-zip", {
+        const cohortRes = await fetch(`${API_BASE}/api/repositories/cohort-zip`, {
           method: "POST",
           body: cohortData
         });
@@ -276,7 +278,7 @@ export default function Home() {
         classroomData.append("session_id", newSessionId);
         classroomData.append("organization", cohortOrganization);
         classroomData.append("assignment_prefix", cohortAssignmentPrefix);
-        const classroomRes = await fetch("http://localhost:8000/api/repositories/github-classroom", {
+        const classroomRes = await fetch(`${API_BASE}/api/repositories/github-classroom`, {
           method: "POST",
           body: classroomData
         });
@@ -291,7 +293,7 @@ export default function Home() {
       const subData = new FormData();
       subData.append("session_id", newSessionId);
       subData.append("file", submissionFile);
-      const subRes = await fetch("http://localhost:8000/api/analyze/submission", {
+      const subRes = await fetch(`${API_BASE}/api/analyze/submission`, {
         method: "POST",
         body: subData
       });
@@ -306,7 +308,7 @@ export default function Home() {
         const templateData = new FormData();
         templateData.append("session_id", newSessionId);
         templateData.append("file", templateFile);
-        const templateRes = await fetch("http://localhost:8000/api/repositories/template", {
+        const templateRes = await fetch(`${API_BASE}/api/repositories/template`, {
           method: "POST",
           body: templateData
         });
@@ -339,7 +341,7 @@ export default function Home() {
         const compareData = new FormData();
         compareData.append("session_id", newSessionId);
         compareData.append("baseline_type", primaryComparison.type);
-        const res = await fetch("http://localhost:8000/api/analyze/compare", {
+        const res = await fetch(`${API_BASE}/api/analyze/compare`, {
           method: "POST",
           body: compareData
         });
@@ -357,7 +359,7 @@ export default function Home() {
         const compareData = new FormData();
         compareData.append("session_id", newSessionId);
         compareData.append("baseline_type", alternativeComparison.type);
-        const res = await fetch("http://localhost:8000/api/analyze/compare", {
+        const res = await fetch(`${API_BASE}/api/analyze/compare`, {
           method: "POST",
           body: compareData
         });
@@ -380,7 +382,7 @@ export default function Home() {
       } else {
         setErrorNotice({
           title: "Analysis Failure",
-          detail: error?.message || "Analysis failed. Please check that the backend is running at http://localhost:8000.",
+          detail: error?.message || `Analysis failed. Please check that the backend is running at ${API_BASE}.`,
           isRateLimit: false
         });
       }
@@ -393,7 +395,7 @@ export default function Home() {
     try {
       const formData = new FormData();
       formData.append("session_id", sessionId);
-      const res = await fetch("http://localhost:8000/api/analyze/ai-report", {
+      const res = await fetch(`${API_BASE}/api/analyze/ai-report`, {
         method: "POST",
         body: formData
       });
@@ -402,7 +404,7 @@ export default function Home() {
         throw new Error(errData.detail || `Server error ${res.status}`);
       }
       const data = await res.json();
-      setAiMode(data.ai_mode?.startsWith("gemini") ? "gemini" : "openai");
+      setAiMode(data.ai_mode || "Google Gemini Flash");
       setReport((prev: any) => ({ ...prev, forensic_report: data.forensic_report }));
     } catch (error: any) {
       console.error("AI Analysis Execution Error:", error);

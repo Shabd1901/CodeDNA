@@ -23,7 +23,7 @@ interface ForensicReport {
 interface AIForensicPanelProps {
   forensicReport: ForensicReport | null;
   aiLoading: boolean;
-  aiMode: "openai" | "gemini" | null;
+  aiMode: string | null;
   sessionId: string | null;
   onRunAi: () => void;
 }
@@ -64,7 +64,7 @@ export function AIForensicPanel({
         <div className="flex items-center gap-2">
           {aiMode && (
             <span className="px-2.5 py-1 text-xs font-semibold rounded-md border bg-emerald-50 text-emerald-700 border-emerald-200">
-              {aiMode === "gemini" ? "Gemini Flash Model" : "OpenAI GPT-4o"}
+              {aiMode.toLowerCase().includes("gemini") ? "Google Gemini Flash" : aiMode}
             </span>
           )}
           <button

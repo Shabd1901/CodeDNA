@@ -46,8 +46,9 @@ SESSION_DIR = os.path.join(os.path.dirname(__file__), "tmp_sessions")
 os.makedirs(SESSION_DIR, exist_ok=True)
 
 @app.get("/", tags=["Health"])
+@app.get("/api/health", tags=["Health"])
 def read_root():
-    return {"status": "ok", "message": "CodeDNA API is running"}
+    return {"status": "ok", "message": "CodeDNA API is running", "version": "1.0.0"}
 
 @app.post("/api/session/start", tags=["Session"], summary="Start Investigation Session")
 def start_session():

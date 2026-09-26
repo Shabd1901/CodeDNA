@@ -207,4 +207,47 @@ The 14 benchmark scenarios in `backend/ml_engine/benchmark_runner.py` comprehens
      - Empirical benchmark reproducibility commands and performance metrics (92.9% accuracy, 0.0% FPR).
      - Ethical human-in-the-loop and viva-defense principles.
 
+---
+
+## 9. First-Time Black-Box Evaluator Journey & Submission Readiness Audit
+
+**Audit Focus:** Full black-box simulation of a first-time technical evaluator reviewing CodeDNA from initial landing to final export. Identification and remediation of anything that could appear unfinished, fake, confusing, unverified, or technically unsupported, followed by an inventory of final submission items.
+
+### 9.1 The Evaluator Journey Trace
+1. **Landing & Orientation**:
+   - The evaluator starts the app at `http://localhost:3000`.
+   - Clear visual hierarchy with "Engine Ready" badge, an instant access banner to the **Scientific Evaluation Lab** (no upload required), and an **Evaluator Tip** referencing ready-to-test scenarios in `test_data/`.
+2. **Investigation Ingestion Flow**:
+   - Dropping `test_data/1_clean/baseline.zip` and `test_data/1_clean/submission.zip` immediately updates the action bar status from `"Awaiting Inputs"` to `"Ready to Execute"`.
+   - Clicking `"Initiate Forensic Investigation"` activates the 5-step progress modal with human-readable status details and animated state transitions.
+3. **Forensic Analysis Dashboard**:
+   - The 9-stage pipeline nav allows rapid keyboard navigation (`1` through `9`).
+   - Stage 1 (Overview) displays authorial profiling (`Standard Analysis`, `Consistent AI Author`, or `Sudden AI Introduction`) with baseline reliability scoring and metric anomalies.
+   - Stage 3 (Radar Chart) renders multi-dimensional AST drift cleanly with responsive tooltips.
+   - Stage 5 (Code Inspector) renders real code lines with line-number markers and affirmative green empty states for clean submissions.
+   - Stage 6 & 7 (ML Projections & Temporal Shifts) provide contrastive Siamese distance metrics, 95% Platt confidence intervals, and CUSUM change-point time-series.
+   - Stage 8 (Case Dossier) provides one-click print-ready formatting with page breaks and signature blocks.
+4. **AI Forensic Reasoning & VivaGuard**:
+   - Clicking `"Generate Gemini Flash Reasoning"` executes Google GenAI Flash, populating structured findings, contradictory evidence, false-positive guardrails, and copyable VivaGuard interview scripts.
+
+### 9.2 Concrete Evaluator Polish & Fixes Applied
+1. **Dynamic Model Badge Resolution**:
+   - In `AIForensicPanel.tsx`, removed legacy `"OpenAI GPT-4o"` fallback logic. The badge now dynamically renders the exact model returned by the engine (`Google Gemini Flash` or configured model variant).
+2. **Configurable Frontend API Endpoint**:
+   - Extracted `const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";` across `page.tsx` and `BenchmarkSuiteView.tsx`, replacing 13 hardcoded localhost instances.
+   - Created `frontend/.env.example` to guide evaluators running custom ports or Docker networks.
+3. **Eliminated Next.js Template Boilerplate**:
+   - Replaced default `create-next-app` `frontend/README.md` with comprehensive documentation of the 9-stage pipeline, keyboard shortcuts, and architecture.
+4. **Standard `/api/health` Route**:
+   - Added `@app.get("/api/health")` in `backend/main.py` alongside `@app.get("/")` for automated health checkers.
+
+### 9.3 Remaining Submission Checklist & Operational Blockers
+1. **API Key Provisioning**:
+   - To demonstrate live AI qualitative reasoning, ensure `backend/.env` contains a valid `GEMINI_API_KEY` (free tier from Google AI Studio). Note that all 8 AST vectors, Siamese ML projections, Platt calibrations, and CUSUM temporal analyses run 100% locally and deterministically without an API key.
+2. **Git Synchronization**:
+   - Local working branch is ahead of `origin/main`. Ready for `git push`.
+3. **Live Server Execution**:
+   - Start backend: `python -m uvicorn main:app --reload --port 8000` (from `backend/` in `venv`).
+   - Start frontend: `npm run dev` (from `frontend/`).
+
 
