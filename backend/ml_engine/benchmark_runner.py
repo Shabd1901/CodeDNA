@@ -501,7 +501,7 @@ def run_empirical_benchmarks() -> Dict[str, Any]:
 
     return {
         "evaluation_architecture": {
-            "version": "CodeDNA Scientific Evaluation Lab v2.4",
+            "version": "CodeDNA Scientific Evaluation Lab v1.1",
             "layers": [
                 "Layer 1: Deterministic 8-Vector AST Feature Extraction",
                 "Layer 2: Contrastive Siamese Latent Metric Projection (24-Dim Hypersphere)",

@@ -57,7 +57,7 @@ export function ForensicDossierView({ sessionId, report }: ForensicDossierViewPr
           </div>
           <div className="sm:text-right font-mono text-xs text-zinc-600">
             <p><strong>Generated:</strong> {currentDate}</p>
-            <p><strong>Engine:</strong> CodeDNA v2.4 (Hybrid Forensic)</p>
+            <p><strong>Engine:</strong> CodeDNA v1.1 (Hybrid Forensic)</p>
             <p className="mt-1">
               <strong>Status:</strong>{" "}
               <span className="uppercase font-bold text-zinc-900">

@@ -73,6 +73,17 @@ $$\text{Adjusted Anomaly Score} = \text{Personal Deviation} \times (1 - \text{Co
 Phase 0, Phase 1, Phase 2, Phase 3, and Phase 4 (Temporal Authorship Modeling & Change-Point Detection) Complete! Ready for Phase 5 (Cross-Language AST Parity & AST Normalization).
 
 ## Completed Changes:
+- (2026-09-26 19:00) **Stacked Vertical Intake Layout Redesign (Permanent Card Dimension Fix):**
+  - Replaced the side-by-side 2-column CSS Grid layout (`grid-cols-2`) with a stacked vertical layout (`space-y-5`) in [`page.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/app/page.tsx), permanently eliminating the card dimension expansion bug when switching baseline tabs.
+  - Card 1 (Historical Reference Baseline) is now full-width with natural height — no fixed `h-[460px]` constraints. Tab content (Single Student, Master LMS ZIP, GitHub Classroom) flows naturally without pushing sibling cards.
+  - Card 2 (Investigated Submission) is redesigned as a compact full-width horizontal bar with inline layout: title + dropzone + engine guarantees side-by-side, reducing vertical scroll.
+  - Root cause was CSS Grid `min-width: auto` allowing Tab 1 (Master LMS ZIP) content to push the grid column wider than `1fr`, distorting Card 2. Stacked layout has zero column competition.
+- (2026-09-26 18:32) **Strict Baseline Intake Card Width & Layout Locking:**
+  - Added `min-w-0 w-full` constraints to Card 1, Card 2, and the 2-column grid container in [`page.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/app/page.tsx).
+  - Fixed horizontal expansion bug in CSS Grid when switching to `Master LMS ZIP` tab by overriding implicit `min-width: auto`, locking both intake cards to exact 50%/50% equal width across all baseline tabs.
+- (2026-09-26 18:23) **Google Fonts Remote Warning Resolution:**
+  - Removed remote `next/font/google` import (`Geist`, `Geist_Mono`) from [`layout.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/app/layout.tsx).
+  - Configured high-performance local system font stack (`system-ui`, `-apple-system`, `Inter`, `sans-serif` and `monospace`), eliminating Google Fonts network fetching warnings during dev and build.
 - (2026-09-26 13:04) **Backend main.py Import Resolution & Linter Cleanup:**
   - Resolved missing symbol errors in [`main.py`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/backend/main.py) by explicitly importing `build_cohort_codedna` and `subtract_template_dna` from [`analysis.py`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/backend/analysis.py).
   - Cleared unused imports (`io`, `copy`) and verified clean execution using `backend/venv`.
@@ -240,7 +251,33 @@ Created comprehensive test suite with `scripts/generate_test_zips.py` for 8 dist
 - *Cohort Normalization Engine Fully Verified:* Master LMS ZIP Ingestion, GitHub Classroom Auto-Fetch, and Instructor Starter Template Subtraction are 100% operational in backend & frontend.
 
 ## Known Issues / Need To make these updates:
-- *None currently open.* All requested UI updates, scenario matrix drawer expansions, browser history back-button synchronization, and tab reordering completed.
+
+- cross option to remove the file uploaded in the Instructor Starter Template
+
+- for the validation check, i need the github.com validation at the spot. like not checking whether this profile exists or not yet. but making sure the correct github.com link is pasted in the text so it reduces the time of user to run the analysis and then understand they made a typo error like https://githuub.com/torvalds/linux
+
+- make sure to define errors for the users
+errors like -> CodeDNA Comparison Error
+Submission contains no usable source code files.
+this even i couldnt understand
+also this error happened when i uploaded one student submission and Instructor Starter Template and 9 historical baselines and 1 github repo. i dont know what caused the error and how do i fix it.
+
+- when uploading stages projects, the space that shows all the projects, it expands based on that 
+i need it to expand upto 3 lines and then have the scroll bar for it so it doesnt take the whole page when i have many projects
+
+- dropping historical baseline projects, expands the whole Historical Reference Baseline card from the sides as i add more projects. make sure the cards dont change dynamically as we are implementing scroll effect
+
+- drop the target student submission should be below the investigated submission title (following the design type as standard for all cards on that page)
+
+- add an option to add GitHub usernames allowing me to add more github profiles with the click of an add button that adds one more line to paste the result 
+
+- the loader after initiating forensic investigation, it just shows some random stuff. to a non technical person just asssigned to do this, it would be impatient for them to look at it and not know how much time it would take, can we somehow predict an estimation from it and show it here??
+
+- i still dont know how to test the data or get results using the 
+Instructor Starter Template: like just an example project of this so it can match if the student has relative project to this or not? and why am i not able to run an analysis from the target submission and instructor starter template
+Master Class/Cohort Zip 
+
+- remove the cards displaying the redirection buttons siamese latent space and the milestone timeline on the overview page.
 
 ### Clarification — Re-Run Suite Button:
 - **What does the Re-Run Suite button do?**
