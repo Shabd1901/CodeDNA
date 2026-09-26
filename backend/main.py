@@ -6,14 +6,12 @@ from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 import httpx
 import asyncio
-import io
 import uuid
 import os
 import shutil
 import zipfile
 import json
-import copy
-from analysis import build_repository_codedna, compare_codedna
+from analysis import build_repository_codedna, compare_codedna, build_cohort_codedna, subtract_template_dna
 from ai_engine import generate_forensic_report
 
 app = FastAPI(

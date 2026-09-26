@@ -73,6 +73,9 @@ $$\text{Adjusted Anomaly Score} = \text{Personal Deviation} \times (1 - \text{Co
 Phase 0, Phase 1, Phase 2, Phase 3, and Phase 4 (Temporal Authorship Modeling & Change-Point Detection) Complete! Ready for Phase 5 (Cross-Language AST Parity & AST Normalization).
 
 ## Completed Changes:
+- (2026-09-26 13:04) **Backend main.py Import Resolution & Linter Cleanup:**
+  - Resolved missing symbol errors in [`main.py`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/backend/main.py) by explicitly importing `build_cohort_codedna` and `subtract_template_dna` from [`analysis.py`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/backend/analysis.py).
+  - Cleared unused imports (`io`, `copy`) and verified clean execution using `backend/venv`.
 - (2026-09-26 12:55) **Workstation UI Polish, Browser History Navigation & Interactive Benchmark Matrix:**
   - **Interactive Scenario Breakdown Matrix:** Set `Scenario Breakdown Matrix (14)` as the default primary tab in [`BenchmarkSuiteView.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/components/BenchmarkSuiteView.tsx). Made scenario table rows interactive with click-to-expand drawers displaying full scenario explanations, ground truth metadata, and model inferences without text clipping.
   - **Browser Back Button State Sync:** Integrated `popstate` event listener and history state sync in [`page.tsx`](file:///c:/Users/praja/HomeSchool/Personal%20Projects/orchestrate/frontend/src/app/page.tsx) so browser Back (`←`) and Forward (`→`) buttons transition between application states without exiting the platform.
